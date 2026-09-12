@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Destroy Squares · Cascade Update</title>
+<title>Destroy Squares · Stacking Cascade</title>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;height:100%;width:100%;overflow:hidden}
@@ -56,22 +56,18 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 #notification.jam{color:#8fc4ff;text-shadow:0 0 12px #3f8fff}
 #notification.boss{color:#ff4444;text-shadow:0 0 16px #ff0000;font-size:clamp(16px,2.4vw,28px)}
 
-/* ---- CHANCE PANEL — now scrollable ---- */
 #chancePanel{
   position:absolute;right:8px;top:50%;transform:translateY(-50%);
   width:clamp(120px,17vw,200px);
-  max-height:calc(100% - 40px);        /* never taller than the game area */
-  overflow-y:auto;                      /* scroll when list is long */
-  overflow-x:hidden;
+  max-height:calc(100% - 40px);
+  overflow-y:auto;overflow-x:hidden;
   background:rgba(0,0,0,.78);
   border:1px solid #555;border-radius:6px;
   padding:8px 10px;
   font-size:clamp(10px,1.2vw,14px);
-  line-height:1.5;
-  z-index:1;
-  pointer-events:auto;                  /* allow scroll gestures */
-  user-select:none;
-  -webkit-overflow-scrolling:touch;     /* smooth mobile scroll */
+  line-height:1.5;z-index:1;
+  pointer-events:auto;user-select:none;
+  -webkit-overflow-scrolling:touch;
   scrollbar-width:thin;
   scrollbar-color:#ffcc44 #111;
 }
@@ -369,49 +365,72 @@ const OVERLORD_POINTS = 100;
 const OVERLORD_SUMMON_INTERVAL_MS = 5000;
 
 /* ============================================================
-   SPAWN CHANCE — CASCADE SYSTEM
+   SPAWN CHANCE — STACKING CASCADE
+   ------------------------------------------------------------
+   Cyan is MORE common than Overlord:
+     - Cyan grows at 2.5%/min starting at minute 5
+     - Overlord grows at 2%/min starting at minute 6
+   Everything else unchanged.
    ============================================================ */
-const SPAWN_BELLS = [
-  { name:"orange",   peak: 5,  width: 8,   height: 1.0 },
-  { name:"purple",   peak:11,  width: 8,   height: 1.0 },
-  { name:"green",    peak:17,  width: 8,   height: 1.0 },
-  { name:"lime",     peak:23,  width: 8,   height: 1.0 },
-  { name:"blue",     peak:30,  width: 9,   height: 1.0 },
-  { name:"cyan",     peak:38,  width:10,   height: 1.0 },
-  { name:"overlord", peak:48,  width:12,   height: 1.2 }
-];
-function triangleBell(m, peak, width){
-  const d = Math.abs(m - peak);
-  if(d >= width) return 0;
-  return 1 - d/width;
-}
+const CASCADE_ORDER = ["red","orange","purple","green","lime","blue","cyan","overlord"];
+const GROWTH = {
+  red:      0,
+  orange:   0.020,
+  purple:   0.020,
+  green:    0.020,
+  lime:     0.020,
+  blue:     0.020,
+  cyan:     0.025,   // <-- now grows faster than Overlord
+  overlord: 0.020
+};
+
 function getSpawnChances(){
-  const m = elapsedMs()/60000;
-  const weights = {};
-  let total = 0;
-  for(const b of SPAWN_BELLS){
-    let w = triangleBell(m, b.peak, b.width) * b.height;
-    if(b.name === "cyan") w *= 0.85;
-    weights[b.name] = w;
-    total += w;
+  const m = Math.floor(elapsedMs()/60000);
+
+  const raw = {
+    red:0,
+    orange: GROWTH.orange * Math.max(0, m - 0),
+    purple: GROWTH.purple * Math.max(0, m - 1),
+    green:  GROWTH.green  * Math.max(0, m - 2),
+    lime:   GROWTH.lime   * Math.max(0, m - 3),
+    blue:   GROWTH.blue   * Math.max(0, m - 4),
+    cyan:   GROWTH.cyan   * Math.max(0, m - 5),
+    overlord: GROWTH.overlord * Math.max(0, m - 6)
+  };
+
+  let sumOthers = 0;
+  for(const k of ["orange","purple","green","lime","blue","cyan","overlord"]) sumOthers += raw[k];
+
+  let red = Math.max(0, 1 - sumOthers);
+  raw.red = red;
+
+  if(red <= 0 && sumOthers > 1){
+    for(const k of ["orange","purple","green","lime","blue","cyan","overlord"]){
+      if(raw[k] <= 0) continue;
+      const excess = sumOthers - 1;
+      const shrink = Math.min(excess, raw[k]);
+      raw[k] -= shrink;
+      sumOthers -= shrink;
+      if(sumOthers <= 1) break;
+    }
   }
-  let red;
-  if(total >= 1){
+
+  let total = raw.red;
+  for(const k of ["orange","purple","green","lime","blue","cyan","overlord"]) total += raw[k];
+  if(total > 1.0000001){
     const k = 1/total;
-    for(const k2 in weights) weights[k2] *= k;
-    red = 0;
-  } else {
-    red = 1 - total;
+    for(const key in raw) raw[key] *= k;
   }
+
   const list = [
-    { name:"Red",      chance:red },
-    { name:"Orange",   chance:weights.orange },
-    { name:"Purple",   chance:weights.purple },
-    { name:"Green",    chance:weights.green },
-    { name:"Lime",     chance:weights.lime },
-    { name:"Blue",     chance:weights.blue },
-    { name:"Cyan",     chance:weights.cyan },
-    { name:"Overlord", chance:weights.overlord }
+    { name:"Red",      chance:raw.red },
+    { name:"Orange",   chance:raw.orange },
+    { name:"Purple",   chance:raw.purple },
+    { name:"Green",    chance:raw.green },
+    { name:"Lime",     chance:raw.lime },
+    { name:"Blue",     chance:raw.blue },
+    { name:"Cyan",     chance:raw.cyan },
+    { name:"Overlord", chance:raw.overlord }
   ];
   return list.sort((a,b)=>b.chance-a.chance);
 }
@@ -623,8 +642,13 @@ function updateUI(){
   damageEl.textContent=damage;
   shopScoreEl.textContent=score;
 }
+let lastChanceMinute = -1;
 function updateChancePanel(){
- if(chanceListEl)chanceListEl.innerHTML=getSpawnChances().map(x=>`<div>${x.name}: ${(x.chance*100).toFixed(1)}%</div>`).join("");
+  if(!chanceListEl) return;
+  const m = Math.floor(elapsedMs()/60000);
+  if(m === lastChanceMinute) return;
+  lastChanceMinute = m;
+  chanceListEl.innerHTML=getSpawnChances().map(x=>`<div>${x.name}: ${(x.chance*100).toFixed(1)}%</div>`).join("");
 }
 function updateGameTimer(){
  if(gameOver)return;
@@ -1431,6 +1455,7 @@ function startGame(){
   dmgUpgradeLevel=0;
   hitCooldownMs=HIT_COOLDOWN_BASE_MS;
   lastGlobalHitTime = 0;
+  lastChanceMinute = -1;
   tornadoOwned=false; tornadoArmed=false; tornadoCooldownUntil=0;
   shopOpen=false; shopOpenedAt=0; totalPausedMs=0; spawnEndsAt=0;
   hitJamUntil=0;
@@ -1451,6 +1476,7 @@ function startGame(){
   spawnTextEl=document.getElementById("spawnText");
   timerEl.textContent="Time: 00:00";
   updateUI(); refreshShop();
+  updateChancePanel();
   requestAnimationFrame(()=>{
     recomputeScale();
     clearInterval(timerInterval);
