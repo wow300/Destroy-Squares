@@ -17,16 +17,10 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 #menu{z-index:20}
 #highscoreText{font-size:clamp(16px,2.2vw,24px);color:#ffd700;margin:15px}
 #gameScreen{display:none;position:absolute;inset:0}
-#top{
-  height:clamp(50px,8vh,75px);
-  background:#1c1c1c;border-bottom:2px solid #444;
-  display:flex;align-items:center;justify-content:space-around;
-  font-size:clamp(11px,1.5vw,19px);position:relative;z-index:5;
-  padding:0 4px;gap:3px;white-space:nowrap;
-}
-#shopBtn{background:#1a7a1a;border:2px solid #3fb83f;color:#fff;padding:6px 12px;font-size:clamp(11px,1.5vw,17px);border-radius:6px;cursor:pointer;margin:0;font-family:inherit}
+#top{height:clamp(50px,8vh,75px);background:#1c1c1c;border-bottom:2px solid #444;display:flex;align-items:center;justify-content:space-around;font-size:clamp(11px,1.5vw,19px);position:relative;z-index:50;padding:0 4px;gap:3px;white-space:nowrap}
+#shopBtn{background:#1a7a1a;border:2px solid #3fb83f;color:#fff;padding:6px 12px;font-size:clamp(11px,1.5vw,17px);border-radius:6px;cursor:pointer;margin:0;font-family:inherit;pointer-events:auto}
 #shopBtn:hover{background:#26a326}
-#tornadoBtn{position:relative;background:#1a3a7a;border:2px solid #3f8fff;color:#fff;padding:6px 12px;font-size:clamp(11px,1.5vw,17px);border-radius:6px;cursor:pointer;margin:0;font-family:inherit;display:none;align-items:center;gap:6px}
+#tornadoBtn{position:relative;background:#1a3a7a;border:2px solid #3f8fff;color:#fff;padding:6px 12px;font-size:clamp(11px,1.5vw,17px);border-radius:6px;cursor:pointer;margin:0;font-family:inherit;display:none;align-items:center;gap:6px;pointer-events:auto}
 #tornadoBtn.unlocked{display:inline-flex}
 #tornadoBtn:hover:not(:disabled){background:#2651a3}
 #tornadoBtn.armed{background:#1a7a1a;border-color:#3fb83f;animation:armedPulse .8s ease-in-out infinite}
@@ -44,7 +38,7 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .tornadoRing{position:absolute;border:2px dashed rgba(160,200,255,.55);border-radius:50%;pointer-events:none;z-index:10;animation:ringPulse 0.6s linear infinite}
 @keyframes ringPulse{0%,100%{opacity:.35}50%{opacity:.9}}
-#game{position:relative;width:100vw;height:calc(100% - clamp(50px,8vh,75px));overflow:hidden}
+#game{position:relative;width:100vw;height:calc(100% - clamp(50px,8vh,75px));overflow:hidden;z-index:1}
 #game.arming{cursor:crosshair}
 #game.jammed::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%, rgba(70,130,255,.10), rgba(70,130,255,.28));pointer-events:none;z-index:14;animation:jamPulse 0.8s ease-in-out infinite}
 @keyframes jamPulse{0%,100%{opacity:.6}50%{opacity:1}}
@@ -209,7 +203,7 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
     <div>Damage: <span id="damage">1</span></div>
     <div id="spawnText">Spawn: 3s</div>
     <button id="tornadoBtn" title="Tornado"><span class="miniTornado"></span><span>Tornado</span></button>
-    <button id="shopBtn" onclick="toggleShop()">SHOP</button>
+    <button id="shopBtn">SHOP</button>
   </div>
   <div id="game"><div id="timer">Time: 00:00</div><div id="notification"></div><div id="chancePanel"><h3>Spawn chances</h3><div id="chanceList"></div></div></div>
 
@@ -220,19 +214,19 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
       <div class="shopItem" id="dmgItem">
         <h4>+1 Damage</h4>
         <div class="desc">Instantly increases your click damage by 1 for the rest of this run.</div>
-        <div class="row"><span class="lvl" id="dmgLvl">Level: 0</span><button id="buyDmgBtn" onclick="buyDamageUpgrade()">Cost: 25</button></div>
+        <div class="row"><span class="lvl" id="dmgLvl">Level: 0</span><button id="buyDmgBtn">Cost: 25</button></div>
       </div>
       <div class="shopItem" id="tornadoItem">
         <h4><span class="miniTornado"></span> Tornado</h4>
         <div class="desc">Unlocks a Tornado ability. Press the Tornado button, then tap the map to drop it. It spins for 3 seconds, dealing your current damage every second to any enemy inside. 6 second cooldown.</div>
-        <div class="row"><span class="lvl" id="tornadoLvl">Not owned</span><button id="buyTornadoBtn" onclick="buyTornadoUpgrade()">Cost: 50</button></div>
+        <div class="row"><span class="lvl" id="tornadoLvl">Not owned</span><button id="buyTornadoBtn">Cost: 50</button></div>
       </div>
       <div class="shopItem" id="cooldownItem">
         <h4>Hit Cooldown</h4>
         <div class="desc">Reduces the global cooldown between hits by 0.05s. You cannot buy below 0.10s.</div>
-        <div class="row"><span class="lvl" id="cooldownLvl">Current: 0.50s</span><button id="buyCooldownBtn" onclick="buyCooldownUpgrade()">Cost: 60</button></div>
+        <div class="row"><span class="lvl" id="cooldownLvl">Current: 0.50s</span><button id="buyCooldownBtn">Cost: 60</button></div>
       </div>
-      <button id="closeShopBtn" onclick="toggleShop()">RESUME</button>
+      <button id="closeShopBtn">RESUME</button>
     </div>
   </div>
 </div>
@@ -253,13 +247,13 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 <script>
 /* ============================================================
    GITHUB LEADERBOARD CONFIG
-   Replace PASTE_YOUR_TOKEN_HERE with your real GitHub token.
+   The token is set at the BOTTOM of this script (single source of truth).
    ============================================================ */
 const GITHUB_CONFIG = {
   owner: "wow300",
   repo:  "Destroy-Squares",
   branch:"main",
-  token: "PASTE_YOUR_TOKEN_HERE"
+  token: ""
 };
 
 const menu=document.getElementById("menu");
@@ -284,6 +278,8 @@ const cooldownLvlEl=document.getElementById("cooldownLvl");
 const buyCooldownBtn=document.getElementById("buyCooldownBtn");
 const cooldownItemEl=document.getElementById("cooldownItem");
 const startBtn=document.getElementById("startBtn");
+const shopBtn=document.getElementById("shopBtn");
+const closeShopBtn=document.getElementById("closeShopBtn");
 const onlineLbBtn=document.getElementById("onlineLbBtn");
 const leaderboardBack=document.getElementById("leaderboardBack");
 const leaderboardList=document.getElementById("leaderboardList");
@@ -532,29 +528,29 @@ function noiseBurst(dur=.2,vol=.08,delay=0){
   src.connect(g); g.connect(audioCtx.destination);
   src.start(t0);
 }
-function purchaseChime(){ensureAudio();tone(660,.10,"sine",.10,0);tone(990,.10,"sine",.10,.08);tone(1320,.20,"sine",.09,.16);}
-function startChime(){ensureAudio();tone(523.25,.12,"sine",.09,0);tone(783.99,.12,"sine",.09,.10);tone(1046.50,.25,"sine",.08,.20);}
-function pressBlip(){ensureAudio();tone(880,.06,"square",.05,0);}
-function tornadoSpawnSound(){ensureAudio();sweep(180,900,.35,"sawtooth",.07);sweep(220,1100,.35,"square",.04);tone(1200,.08,"sine",.05,.30);}
-function tornadoFadeSound(){ensureAudio();sweep(900,200,.35,"sawtooth",.06);sweep(1100,180,.35,"sine",.04);}
-function empSound(){ensureAudio();sweep(1600,180,.45,"square",.09);sweep(1200,140,.45,"sawtooth",.06);tone(80,.30,"sine",.10,.10);tone(60,.35,"sine",.09,.20);}
-function jamClearSound(){ensureAudio();tone(880,.09,"sine",.06,0);tone(1320,.14,"sine",.05,.08);}
-function overlordSummonSound(){ensureAudio();sweep(120,900,.5,"sawtooth",.07);sweep(180,1200,.5,"square",.05);tone(60,.35,"sine",.09);tone(90,.30,"sine",.06,.15);}
-function bossSpawnSound(){ensureAudio();sweep(80,400,.6,"sawtooth",.09);sweep(120,600,.6,"square",.06);tone(50,.8,"sine",.10,.1);tone(200,.3,"square",.06,.4);tone(250,.3,"square",.06,.5);tone(300,.5,"square",.06,.6);}
-function cyanHealSound(){ensureAudio();tone(660,.14,"sine",.06,0);tone(880,.14,"sine",.06,.08);tone(1100,.18,"sine",.05,.16);tone(1320,.28,"sine",.05,.24);sweep(400,1600,.5,"sine",.03,.05);}
-function blackStealSound(){ensureAudio();tone(440,.12,"sine",.07,0);tone(330,.14,"sine",.06,.09);tone(220,.18,"sine",.06,.18);tone(165,.24,"sine",.05,.27);sweep(600,120,.4,"triangle",.04,.05);}
-function hitSound(isBoss){ensureAudio();tone(520,.045,"square",.075,0);tone(300,.06,"triangle",.055,.008);tone(150,.09,"sine",.06,.012);noiseBurst(.03,.04,0);if(isBoss){tone(90,.18,"sine",.09,.02);tone(680,.08,"square",.05,.02);}}
-function cyanHitSound(){ensureAudio();tone(1200,.05,"sine",.07,0);tone(900,.06,"sine",.06,.04);tone(1500,.05,"sine",.05,.09);noiseBurst(.02,.03,0);}
-function blackHitSound(){ensureAudio();tone(180,.08,"square",.08,0);tone(110,.10,"triangle",.06,.02);noiseBurst(.05,.05,0);}
-function redDeathSound(){ensureAudio();tone(300,.07,"square",.09);tone(140,.14,"square",.07,.04);noiseBurst(.09,.05);}
-function orangeDeathSound(){ensureAudio();sweep(600,120,.25,"sawtooth",.10);tone(90,.22,"sine",.08,.05);noiseBurst(.14,.06,.02);}
-function purpleDeathSound(){ensureAudio();sweep(400,1400,.18,"sine",.08);sweep(1300,240,.28,"square",.07,.14);tone(700,.10,"sine",.05,.28);}
-function greenDeathSound(){ensureAudio();tone(1100,.05,"square",.08);tone(1500,.05,"square",.07,.05);tone(900,.06,"square",.06,.12);}
-function limeDeathSound(){ensureAudio();tone(880,.12,"sine",.08);tone(660,.14,"sine",.07,.08);tone(440,.20,"sine",.06,.18);}
-function blueDeathSound(){ensureAudio();sweep(2200,300,.22,"square",.10);noiseBurst(.15,.08);tone(1600,.08,"sawtooth",.06,.02);tone(120,.18,"sine",.07,.10);}
-function cyanDeathSound(){ensureAudio();tone(1500,.06,"sine",.08,0);tone(1200,.07,"sine",.07,.05);tone(900,.08,"sine",.06,.11);tone(600,.12,"sine",.06,.18);sweep(1400,300,.4,"sine",.05,.05);noiseBurst(.2,.05,.1);}
-function blackDeathSound(){ensureAudio();sweep(400,60,.7,"sawtooth",.09);sweep(600,80,.7,"triangle",.07,.05);tone(60,.5,"sine",.11,.15);tone(45,.7,"sine",.09,.4);noiseBurst(.5,.07,.1);tone(220,.2,"sine",.05,.3);tone(110,.3,"sine",.05,.5);}
-function overlordDeathSound(){ensureAudio();sweep(200,40,2.0,"sawtooth",.10);sweep(260,50,2.0,"square",.07,.08);tone(70,1.1,"sine",.13,.05);tone(50,1.5,"sine",.11,.45);tone(90,1.4,"sine",.09,.9);tone(900,.30,"square",.06,.15);tone(700,.35,"square",.05,.45);tone(550,.40,"square",.05,.75);noiseBurst(1.1,.08,.05);noiseBurst(.9,.06,1.1);noiseBurst(.7,.05,1.8);tone(1760,.6,"sine",.05,1.5);tone(1320,.8,"sine",.05,1.9);}
+function purchaseChime(){try{ensureAudio();tone(660,.10,"sine",.10,0);tone(990,.10,"sine",.10,.08);tone(1320,.20,"sine",.09,.16);}catch(e){}}
+function startChime(){try{ensureAudio();tone(523.25,.12,"sine",.09,0);tone(783.99,.12,"sine",.09,.10);tone(1046.50,.25,"sine",.08,.20);}catch(e){}}
+function pressBlip(){try{ensureAudio();tone(880,.06,"square",.05,0);}catch(e){}}
+function tornadoSpawnSound(){try{ensureAudio();sweep(180,900,.35,"sawtooth",.07);sweep(220,1100,.35,"square",.04);tone(1200,.08,"sine",.05,.30);}catch(e){}}
+function tornadoFadeSound(){try{ensureAudio();sweep(900,200,.35,"sawtooth",.06);sweep(1100,180,.35,"sine",.04);}catch(e){}}
+function empSound(){try{ensureAudio();sweep(1600,180,.45,"square",.09);sweep(1200,140,.45,"sawtooth",.06);tone(80,.30,"sine",.10,.10);tone(60,.35,"sine",.09,.20);}catch(e){}}
+function jamClearSound(){try{ensureAudio();tone(880,.09,"sine",.06,0);tone(1320,.14,"sine",.05,.08);}catch(e){}}
+function overlordSummonSound(){try{ensureAudio();sweep(120,900,.5,"sawtooth",.07);sweep(180,1200,.5,"square",.05);tone(60,.35,"sine",.09);tone(90,.30,"sine",.06,.15);}catch(e){}}
+function bossSpawnSound(){try{ensureAudio();sweep(80,400,.6,"sawtooth",.09);sweep(120,600,.6,"square",.06);tone(50,.8,"sine",.10,.1);tone(200,.3,"square",.06,.4);tone(250,.3,"square",.06,.5);tone(300,.5,"square",.06,.6);}catch(e){}}
+function cyanHealSound(){try{ensureAudio();tone(660,.14,"sine",.06,0);tone(880,.14,"sine",.06,.08);tone(1100,.18,"sine",.05,.16);tone(1320,.28,"sine",.05,.24);sweep(400,1600,.5,"sine",.03,.05);}catch(e){}}
+function blackStealSound(){try{ensureAudio();tone(440,.12,"sine",.07,0);tone(330,.14,"sine",.06,.09);tone(220,.18,"sine",.06,.18);tone(165,.24,"sine",.05,.27);sweep(600,120,.4,"triangle",.04,.05);}catch(e){}}
+function hitSound(isBoss){try{ensureAudio();tone(520,.045,"square",.075,0);tone(300,.06,"triangle",.055,.008);tone(150,.09,"sine",.06,.012);noiseBurst(.03,.04,0);if(isBoss){tone(90,.18,"sine",.09,.02);tone(680,.08,"square",.05,.02);}}catch(e){}}
+function cyanHitSound(){try{ensureAudio();tone(1200,.05,"sine",.07,0);tone(900,.06,"sine",.06,.04);tone(1500,.05,"sine",.05,.09);noiseBurst(.02,.03,0);}catch(e){}}
+function blackHitSound(){try{ensureAudio();tone(180,.08,"square",.08,0);tone(110,.10,"triangle",.06,.02);noiseBurst(.05,.05,0);}catch(e){}}
+function redDeathSound(){try{ensureAudio();tone(300,.07,"square",.09);tone(140,.14,"square",.07,.04);noiseBurst(.09,.05);}catch(e){}}
+function orangeDeathSound(){try{ensureAudio();sweep(600,120,.25,"sawtooth",.10);tone(90,.22,"sine",.08,.05);noiseBurst(.14,.06,.02);}catch(e){}}
+function purpleDeathSound(){try{ensureAudio();sweep(400,1400,.18,"sine",.08);sweep(1300,240,.28,"square",.07,.14);tone(700,.10,"sine",.05,.28);}catch(e){}}
+function greenDeathSound(){try{ensureAudio();tone(1100,.05,"square",.08);tone(1500,.05,"square",.07,.05);tone(900,.06,"square",.06,.12);}catch(e){}}
+function limeDeathSound(){try{ensureAudio();tone(880,.12,"sine",.08);tone(660,.14,"sine",.07,.08);tone(440,.20,"sine",.06,.18);}catch(e){}}
+function blueDeathSound(){try{ensureAudio();sweep(2200,300,.22,"square",.10);noiseBurst(.15,.08);tone(1600,.08,"sawtooth",.06,.02);tone(120,.18,"sine",.07,.10);}catch(e){}}
+function cyanDeathSound(){try{ensureAudio();tone(1500,.06,"sine",.08,0);tone(1200,.07,"sine",.07,.05);tone(900,.08,"sine",.06,.11);tone(600,.12,"sine",.06,.18);sweep(1400,300,.4,"sine",.05,.05);noiseBurst(.2,.05,.1);}catch(e){}}
+function blackDeathSound(){try{ensureAudio();sweep(400,60,.7,"sawtooth",.09);sweep(600,80,.7,"triangle",.07,.05);tone(60,.5,"sine",.11,.15);tone(45,.7,"sine",.09,.4);noiseBurst(.5,.07,.1);tone(220,.2,"sine",.05,.3);tone(110,.3,"sine",.05,.5);}catch(e){}}
+function overlordDeathSound(){try{ensureAudio();sweep(200,40,2.0,"sawtooth",.10);sweep(260,50,2.0,"square",.07,.08);tone(70,1.1,"sine",.13,.05);tone(50,1.5,"sine",.11,.45);tone(90,1.4,"sine",.09,.9);tone(900,.30,"square",.06,.15);tone(700,.35,"square",.05,.45);tone(550,.40,"square",.05,.75);noiseBurst(1.1,.08,.05);noiseBurst(.9,.06,1.1);noiseBurst(.7,.05,1.8);tone(1760,.6,"sine",.05,1.5);tone(1320,.8,"sine",.05,1.9);}catch(e){}}
 function playMusicStep(){
  const step=musicStep%16;
  const bass=[55,55,73.42,55,65.41,65.41,82.41,65.41][Math.floor(step/2)];
@@ -719,7 +715,7 @@ function refreshShop(){
 }
 function toggleShop(){
   if(gameOver) return;
-  pressBlip();
+  try { pressBlip(); } catch(e){}
   shopOpen = !shopOpen;
   if(shopOpen){
     shopOpenedAt = Date.now();
@@ -773,7 +769,7 @@ function buyCooldownUpgrade(){
 function armTornado(){
   if(gameOver||shopOpen||!tornadoOwned) return;
   if(Date.now() < tornadoCooldownUntil) return;
-  pressBlip();
+  try { pressBlip(); } catch(e){}
   tornadoArmed = !tornadoArmed;
   if(tornadoArmed){ tornadoBtn.classList.add("armed"); game.classList.add("arming"); tornadoBtn.querySelector("span:last-child").textContent = "Tap map"; }
   else { tornadoBtn.classList.remove("armed"); game.classList.remove("arming"); tornadoBtn.querySelector("span:last-child").textContent = "Tornado"; }
@@ -1324,6 +1320,11 @@ function overlordDeath(cx,cy,sizePx){
 }
 
 tornadoBtn.addEventListener("click", (e)=>{ e.stopPropagation(); armTornado(); });
+shopBtn.addEventListener("click", (e)=>{ e.stopPropagation(); toggleShop(); });
+closeShopBtn.addEventListener("click", (e)=>{ e.stopPropagation(); toggleShop(); });
+buyDmgBtn.addEventListener("click", (e)=>{ e.stopPropagation(); buyDamageUpgrade(); });
+buyTornadoBtn.addEventListener("click", (e)=>{ e.stopPropagation(); buyTornadoUpgrade(); });
+buyCooldownBtn.addEventListener("click", (e)=>{ e.stopPropagation(); buyCooldownUpgrade(); });
 game.addEventListener("pointerdown", (e)=>{
   if(!tornadoArmed) return;
   e.preventDefault(); e.stopPropagation();
@@ -1542,9 +1543,9 @@ function killEnemy(data){
 /* ============================================================
    START/END
    ============================================================ */
-startBtn.addEventListener("click", ()=>{ startChime(); startGame(); });
+startBtn.addEventListener("click", ()=>{ try { startChime(); } catch(e){} startGame(); });
 function startGame(){
-  ensureAudio();
+  try { ensureAudio(); } catch(e){}
   menu.style.display="none";
   loseScreen.style.display="none";
   leaderboardScreen.style.display="none";
@@ -1848,7 +1849,12 @@ window.addEventListener('load',()=>{
   recomputeScale();
   setTimeout(recomputeScale, 100);
 });
-GITHUB_CONFIG.token = "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";
+
+/* ============================================================
+   TOKEN — the ONLY place you set it. Paste your real token inside
+   the quotes below. Do NOT share this file with the token filled in.
+   ============================================================ */
+GITHUB_CONFIG.token = "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";
 </script>
 <script src="scores.js"></script>
 </body>
