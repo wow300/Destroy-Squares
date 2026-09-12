@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Destroy Squares · Stacking Cascade</title>
+<title>Destroy Squares · Black Square</title>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;height:100%;width:100%;overflow:hidden}
@@ -87,6 +87,14 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 .lime{background:#9acd32;border:2px solid #d4ff70;box-shadow:0 0 26px #b3ff3b}
 .blue{background:#1e6bff;border:2px solid #8fc4ff;box-shadow:0 0 28px #3f8fff}
 .cyan{background:#00e5e5;border:2px solid #a8ffff;box-shadow:0 0 30px #00e5e5}
+.black{background:#111;border:3px solid #888;box-shadow:0 0 24px #555, 0 0 40px #000 inset}
+.black::before{
+  content:"";
+  position:absolute;inset:2px;
+  background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.06), transparent 60%);
+  pointer-events:none;
+  border-radius:2px;
+}
 .overlord{background:linear-gradient(135deg,#8a0000,#ff2020,#8a0000);border:3px solid #ff8888;box-shadow:0 0 40px #ff0000, 0 0 80px #ff0000 inset;border-radius:4px}
 .overlord::before{content:"";position:absolute;inset:-6px;border:2px solid #ff6666;border-radius:8px;animation:overlordAura 1.6s ease-in-out infinite;pointer-events:none}
 @keyframes overlordAura{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
@@ -102,6 +110,42 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 }
 .empRing{position:absolute;border:3px solid #8fc4ff;border-radius:50%;pointer-events:none;animation:empExpand .7s ease-out forwards;box-shadow:0 0 30px #3f8fff, 0 0 60px #3f8fff inset;z-index:19}
 @keyframes empExpand{0%{opacity:1;transform:scale(.2)}100%{opacity:0;transform:scale(2.4)}}
+
+/* Black Square steal effect — dark pull rings collapsing inward */
+.stealRing{
+  position:absolute;border:3px solid #444;border-radius:50%;
+  pointer-events:none;z-index:19;
+  box-shadow:0 0 20px #000, 0 0 30px #000 inset;
+  animation:stealCollapse .7s ease-out forwards;
+}
+@keyframes stealCollapse{
+  0%{opacity:0;transform:scale(2.2)}
+  20%{opacity:1}
+  100%{opacity:0;transform:scale(.15)}
+}
+.stealPulse{
+  position:absolute;inset:0;pointer-events:none;z-index:14;
+  background:radial-gradient(circle at 50% 50%, rgba(0,0,0,.35), rgba(0,0,0,0) 70%);
+  animation:stealPulse 1s ease-out forwards;
+}
+@keyframes stealPulse{
+  0%{opacity:0}
+  30%{opacity:1}
+  100%{opacity:0}
+}
+.stealScoreText{
+  position:absolute;
+  color:#ff4466;
+  font-weight:bold;
+  pointer-events:none;
+  z-index:21;
+  text-shadow:0 0 14px #ff0033;
+  animation:stealFloat 1.1s ease-out forwards;
+}
+@keyframes stealFloat{
+  0%{opacity:1;transform:translateY(0) scale(.8)}
+  100%{opacity:0;transform:translateY(-55px) scale(1.4)}
+}
 
 .cyanHealRing{
   position:absolute;border:3px solid #00e5e5;border-radius:50%;
@@ -153,6 +197,19 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
   100%{opacity:0;transform:scale(1.7) rotate(180deg)}
 }
 
+/* Black unique hit — collapsing dark ring */
+.hitBlack{
+  position:absolute;pointer-events:none;z-index:18;
+  border-radius:50%;
+  border:3px solid #666;
+  box-shadow:0 0 26px #000, 0 0 40px #000 inset;
+  animation:hitBlackAnim .45s ease-out forwards;
+}
+@keyframes hitBlackAnim{
+  0%{opacity:1;transform:scale(1.5)}
+  100%{opacity:0;transform:scale(.35)}
+}
+
 .death-red-puff{position:absolute;border-radius:50%;pointer-events:none;z-index:19;background:radial-gradient(circle, rgba(255,60,60,.9), rgba(255,0,0,0) 65%);animation:redPuff .4s ease-out forwards}
 @keyframes redPuff{0%{opacity:1;transform:scale(.5)}100%{opacity:0;transform:scale(1.8)}}
 .death-shard{position:absolute;width:6px;height:6px;background:#ff4040;pointer-events:none;z-index:19;border-radius:1px;box-shadow:0 0 8px #ff2020}
@@ -192,6 +249,32 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
   background:radial-gradient(circle, #a8ffff, #00e5e5 70%);
   border-radius:50%;pointer-events:none;z-index:19;
   box-shadow:0 0 12px #00e5e5, 0 0 24px #00e5e5 inset;
+}
+
+/* Black death — imploding void with ash flecks */
+.death-black-ring{
+  position:absolute;border:3px solid #666;border-radius:50%;
+  pointer-events:none;z-index:19;
+  box-shadow:0 0 24px #000, 0 0 60px #000 inset;
+  animation:blackRingCollapse .9s ease-out forwards;
+}
+@keyframes blackRingCollapse{
+  0%{opacity:1;transform:scale(1.8)}
+  100%{opacity:0;transform:scale(.05)}
+}
+.death-black-flash{
+  position:absolute;border-radius:50%;pointer-events:none;z-index:19;
+  background:radial-gradient(circle, rgba(255,255,255,.35), rgba(0,0,0,.9) 70%);
+  animation:blackFlash .5s ease-out forwards;
+}
+@keyframes blackFlash{
+  0%{opacity:1;transform:scale(.4)}
+  100%{opacity:0;transform:scale(2.2)}
+}
+.death-black-ash{
+  position:absolute;width:6px;height:6px;background:#555;
+  border-radius:1px;pointer-events:none;z-index:19;
+  box-shadow:0 0 8px #000;
 }
 
 .bossDeathFX{position:absolute;border-radius:50%;pointer-events:none;z-index:20;animation:bossDeath 2.6s ease-out forwards;background:radial-gradient(circle, rgba(255,60,60,.9), rgba(255,0,0,0) 70%);box-shadow:0 0 60px #ff0000, 0 0 120px #ff0000 inset}
@@ -360,19 +443,24 @@ const CYAN_POINTS = 16;
 const CYAN_HEAL_INTERVAL_MS = 2000;
 const CYAN_HEAL_AMOUNT = 6;
 
+/* ---- BLACK ---- */
+const BLACK_HEALTH = 25;
+const BLACK_POINTS = 50;
+const BLACK_STEAL_INTERVAL_MS = 2000;
+const BLACK_STEAL_AMOUNT = 40;
+
 const OVERLORD_HEALTH = 50;
 const OVERLORD_POINTS = 100;
 const OVERLORD_SUMMON_INTERVAL_MS = 5000;
 
 /* ============================================================
    SPAWN CHANCE — STACKING CASCADE
-   ------------------------------------------------------------
-   Cyan is MORE common than Overlord:
-     - Cyan grows at 2.5%/min starting at minute 5
-     - Overlord grows at 2%/min starting at minute 6
-   Everything else unchanged.
+   Order: orange, purple, green, lime, blue, cyan, black, overlord
+   Cyan   2.5%/min from minute 5
+   Black  2.2%/min from minute 6   (rarer than cyan, commoner than overlord)
+   Overlord 2.0%/min from minute 7
    ============================================================ */
-const CASCADE_ORDER = ["red","orange","purple","green","lime","blue","cyan","overlord"];
+const CASCADE_ORDER = ["red","orange","purple","green","lime","blue","cyan","black","overlord"];
 const GROWTH = {
   red:      0,
   orange:   0.020,
@@ -380,7 +468,8 @@ const GROWTH = {
   green:    0.020,
   lime:     0.020,
   blue:     0.020,
-  cyan:     0.025,   // <-- now grows faster than Overlord
+  cyan:     0.025,
+  black:    0.022,
   overlord: 0.020
 };
 
@@ -395,17 +484,18 @@ function getSpawnChances(){
     lime:   GROWTH.lime   * Math.max(0, m - 3),
     blue:   GROWTH.blue   * Math.max(0, m - 4),
     cyan:   GROWTH.cyan   * Math.max(0, m - 5),
-    overlord: GROWTH.overlord * Math.max(0, m - 6)
+    black:  GROWTH.black  * Math.max(0, m - 6),
+    overlord: GROWTH.overlord * Math.max(0, m - 7)
   };
 
   let sumOthers = 0;
-  for(const k of ["orange","purple","green","lime","blue","cyan","overlord"]) sumOthers += raw[k];
+  for(const k of ["orange","purple","green","lime","blue","cyan","black","overlord"]) sumOthers += raw[k];
 
   let red = Math.max(0, 1 - sumOthers);
   raw.red = red;
 
   if(red <= 0 && sumOthers > 1){
-    for(const k of ["orange","purple","green","lime","blue","cyan","overlord"]){
+    for(const k of ["orange","purple","green","lime","blue","cyan","black","overlord"]){
       if(raw[k] <= 0) continue;
       const excess = sumOthers - 1;
       const shrink = Math.min(excess, raw[k]);
@@ -416,7 +506,7 @@ function getSpawnChances(){
   }
 
   let total = raw.red;
-  for(const k of ["orange","purple","green","lime","blue","cyan","overlord"]) total += raw[k];
+  for(const k of ["orange","purple","green","lime","blue","cyan","black","overlord"]) total += raw[k];
   if(total > 1.0000001){
     const k = 1/total;
     for(const key in raw) raw[key] *= k;
@@ -430,6 +520,7 @@ function getSpawnChances(){
     { name:"Lime",     chance:raw.lime },
     { name:"Blue",     chance:raw.blue },
     { name:"Cyan",     chance:raw.cyan },
+    { name:"Black",    chance:raw.black },
     { name:"Overlord", chance:raw.overlord }
   ];
   return list.sort((a,b)=>b.chance-a.chance);
@@ -523,6 +614,15 @@ function cyanHealSound(){
   tone(1320,.28,"sine",.05,.24);
   sweep(400,1600,.5,"sine",.03,.05);
 }
+/* Black steal sound — descending minor chime */
+function blackStealSound(){
+  ensureAudio();
+  tone(440,.12,"sine",.07,0);
+  tone(330,.14,"sine",.06,.09);
+  tone(220,.18,"sine",.06,.18);
+  tone(165,.24,"sine",.05,.27);
+  sweep(600,120,.4,"triangle",.04,.05);
+}
 function hitSound(isBoss){
   ensureAudio();
   tone(520,.045,"square",.075,0);
@@ -541,6 +641,13 @@ function cyanHitSound(){
   tone(1500,.05,"sine",.05,.09);
   noiseBurst(.02,.03,0);
 }
+/* Black hit sound — muffled dark thunk */
+function blackHitSound(){
+  ensureAudio();
+  tone(180,.08,"square",.08,0);
+  tone(110,.10,"triangle",.06,.02);
+  noiseBurst(.05,.05,0);
+}
 function redDeathSound(){ensureAudio();tone(300,.07,"square",.09);tone(140,.14,"square",.07,.04);noiseBurst(.09,.05);}
 function orangeDeathSound(){ensureAudio();sweep(600,120,.25,"sawtooth",.10);tone(90,.22,"sine",.08,.05);noiseBurst(.14,.06,.02);}
 function purpleDeathSound(){ensureAudio();sweep(400,1400,.18,"sine",.08);sweep(1300,240,.28,"square",.07,.14);tone(700,.10,"sine",.05,.28);}
@@ -555,6 +662,17 @@ function cyanDeathSound(){
   tone(600,.12,"sine",.06,.18);
   sweep(1400,300,.4,"sine",.05,.05);
   noiseBurst(.2,.05,.1);
+}
+/* Black death sound — collapsing void, low + sucking */
+function blackDeathSound(){
+  ensureAudio();
+  sweep(400,60,.7,"sawtooth",.09);
+  sweep(600,80,.7,"triangle",.07,.05);
+  tone(60,.5,"sine",.11,.15);
+  tone(45,.7,"sine",.09,.4);
+  noiseBurst(.5,.07,.1);
+  tone(220,.2,"sine",.05,.3);
+  tone(110,.3,"sine",.05,.5);
 }
 function overlordDeathSound(){
   ensureAudio();
@@ -601,6 +719,7 @@ function recomputeScale(){
     lime:     { size: Math.max(40, Math.round(72 * SCALE)), health: 10, points: 25 },
     blue:     { size: Math.max(46, Math.round(80 * SCALE)), health: BLUE_HEALTH, points: BLUE_POINTS },
     cyan:     { size: Math.max(50, Math.round(88 * SCALE)), health: CYAN_HEALTH, points: CYAN_POINTS },
+    black:    { size: Math.max(38, Math.round(65 * SCALE)), health: BLACK_HEALTH, points: BLACK_POINTS },
     overlord: { size: Math.max(70, Math.round(120 * SCALE)), health: OVERLORD_HEALTH, points: OVERLORD_POINTS }
   };
 }
@@ -870,6 +989,7 @@ function cleanupEnemy(data){
   if(data.empTimer) clearInterval(data.empTimer);
   if(data.summonTimer) clearInterval(data.summonTimer);
   if(data.cyanHealTimer) clearInterval(data.cyanHealTimer);
+  if(data.blackStealTimer) clearInterval(data.blackStealTimer);
   data.element.remove();
 }
 
@@ -879,7 +999,7 @@ function cleanupEnemy(data){
 const HIT_COLORS = {
   red:"#ff4040", orange:"#ff9020", purple:"#c080ff",
   green:"#40ff80", lime:"#d4ff60", blue:"#60a0ff",
-  cyan:"#00e5e5",
+  cyan:"#00e5e5", black:"#888888",
   overlord:"#ff3030"
 };
 function hitEffect(kind, cx, cy, sizePx){
@@ -909,6 +1029,39 @@ function hitEffect(kind, cx, cy, sizePx){
         b.style.opacity = String(1-p);
         if(p<1) requestAnimationFrame(step);
         else b.remove();
+      }
+      requestAnimationFrame(step);
+    }
+    return;
+  }
+  if(kind === "black"){
+    // Black unique: collapsing dark ring
+    const ringBase = Math.max(30, Math.round((sizePx||40) * 1.3));
+    const ring = document.createElement("div");
+    ring.className = "hitBlack";
+    ring.style.width  = ringBase+"px";
+    ring.style.height = ringBase+"px";
+    ring.style.left = (cx - ringBase/2)+"px";
+    ring.style.top  = (cy - ringBase/2)+"px";
+    game.appendChild(ring);
+    setTimeout(()=>ring.remove(), 480);
+    // few dark ash specks
+    for(let i=0;i<4;i++){
+      const a = Math.random()*Math.PI*2;
+      const sp = document.createElement("div");
+      sp.className = "death-black-ash";
+      sp.style.left = (cx-3)+"px";
+      sp.style.top  = (cy-3)+"px";
+      game.appendChild(sp);
+      const dist = (20 + Math.random()*18) * SCALE;
+      const tx = Math.cos(a)*dist, ty = Math.sin(a)*dist;
+      const start = performance.now();
+      function step(t){
+        const p = Math.min(1, (t-start)/320);
+        sp.style.transform = `translate(${tx*p}px, ${ty*p}px)`;
+        sp.style.opacity = String(1-p);
+        if(p<1) requestAnimationFrame(step);
+        else sp.remove();
       }
       requestAnimationFrame(step);
     }
@@ -979,6 +1132,7 @@ function deathEffect(kind, cx, cy, sizePx){
     case "lime":     limeDeath(cx,cy,sizePx); break;
     case "blue":     blueDeath(cx,cy,sizePx); break;
     case "cyan":     cyanDeath(cx,cy,sizePx); break;
+    case "black":    blackDeath(cx,cy,sizePx); break;
     case "overlord": overlordDeath(cx,cy,sizePx); break;
   }
 }
@@ -1219,6 +1373,47 @@ function cyanDeath(cx,cy,sizePx){
     requestAnimationFrame(step);
   }
 }
+/* Black death — collapsing void with ash flecks */
+function blackDeath(cx,cy,sizePx){
+  const maxR = Math.round(120*SCALE);
+  // White flash behind the void
+  const flash = document.createElement("div");
+  flash.className = "death-black-flash";
+  flash.style.width=maxR+"px"; flash.style.height=maxR+"px";
+  flash.style.left=(cx-maxR/2)+"px"; flash.style.top=(cy-maxR/2)+"px";
+  game.appendChild(flash);
+  setTimeout(()=>flash.remove(), 550);
+
+  // Collapsing ring
+  const ring = document.createElement("div");
+  ring.className = "death-black-ring";
+  ring.style.width=maxR+"px"; ring.style.height=maxR+"px";
+  ring.style.left=(cx-maxR/2)+"px"; ring.style.top=(cy-maxR/2)+"px";
+  game.appendChild(ring);
+  setTimeout(()=>ring.remove(), 950);
+
+  // Ash flecks
+  for(let i=0;i<10;i++){
+    const a = (i/10)*Math.PI*2 + Math.random()*0.4;
+    const sp = document.createElement("div");
+    sp.className = "death-black-ash";
+    const sz = Math.max(5, Math.round(6*SCALE));
+    sp.style.width=sz+"px"; sp.style.height=sz+"px";
+    sp.style.left=(cx-sz/2)+"px"; sp.style.top=(cy-sz/2)+"px";
+    game.appendChild(sp);
+    const dist = (50 + Math.random()*40) * SCALE;
+    const tx = Math.cos(a)*dist, ty = Math.sin(a)*dist;
+    const start = performance.now();
+    function step(t){
+      const p = Math.min(1, (t-start)/650);
+      sp.style.transform = `translate(${tx*p}px, ${ty*p}px) rotate(${p*540}deg)`;
+      sp.style.opacity = String(1-p);
+      if(p<1) requestAnimationFrame(step);
+      else sp.remove();
+    }
+    requestAnimationFrame(step);
+  }
+}
 function overlordDeath(cx,cy,sizePx){
   const flash = document.createElement("div");
   flash.className = "bossFlash";
@@ -1306,6 +1501,52 @@ function clearJamUI(){
   game.classList.remove("jammed");
   jamClearSound();
   showNotification("SIGNAL RESTORED");
+}
+
+/* ============================================================
+   BLACK STEAL
+   ============================================================ */
+function blackSteal(enemy, data){
+  if(gameOver||shopOpen||!enemy.parentNode) return;
+  const size=data.size;
+  const cx=enemy.offsetLeft+size/2, cy=enemy.offsetTop+size/2;
+
+  // Actual steal (score can't go below 0)
+  const taken = Math.min(BLACK_STEAL_AMOUNT, score);
+  score -= taken;
+  updateUI();
+  if(shopOpen) refreshShop();
+
+  // Visual: pulsing dark vignette
+  const pulse=document.createElement("div");
+  pulse.className="stealPulse";
+  game.appendChild(pulse);
+  setTimeout(()=>pulse.remove(),1050);
+
+  // Collapsing rings from black
+  const ring=document.createElement("div");
+  ring.className="stealRing";
+  const rSize=Math.round(180*SCALE);
+  ring.style.width=rSize+"px"; ring.style.height=rSize+"px";
+  ring.style.left=(cx-rSize/2)+"px"; ring.style.top=(cy-rSize/2)+"px";
+  game.appendChild(ring);
+  setTimeout(()=>ring.remove(),720);
+
+  // Floating "-40" from the black square
+  const txt=document.createElement("div");
+  txt.className="stealScoreText";
+  txt.textContent="-"+taken;
+  txt.style.fontSize = Math.max(16, Math.round(26*SCALE))+"px";
+  txt.style.left = (cx - 14)+"px";
+  txt.style.top  = (cy - 12)+"px";
+  game.appendChild(txt);
+  setTimeout(()=>txt.remove(),1150);
+
+  // Brief jolt on the square
+  enemy.style.transform = "scale(1.15)";
+  setTimeout(()=>{ if(enemy.parentNode) enemy.style.transform = ""; }, 220);
+
+  blackStealSound();
 }
 
 /* ============================================================
@@ -1431,6 +1672,7 @@ function killEnemy(data){
     case "lime":     limeDeathSound();     break;
     case "blue":     blueDeathSound();     break;
     case "cyan":     cyanDeathSound();     break;
+    case "black":    blackDeathSound();    break;
     case "overlord": overlordDeathSound(); break;
   }
   if(kind === "overlord") showNotification("RED OVERLORD DESTROYED!", "boss");
@@ -1643,6 +1885,22 @@ function spawnEnemy(){
    enemy.style.top=Math.max(0,Math.min(my,y))+"px";
   },30);
  }
+ /* BLACK — slower than green, same bouncing behaviour */
+ if(kind==="black"){
+  let vx=(Math.random()<.5?-1:1)*(1.4+Math.random()*0.9)*SCALE;
+  let vy=(Math.random()<.5?-1:1)*(1.4+Math.random()*0.9)*SCALE;
+  data.moveTimer=setInterval(()=>{
+   if(!enemy.parentNode){clearInterval(data.moveTimer);return}
+   if(gameOver||shopOpen) return;
+   const mx=Math.max(0,game.clientWidth-size);
+   const my=Math.max(0,game.clientHeight-size-Math.round(20*SCALE));
+   let x=enemy.offsetLeft+vx,y=enemy.offsetTop+vy;
+   if(x<=0||x>=mx)vx*=-1;
+   if(y<=0||y>=my)vy*=-1;
+   enemy.style.left=Math.max(0,Math.min(mx,x))+"px";
+   enemy.style.top=Math.max(0,Math.min(my,y))+"px";
+  },30);
+ }
  if(kind==="lime"){
    data.healTimer=setInterval(()=>{
      if(!enemy.parentNode){clearInterval(data.healTimer);return}
@@ -1671,6 +1929,13 @@ function spawnEnemy(){
      cyanHealAll(enemy,data);
    }, CYAN_HEAL_INTERVAL_MS);
  }
+ if(kind==="black"){
+   data.blackStealTimer=setInterval(()=>{
+     if(!enemy.parentNode){clearInterval(data.blackStealTimer);return}
+     if(gameOver||shopOpen) return;
+     blackSteal(enemy,data);
+   }, BLACK_STEAL_INTERVAL_MS);
+ }
  if(kind==="overlord"){
    setTimeout(()=>{
      if(!gameOver && enemy.parentNode) overlordSummon(enemy,data);
@@ -1695,6 +1960,8 @@ function spawnEnemy(){
   } else {
     if(kind === "cyan"){
       cyanHitSound();
+    } else if(kind === "black"){
+      blackHitSound();
     } else {
       const isBoss = (kind === "overlord");
       hitSound(isBoss);
