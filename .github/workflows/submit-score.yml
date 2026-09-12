@@ -1,0 +1,41 @@
+name: Submit High Score
+
+on:
+  repository_dispatch:
+    types: [new_high_score]
+
+jobs:
+  update-leaderboard:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Update Scores JS
+        run: |
+          PLAYER_NAME="${{ github.event.client_payload.name }}"
+          PLAYER_SCORE="${{ github.event.client_payload.score }}"
+
+          if [ -f scores.js ]; then
+            sed -n 's/^window.LEADERBOARD_SCORES = //p' scores.js | sed 's/;$//' > current.json
+          else
+            echo "[]" > current.json
+          fi
+
+          jq --arg name "$PLAYER_NAME" --argjson score "$PLAYER_SCORE" \
+          '. + [{"name": $name, "score": $score}] | sort_by(.score) | reverse' \
+          current.json > updated.json
+
+          { echo "window.LEADERBOARD_SCORES = "; cat updated.json; echo ";"; } > scores.js
+          rm -f current.json updated.json
+
+      - name: Commit and Push to Repository
+        run: |
+          git config --global user.name "LeaderboardBot"
+          git config --global user.email "bot@github.com"
+          git add scores.js
+          git commit -m "New high score by ${{ github.event.client_payload.name }}" || exit 0
+          git push
