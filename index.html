@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Destroy Squares · Blue Square Update</title>
+<title>Destroy Squares · Cascade Update</title>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;height:100%;width:100%;overflow:hidden}
@@ -19,49 +19,21 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 #gameScreen{display:none;position:absolute;inset:0}
 #top{
   height:clamp(50px,8vh,75px);
-  background:#1c1c1c;
-  border-bottom:2px solid #444;
-  display:flex;
-  align-items:center;
-  justify-content:space-around;
-  font-size:clamp(11px,1.5vw,19px);
-  position:relative;
-  z-index:5;
-  padding:0 4px;
-  gap:3px;
-  white-space:nowrap;
+  background:#1c1c1c;border-bottom:2px solid #444;
+  display:flex;align-items:center;justify-content:space-around;
+  font-size:clamp(11px,1.5vw,19px);position:relative;z-index:5;
+  padding:0 4px;gap:3px;white-space:nowrap;
 }
-#shopBtn{
-  background:#1a7a1a;border:2px solid #3fb83f;color:#fff;
-  padding:6px 12px;font-size:clamp(11px,1.5vw,17px);
-  border-radius:6px;cursor:pointer;margin:0;font-family:inherit;
-}
+#shopBtn{background:#1a7a1a;border:2px solid #3fb83f;color:#fff;padding:6px 12px;font-size:clamp(11px,1.5vw,17px);border-radius:6px;cursor:pointer;margin:0;font-family:inherit}
 #shopBtn:hover{background:#26a326}
-
-#tornadoBtn{
-  position:relative;
-  background:#1a3a7a;border:2px solid #3f8fff;color:#fff;
-  padding:6px 12px;font-size:clamp(11px,1.5vw,17px);
-  border-radius:6px;cursor:pointer;margin:0;font-family:inherit;
-  display:none;
-  align-items:center;gap:6px;
-}
+#tornadoBtn{position:relative;background:#1a3a7a;border:2px solid #3f8fff;color:#fff;padding:6px 12px;font-size:clamp(11px,1.5vw,17px);border-radius:6px;cursor:pointer;margin:0;font-family:inherit;display:none;align-items:center;gap:6px}
 #tornadoBtn.unlocked{display:inline-flex}
-#tornadoBtn:hover{background:#2651a3}
-#tornadoBtn.armed{
-  background:#1a7a1a;border-color:#3fb83f;
-  animation:armedPulse .8s ease-in-out infinite;
-}
-@keyframes armedPulse{
-  0%,100%{box-shadow:0 0 0 0 rgba(63,184,63,.7)}
-  50%{box-shadow:0 0 0 8px rgba(63,184,63,0)}
-}
+#tornadoBtn:hover:not(:disabled){background:#2651a3}
+#tornadoBtn.armed{background:#1a7a1a;border-color:#3fb83f;animation:armedPulse .8s ease-in-out infinite}
+#tornadoBtn.cooling{background:#333;border-color:#555;color:#888;cursor:not-allowed}
+@keyframes armedPulse{0%,100%{box-shadow:0 0 0 0 rgba(63,184,63,.7)}50%{box-shadow:0 0 0 8px rgba(63,184,63,0)}}
 .miniTornado{position:relative;display:inline-block;width:16px;height:16px}
-.miniTornado::before,.miniTornado::after{
-  content:"";position:absolute;left:50%;transform:translateX(-50%);
-  border-style:solid;border-color:#cfe4ff transparent transparent transparent;
-  width:0;height:0;
-}
+.miniTornado::before,.miniTornado::after{content:"";position:absolute;left:50%;transform:translateX(-50%);border-style:solid;border-color:#cfe4ff transparent transparent transparent;width:0;height:0}
 .miniTornado::before{top:0;border-left-width:8px;border-right-width:8px;border-top-width:6px}
 .miniTornado::after{top:6px;border-left-width:5px;border-right-width:5px;border-top-width:5px;border-color:#9dc4ff transparent transparent transparent}
 
@@ -76,49 +48,16 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 
 #game{position:relative;width:100vw;height:calc(100% - clamp(50px,8vh,75px));overflow:hidden}
 #game.arming{cursor:crosshair}
-#game.jammed::after{
-  content:"";
-  position:absolute;inset:0;
-  background:radial-gradient(circle at 50% 50%, rgba(70,130,255,.10), rgba(70,130,255,.28));
-  pointer-events:none;
-  z-index:14;
-  animation:jamPulse 0.8s ease-in-out infinite;
-}
+#game.jammed::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%, rgba(70,130,255,.10), rgba(70,130,255,.28));pointer-events:none;z-index:14;animation:jamPulse 0.8s ease-in-out infinite}
 @keyframes jamPulse{0%,100%{opacity:.6}50%{opacity:1}}
 
-#timer{
-  position:absolute;left:12px;bottom:10px;
-  font-size:clamp(12px,1.5vw,18px);
-  color:#fff;background:rgba(0,0,0,.55);
-  padding:6px 10px;border:1px solid #555;border-radius:5px;
-  z-index:10;pointer-events:none;
-}
-#notification{
-  position:absolute;top:12px;left:50%;transform:translateX(-50%);
-  font-size:clamp(14px,2vw,24px);font-weight:bold;color:#ffd700;
-  text-shadow:0 0 10px #ff8c00;background:rgba(0,0,0,.7);
-  padding:8px 16px;border-radius:6px;opacity:0;pointer-events:none;
-  z-index:15;transition:opacity .25s;white-space:nowrap;max-width:90vw;
-  overflow:hidden;text-overflow:ellipsis;
-}
-#notification.jam{
-  color:#8fc4ff;
-  text-shadow:0 0 12px #3f8fff;
-}
-#chancePanel{
-  position:absolute;right:8px;top:50%;transform:translateY(-50%);
-  width:clamp(120px,17vw,200px);
-  background:rgba(0,0,0,.78);border:1px solid #555;border-radius:6px;
-  padding:8px 10px;
-  font-size:clamp(10px,1.2vw,14px);
-  line-height:1.5;z-index:1;pointer-events:none!important;user-select:none;
-}
+#timer{position:absolute;left:12px;bottom:10px;font-size:clamp(12px,1.5vw,18px);color:#fff;background:rgba(0,0,0,.55);padding:6px 10px;border:1px solid #555;border-radius:5px;z-index:10;pointer-events:none}
+#notification{position:absolute;top:12px;left:50%;transform:translateX(-50%);font-size:clamp(14px,2vw,24px);font-weight:bold;color:#ffd700;text-shadow:0 0 10px #ff8c00;background:rgba(0,0,0,.7);padding:8px 16px;border-radius:6px;opacity:0;pointer-events:none;z-index:15;transition:opacity .25s;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+#notification.jam{color:#8fc4ff;text-shadow:0 0 12px #3f8fff}
+#notification.boss{color:#ff4444;text-shadow:0 0 16px #ff0000;font-size:clamp(16px,2.4vw,28px)}
+#chancePanel{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:clamp(120px,17vw,200px);background:rgba(0,0,0,.78);border:1px solid #555;border-radius:6px;padding:8px 10px;font-size:clamp(10px,1.2vw,14px);line-height:1.5;z-index:1;pointer-events:none!important;user-select:none}
 #chancePanel h3{margin:0 0 5px;color:#ffd700;font-size:clamp(12px,1.4vw,16px)}
-.enemy{
-  pointer-events:auto;position:absolute;cursor:crosshair;
-  transition:transform .08s;z-index:12;touch-action:manipulation;
-  overflow:visible;
-}
+.enemy{pointer-events:auto;position:absolute;cursor:crosshair;transition:transform .08s;z-index:12;touch-action:manipulation;overflow:visible}
 .enemy:hover{transform:scale(1.08)}
 
 .red{background:#e00000;border:2px solid #ff5555;box-shadow:0 0 12px #f00}
@@ -127,11 +66,12 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 .green{background:#16d64b;border:2px solid #8aff9b;box-shadow:0 0 16px #16d64b}
 .lime{background:#9acd32;border:2px solid #d4ff70;box-shadow:0 0 26px #b3ff3b}
 .blue{background:#1e6bff;border:2px solid #8fc4ff;box-shadow:0 0 28px #3f8fff}
+.cyan{background:#00e5e5;border:2px solid #a8ffff;box-shadow:0 0 30px #00e5e5}
+.overlord{background:linear-gradient(135deg,#8a0000,#ff2020,#8a0000);border:3px solid #ff8888;box-shadow:0 0 40px #ff0000, 0 0 80px #ff0000 inset;border-radius:4px}
+.overlord::before{content:"";position:absolute;inset:-6px;border:2px solid #ff6666;border-radius:8px;animation:overlordAura 1.6s ease-in-out infinite;pointer-events:none}
+@keyframes overlordAura{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
 
-.blue.emp-fire{
-  animation:empShake .45s ease-out;
-  box-shadow:0 0 60px #8fc4ff, 0 0 100px #3f8fff;
-}
+.blue.emp-fire{animation:empShake .45s ease-out;box-shadow:0 0 60px #8fc4ff, 0 0 100px #3f8fff}
 @keyframes empShake{
   0%{transform:translate(0,0) scale(1)}
   20%{transform:translate(-3px,2px) scale(1.06)}
@@ -140,46 +80,129 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
   80%{transform:translate(2px,2px) scale(1.02)}
   100%{transform:translate(0,0) scale(1)}
 }
-.empRing{
-  position:absolute;border:3px solid #8fc4ff;border-radius:50%;
-  pointer-events:none;animation:empExpand .7s ease-out forwards;
-  box-shadow:0 0 30px #3f8fff, 0 0 60px #3f8fff inset;
-  z-index:19;
+.empRing{position:absolute;border:3px solid #8fc4ff;border-radius:50%;pointer-events:none;animation:empExpand .7s ease-out forwards;box-shadow:0 0 30px #3f8fff, 0 0 60px #3f8fff inset;z-index:19}
+@keyframes empExpand{0%{opacity:1;transform:scale(.2)}100%{opacity:0;transform:scale(2.4)}}
+
+.cyanHealRing{
+  position:absolute;border:3px solid #00e5e5;border-radius:50%;
+  pointer-events:none;z-index:19;
+  box-shadow:0 0 40px #00e5e5, 0 0 80px #00e5e5 inset;
+  animation:cyanHealRing 1.2s ease-out forwards;
 }
-@keyframes empExpand{
-  0%{opacity:1;transform:scale(.2)}
-  100%{opacity:0;transform:scale(2.4)}
+@keyframes cyanHealRing{
+  0%{opacity:0;transform:scale(.3)}
+  20%{opacity:1}
+  100%{opacity:0;transform:scale(6)}
+}
+.cyanHealPulse{
+  position:absolute;inset:0;pointer-events:none;z-index:14;
+  background:radial-gradient(circle at 50% 50%, rgba(0,229,229,.12), rgba(0,229,229,.28));
+  animation:cyanPulse 1.1s ease-out forwards;
+}
+@keyframes cyanPulse{
+  0%{opacity:0}
+  25%{opacity:.9}
+  100%{opacity:0}
 }
 
 .teleportFX{position:absolute;border:3px solid #d58aff;border-radius:50%;pointer-events:none;animation:tele .45s ease-out forwards}
 @keyframes tele{from{opacity:1;transform:scale(.3)}to{opacity:0;transform:scale(1.8)}}
 .healFX{position:absolute;border:3px solid #b3ff3b;border-radius:50%;pointer-events:none;animation:healRing .6s ease-out forwards;box-shadow:0 0 22px #b3ff3b inset}
-@keyframes healRing{
-  0%{opacity:1;transform:scale(.4);box-shadow:0 0 10px #b3ff3b}
-  100%{opacity:0;transform:scale(1.6);box-shadow:0 0 40px #b3ff3b}
-}
+@keyframes healRing{0%{opacity:1;transform:scale(.4);box-shadow:0 0 10px #b3ff3b}100%{opacity:0;transform:scale(1.6);box-shadow:0 0 40px #b3ff3b}}
 .healCross{position:absolute;color:#d4ff70;font-weight:bold;pointer-events:none;text-shadow:0 0 12px #b3ff3b;animation:healFloat .9s ease-out forwards;z-index:20}
-@keyframes healFloat{
-  0%{opacity:1;transform:translateY(0) scale(.6)}
-  100%{opacity:0;transform:translateY(-45px) scale(1.2)}
+@keyframes healFloat{0%{opacity:1;transform:translateY(0) scale(.6)}100%{opacity:0;transform:translateY(-45px) scale(1.2)}}
+
+.summonFX{position:absolute;border:3px solid #ff4444;border-radius:50%;pointer-events:none;animation:summonPulse .7s ease-out forwards;box-shadow:0 0 30px #ff0000, 0 0 60px #ff0000 inset;z-index:19}
+@keyframes summonPulse{0%{opacity:0;transform:scale(.1)}40%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.8)}}
+
+.hitRing{position:absolute;border-radius:50%;pointer-events:none;z-index:18;animation:hitRingAnim .28s ease-out forwards}
+@keyframes hitRingAnim{0%{opacity:1;transform:scale(.6)}100%{opacity:0;transform:scale(1.6)}}
+.hitSpark{position:absolute;width:5px;height:5px;border-radius:50%;pointer-events:none;z-index:18}
+.hitFlash{position:absolute;border-radius:50%;pointer-events:none;z-index:18;animation:hitFlashAnim .18s ease-out forwards}
+@keyframes hitFlashAnim{0%{opacity:.85;transform:scale(.9)}100%{opacity:0;transform:scale(1.3)}}
+
+/* Cyan unique hit effect */
+.hitCyan{
+  position:absolute;pointer-events:none;z-index:18;
+  border-radius:50%;
+  border:3px dashed #00e5e5;
+  box-shadow:0 0 24px #00e5e5, 0 0 48px #00e5e5 inset;
+  animation:hitCyanAnim .5s ease-out forwards;
 }
+@keyframes hitCyanAnim{
+  0%{opacity:1;transform:scale(.5) rotate(0deg)}
+  100%{opacity:0;transform:scale(1.7) rotate(180deg)}
+}
+
+.death-red-puff{position:absolute;border-radius:50%;pointer-events:none;z-index:19;background:radial-gradient(circle, rgba(255,60,60,.9), rgba(255,0,0,0) 65%);animation:redPuff .4s ease-out forwards}
+@keyframes redPuff{0%{opacity:1;transform:scale(.5)}100%{opacity:0;transform:scale(1.8)}}
+.death-shard{position:absolute;width:6px;height:6px;background:#ff4040;pointer-events:none;z-index:19;border-radius:1px;box-shadow:0 0 8px #ff2020}
+
+.death-orange-core{position:absolute;border-radius:50%;pointer-events:none;z-index:19;background:radial-gradient(circle, rgba(255,160,60,.9), rgba(255,120,0,0) 70%);animation:orangeCore .5s ease-out forwards}
+@keyframes orangeCore{0%{opacity:1;transform:scale(.6)}100%{opacity:0;transform:scale(2)}}
+.death-chunk{position:absolute;width:14px;height:14px;background:#f07800;border:2px solid #ffb347;pointer-events:none;z-index:19;box-shadow:0 0 12px #ff7b00}
+
+.death-purple-ring{position:absolute;border:3px solid #d58aff;border-radius:50%;pointer-events:none;z-index:19;box-shadow:0 0 20px #a020f0, 0 0 40px #a020f0 inset;animation:purpleRing .6s ease-out forwards}
+@keyframes purpleRing{0%{opacity:1;transform:scale(1.5)}100%{opacity:0;transform:scale(.1)}}
+.death-purple-spark{position:absolute;width:5px;height:5px;background:#d58aff;border-radius:50%;pointer-events:none;z-index:19;box-shadow:0 0 10px #a020f0}
+
+.death-green-dot{position:absolute;width:8px;height:8px;background:#16d64b;border-radius:50%;pointer-events:none;z-index:19;box-shadow:0 0 10px #16d64b}
+
+.death-lime-ring{position:absolute;border:3px solid #d4ff70;border-radius:50%;pointer-events:none;z-index:19;box-shadow:0 0 20px #b3ff3b, 0 0 40px #b3ff3b inset;animation:limeRing .8s ease-out forwards}
+@keyframes limeRing{0%{opacity:1;transform:scale(1.3)}100%{opacity:0;transform:scale(.2)}}
+.death-lime-drip{position:absolute;width:6px;height:6px;background:#d4ff70;border-radius:50%;pointer-events:none;z-index:19;box-shadow:0 0 10px #b3ff3b}
+
+.death-blue-flash{position:absolute;border-radius:50%;pointer-events:none;z-index:19;background:radial-gradient(circle, rgba(140,200,255,.95), rgba(30,100,255,0) 70%);animation:blueFlash .35s ease-out forwards}
+@keyframes blueFlash{0%{opacity:1;transform:scale(.6)}100%{opacity:0;transform:scale(2.2)}}
+.death-bolt{position:absolute;width:3px;height:26px;background:#bfe0ff;pointer-events:none;z-index:19;transform-origin:50% 100%;box-shadow:0 0 12px #3f8fff;animation:boltFade .35s ease-out forwards}
+@keyframes boltFade{0%{opacity:1}100%{opacity:0}}
+.death-blue-spark{position:absolute;width:4px;height:4px;background:#8fc4ff;border-radius:50%;pointer-events:none;z-index:19;box-shadow:0 0 10px #3f8fff}
+
+.death-cyan-ring{
+  position:absolute;border:3px solid #00e5e5;border-radius:50%;
+  pointer-events:none;z-index:19;
+  box-shadow:0 0 24px #00e5e5, 0 0 48px #00e5e5 inset;
+  animation:cyanRingCollapse .8s ease-out forwards;
+}
+@keyframes cyanRingCollapse{
+  0%{opacity:1;transform:scale(1.6)}
+  100%{opacity:0;transform:scale(.05)}
+}
+.death-cyan-bubble{
+  position:absolute;width:10px;height:10px;
+  background:radial-gradient(circle, #a8ffff, #00e5e5 70%);
+  border-radius:50%;pointer-events:none;z-index:19;
+  box-shadow:0 0 12px #00e5e5, 0 0 24px #00e5e5 inset;
+}
+
+.bossDeathFX{position:absolute;border-radius:50%;pointer-events:none;z-index:20;animation:bossDeath 2.6s ease-out forwards;background:radial-gradient(circle, rgba(255,60,60,.9), rgba(255,0,0,0) 70%);box-shadow:0 0 60px #ff0000, 0 0 120px #ff0000 inset}
+@keyframes bossDeath{0%{opacity:0;transform:scale(.2)}15%{opacity:1;transform:scale(.6)}50%{opacity:1;transform:scale(1.8)}100%{opacity:0;transform:scale(4.5)}}
+.bossDeathRing{position:absolute;border:4px solid #ff6666;border-radius:50%;pointer-events:none;z-index:20;animation:bossRing 2.6s ease-out forwards}
+@keyframes bossRing{0%{opacity:0;transform:scale(.2)}20%{opacity:1}100%{opacity:0;transform:scale(4)}}
+.bossEmber{position:absolute;width:8px;height:8px;background:#ff5522;border-radius:50%;pointer-events:none;z-index:21;box-shadow:0 0 12px #ff0000}
+.bossFlash{position:absolute;inset:0;background:#ffffff;pointer-events:none;z-index:22;animation:bossFlash .6s ease-out forwards}
+@keyframes bossFlash{0%{opacity:0}8%{opacity:.75}20%{opacity:.25}100%{opacity:0}}
+
 .health{position:absolute;left:0;width:100%;background:#333;border:1px solid #111;pointer-events:none}
 .healthFill{height:100%;background:#00e83b;width:100%;pointer-events:none}
+.healthFill.boss{background:linear-gradient(90deg,#ff4444,#ff8800)}
 #loseScreen{display:none;z-index:30}
 #loseScreen p{font-size:clamp(14px,2vw,25px);margin:6px 0}
 #finalScore,#loseHighscore{color:#ffd700}
 
 #shopOverlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,.82);z-index:25;align-items:center;justify-content:center;padding:16px}
 #shopOverlay.open{display:flex}
-#shopPanel{background:#1c1c1c;border:2px solid #ffcc44;border-radius:10px;padding:18px 20px;width:min(440px, 94vw);text-align:center;box-shadow:0 0 30px rgba(255,200,60,.35);max-height:92vh;overflow-y:auto}
+#shopPanel{background:#1c1c1c;border:2px solid #ffcc44;border-radius:10px;padding:18px 20px;width:min(460px, 94vw);text-align:center;box-shadow:0 0 30px rgba(255,200,60,.35);max-height:92vh;overflow-y:auto}
 #shopPanel h3{margin:0 0 8px;color:#ffcc44;font-size:clamp(20px,4vw,30px);text-shadow:0 0 10px #ff9900}
 #shopPanel .shopScore{font-size:clamp(14px,2vw,18px);color:#ffd700;margin-bottom:14px}
 .shopItem{background:#111;border:2px solid #444;border-radius:8px;padding:12px 14px;margin:10px 0;text-align:left}
 .shopItem.owned{border-color:#3fb83f}
+.shopItem.maxed{border-color:#ffcc44}
 .shopItem h4{margin:0 0 4px;font-size:clamp(15px,2vw,18px);color:#fff;display:flex;align-items:center;gap:8px}
 .shopItem .desc{font-size:clamp(11px,1.4vw,13px);color:#bbb;margin-bottom:8px}
 .shopItem .row{display:flex;justify-content:space-between;align-items:center}
 .shopItem .lvl{font-size:clamp(11px,1.4vw,13px);color:#8aff9b}
+.shopItem .lvl.max{color:#ffd700}
 .shopItem button{padding:8px 16px;font-size:clamp(13px,1.6vw,15px);margin:0;background:#1a7a1a;border-color:#3fb83f}
 .shopItem button:hover:not(:disabled){background:#26a326}
 .shopItem button:disabled{background:#333;border-color:#555;color:#888}
@@ -224,10 +247,18 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
       </div>
       <div class="shopItem" id="tornadoItem">
         <h4><span class="miniTornado"></span> Tornado</h4>
-        <div class="desc">Unlocks a Tornado ability. Press the Tornado button, then tap the map to drop it. It spins for 3 seconds and deals your current damage every second to any enemy inside.</div>
+        <div class="desc">Unlocks a Tornado ability. Press the Tornado button, then tap the map to drop it. It spins for 3 seconds, dealing your current damage every second to any enemy inside. 6 second cooldown.</div>
         <div class="row">
           <span class="lvl" id="tornadoLvl">Not owned</span>
           <button id="buyTornadoBtn" onclick="buyTornadoUpgrade()">Cost: 50</button>
+        </div>
+      </div>
+      <div class="shopItem" id="cooldownItem">
+        <h4>Hit Cooldown</h4>
+        <div class="desc">Reduces the global cooldown between hits by 0.05s. You cannot buy below 0.10s.</div>
+        <div class="row">
+          <span class="lvl" id="cooldownLvl">Current: 0.50s</span>
+          <button id="buyCooldownBtn" onclick="buyCooldownUpgrade()">Cost: 60</button>
         </div>
       </div>
       <button id="closeShopBtn" onclick="toggleShop()">RESUME</button>
@@ -245,7 +276,7 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 
 <script>
 /* ============================================================
-   ELEMENT REFERENCES
+   ELEMENT REFS
    ============================================================ */
 const menu=document.getElementById("menu");
 const gameScreen=document.getElementById("gameScreen");
@@ -264,6 +295,9 @@ const buyDmgBtn=document.getElementById("buyDmgBtn");
 const tornadoBtn=document.getElementById("tornadoBtn");
 const tornadoLvlEl=document.getElementById("tornadoLvl");
 const buyTornadoBtn=document.getElementById("buyTornadoBtn");
+const cooldownLvlEl=document.getElementById("cooldownLvl");
+const buyCooldownBtn=document.getElementById("buyCooldownBtn");
+const cooldownItemEl=document.getElementById("cooldownItem");
 const startBtn=document.getElementById("startBtn");
 let timerEl=document.getElementById("timer");
 let notificationEl=document.getElementById("notification");
@@ -278,50 +312,114 @@ let gameStartTime=0, timerInterval=null, notificationTimeout=null, notifiedMinut
 let audioCtx=null, musicTimer=null, musicStep=0;
 let shopOpen=false;
 let dmgUpgradeLevel=0;
+let tornadoOwned=false, tornadoArmed=false, tornadoCooldownUntil=0;
+let hitJamUntil=0, hitJamTimer=null;
+let lastGlobalHitTime = 0;
 
-let tornadoOwned=false;
-let tornadoArmed=false;
-let tornadoCooldownUntil=0;
+const HIT_COOLDOWN_BASE_MS = 500;
+const HIT_COOLDOWN_STEP_MS = 50;
+const HIT_COOLDOWN_MIN_MS  = 100;
+let hitCooldownMs = HIT_COOLDOWN_BASE_MS;
 
-/* Blue Square EMP state */
-let hitJamUntil = 0;       // timestamp until which hitting is disabled
-let hitJamTimer = null;    // UI updater
-
-const HIT_COOLDOWN_MS = 500;
-
-/* ---------- PRICES ---------- */
 const DMG_STARTING_COST = 25;
 const DMG_COST_STEP     = 3;
 const TORNADO_COST      = 50;
+const COOLDOWN_STARTING_COST = 60;
+const COOLDOWN_COST_STEP     = 20;
 
 const TORNADO_DURATION_MS = 3000;
 const TORNADO_RADIUS = 90;
-const TORNADO_COOLDOWN_MS = 600;
+const TORNADO_COOLDOWN_MS = 6000;
 
-/* ---------- BLUE SQUARE ---------- */
 const BLUE_HEALTH = 12;
 const BLUE_POINTS = 30;
-const BLUE_EMP_INTERVAL_MS = 5000;   // fires EVERY 5 seconds
-const BLUE_JAM_DURATION_MS = 3000;   // Hit disabled for 3s
+const BLUE_EMP_INTERVAL_MS = 5000;
+const BLUE_JAM_DURATION_MS = 3000;
+
+/* ---- CYAN ---- */
+const CYAN_HEALTH = 25;
+const CYAN_POINTS = 16;    // <-- 16 score
+const CYAN_HEAL_INTERVAL_MS = 2000;
+const CYAN_HEAL_AMOUNT = 6;
+
+const OVERLORD_HEALTH = 50;
+const OVERLORD_POINTS = 100;
+const OVERLORD_SUMMON_INTERVAL_MS = 5000;
 
 /* ============================================================
-   PAUSE SYSTEM
+   SPAWN CHANCE — CASCADE SYSTEM
+   ------------------------------------------------------------
+   Every non-red enemy is a triangular bell around its peak
+   minute. Weight is normalized so all weights sum to 1.
+   As one peaks and falls, the next rises — cascade.
+   Red fills whatever's left at the start; once others sum
+   to 1, red = 0 forever.
    ============================================================ */
-let totalPausedMs = 0;
-let shopOpenedAt = 0;
-let spawnEndsAt = 0;
+const SPAWN_BELLS = [
+  // name        peak(min)   width(min)   height (max contribution before normalize)
+  { name:"orange",   peak: 5,  width: 8,   height: 1.0 },
+  { name:"purple",   peak:11,  width: 8,   height: 1.0 },
+  { name:"green",    peak:17,  width: 8,   height: 1.0 },
+  { name:"lime",     peak:23,  width: 8,   height: 1.0 },
+  { name:"blue",     peak:30,  width: 9,   height: 1.0 },
+  { name:"cyan",     peak:38,  width:10,   height: 1.0 },   // rarer than overlord initially, but peaks around 38
+  { name:"overlord", peak:48,  width:12,   height: 1.2 }    // slightly taller to dominate late
+];
 
+function triangleBell(m, peak, width){
+  const d = Math.abs(m - peak);
+  if(d >= width) return 0;
+  return 1 - d/width;
+}
+
+function getSpawnChances(){
+  const m = elapsedMs()/60000;
+
+  const weights = {};
+  let total = 0;
+  for(const b of SPAWN_BELLS){
+    let w = triangleBell(m, b.peak, b.width) * b.height;
+    // Guarantee cyan stays a touch rarer than overlord at every point in time
+    if(b.name === "cyan") w *= 0.85;
+    weights[b.name] = w;
+    total += w;
+  }
+
+  // Red is the leftover — fill the rest of the bar.
+  // Once total >= 1, red is zero and everyone gets normalized.
+  let red;
+  if(total >= 1){
+    const k = 1/total;
+    for(const k2 in weights) weights[k2] *= k;
+    red = 0;
+  } else {
+    red = 1 - total;
+  }
+
+  const list = [
+    { name:"Red",      chance:red },
+    { name:"Orange",   chance:weights.orange },
+    { name:"Purple",   chance:weights.purple },
+    { name:"Green",    chance:weights.green },
+    { name:"Lime",     chance:weights.lime },
+    { name:"Blue",     chance:weights.blue },
+    { name:"Cyan",     chance:weights.cyan },
+    { name:"Overlord", chance:weights.overlord }
+  ];
+  return list.sort((a,b)=>b.chance-a.chance);
+}
+
+/* ============================================================
+   PAUSE
+   ============================================================ */
+let totalPausedMs=0, shopOpenedAt=0, spawnEndsAt=0;
 function elapsedMs(){
-  const raw = Date.now() - gameStartTime;
-  const currentlyPaused = shopOpenedAt ? (Date.now() - shopOpenedAt) : 0;
+  const raw = Date.now()-gameStartTime;
+  const currentlyPaused = shopOpenedAt ? (Date.now()-shopOpenedAt) : 0;
   return raw - totalPausedMs - currentlyPaused;
 }
-function elapsedSeconds(){
-  return Math.floor(elapsedMs()/1000);
-}
-function hitIsJammed(){
-  return Date.now() < hitJamUntil;
-}
+function elapsedSeconds(){ return Math.floor(elapsedMs()/1000); }
+function hitIsJammed(){ return Date.now() < hitJamUntil; }
 
 /* ============================================================
    AUDIO
@@ -338,7 +436,6 @@ function startMusic(){
  playMusicStep();
 }
 function stopMusic(){ clearInterval(musicTimer); musicTimer=null; }
-
 function tone(freq,duration,type="square",volume=.045,delay=0){
  if(!audioCtx)return;
  const t0 = audioCtx.currentTime + delay;
@@ -349,58 +446,109 @@ function tone(freq,duration,type="square",volume=.045,delay=0){
  osc.connect(gain);gain.connect(audioCtx.destination);
  osc.start(t0);osc.stop(t0+duration);
 }
-function sweep(freqStart, freqEnd, duration, type="sawtooth", volume=.06, delay=0){
+function sweep(f1,f2,dur,type="sawtooth",vol=.06,delay=0){
   if(!audioCtx)return;
-  const t0=audioCtx.currentTime + delay;
+  const t0=audioCtx.currentTime+delay;
   const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
   osc.type=type;
-  osc.frequency.setValueAtTime(freqStart,t0);
-  osc.frequency.exponentialRampToValueAtTime(Math.max(20,freqEnd),t0+duration);
-  gain.gain.setValueAtTime(volume,t0);
-  gain.gain.exponentialRampToValueAtTime(.001,t0+duration);
+  osc.frequency.setValueAtTime(f1,t0);
+  osc.frequency.exponentialRampToValueAtTime(Math.max(20,f2),t0+dur);
+  gain.gain.setValueAtTime(vol,t0);
+  gain.gain.exponentialRampToValueAtTime(.001,t0+dur);
   osc.connect(gain);gain.connect(audioCtx.destination);
-  osc.start(t0);osc.stop(t0+duration);
+  osc.start(t0);osc.stop(t0+dur);
 }
-function purchaseChime(){
-  ensureAudio();
-  tone(660,.10,"sine",.10,0);
-  tone(990,.10,"sine",.10,.08);
-  tone(1320,.20,"sine",.09,.16);
+function noiseBurst(dur=.2,vol=.08,delay=0){
+  if(!audioCtx)return;
+  const t0=audioCtx.currentTime+delay;
+  const sr=audioCtx.sampleRate;
+  const buf=audioCtx.createBuffer(1,sr*dur,sr);
+  const d=buf.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1;
+  const src=audioCtx.createBufferSource(); src.buffer=buf;
+  const g=audioCtx.createGain();
+  g.gain.setValueAtTime(vol,t0);
+  g.gain.exponentialRampToValueAtTime(.001,t0+dur);
+  src.connect(g); g.connect(audioCtx.destination);
+  src.start(t0);
 }
-function startChime(){
+function purchaseChime(){ensureAudio();tone(660,.10,"sine",.10,0);tone(990,.10,"sine",.10,.08);tone(1320,.20,"sine",.09,.16);}
+function startChime(){ensureAudio();tone(523.25,.12,"sine",.09,0);tone(783.99,.12,"sine",.09,.10);tone(1046.50,.25,"sine",.08,.20);}
+function pressBlip(){ensureAudio();tone(880,.06,"square",.05,0);}
+function tornadoSpawnSound(){ensureAudio();sweep(180,900,.35,"sawtooth",.07);sweep(220,1100,.35,"square",.04);tone(1200,.08,"sine",.05,.30);}
+function tornadoFadeSound(){ensureAudio();sweep(900,200,.35,"sawtooth",.06);sweep(1100,180,.35,"sine",.04);}
+function empSound(){ensureAudio();sweep(1600,180,.45,"square",.09);sweep(1200,140,.45,"sawtooth",.06);tone(80,.30,"sine",.10,.10);tone(60,.35,"sine",.09,.20);}
+function jamClearSound(){ensureAudio();tone(880,.09,"sine",.06,0);tone(1320,.14,"sine",.05,.08);}
+function overlordSummonSound(){ensureAudio();sweep(120,900,.5,"sawtooth",.07);sweep(180,1200,.5,"square",.05);tone(60,.35,"sine",.09);tone(90,.30,"sine",.06,.15);}
+function bossSpawnSound(){
   ensureAudio();
-  tone(523.25,.12,"sine",.09,0);
-  tone(783.99,.12,"sine",.09,.10);
-  tone(1046.50,.25,"sine",.08,.20);
+  sweep(80,400,.6,"sawtooth",.09);
+  sweep(120,600,.6,"square",.06);
+  tone(50,.8,"sine",.10,.1);
+  tone(200,.3,"square",.06,.4);
+  tone(250,.3,"square",.06,.5);
+  tone(300,.5,"square",.06,.6);
 }
-function pressBlip(){
+/* Cyan global heal sound — warm rising shimmer */
+function cyanHealSound(){
   ensureAudio();
-  tone(880,.06,"square",.05,0);
+  tone(660,.14,"sine",.06,0);
+  tone(880,.14,"sine",.06,.08);
+  tone(1100,.18,"sine",.05,.16);
+  tone(1320,.28,"sine",.05,.24);
+  sweep(400,1600,.5,"sine",.03,.05);
 }
-function tornadoSpawnSound(){
+/* Universal hit sound */
+function hitSound(isBoss){
   ensureAudio();
-  sweep(180, 900, .35, "sawtooth", .07);
-  sweep(220, 1100, .35, "square", .04);
-  tone(1200,.08,"sine",.05,.30);
+  tone(520,.045,"square",.075,0);
+  tone(300,.06,"triangle",.055,.008);
+  tone(150,.09,"sine",.06,.012);
+  noiseBurst(.03,.04,0);
+  if(isBoss){
+    tone(90,.18,"sine",.09,.02);
+    tone(680,.08,"square",.05,.02);
+  }
 }
-function tornadoFadeSound(){
+/* Cyan unique hit sound — bubbly ping */
+function cyanHitSound(){
   ensureAudio();
-  sweep(900, 200, .35, "sawtooth", .06);
-  sweep(1100, 180, .35, "sine", .04);
+  tone(1200,.05,"sine",.07,0);
+  tone(900,.06,"sine",.06,.04);
+  tone(1500,.05,"sine",.05,.09);
+  noiseBurst(.02,.03,0);
 }
-/* Blue Square EMP zap: descending warble + low thud */
-function empSound(){
+function redDeathSound(){ensureAudio();tone(300,.07,"square",.09);tone(140,.14,"square",.07,.04);noiseBurst(.09,.05);}
+function orangeDeathSound(){ensureAudio();sweep(600,120,.25,"sawtooth",.10);tone(90,.22,"sine",.08,.05);noiseBurst(.14,.06,.02);}
+function purpleDeathSound(){ensureAudio();sweep(400,1400,.18,"sine",.08);sweep(1300,240,.28,"square",.07,.14);tone(700,.10,"sine",.05,.28);}
+function greenDeathSound(){ensureAudio();tone(1100,.05,"square",.08);tone(1500,.05,"square",.07,.05);tone(900,.06,"square",.06,.12);}
+function limeDeathSound(){ensureAudio();tone(880,.12,"sine",.08);tone(660,.14,"sine",.07,.08);tone(440,.20,"sine",.06,.18);}
+function blueDeathSound(){ensureAudio();sweep(2200,300,.22,"square",.10);noiseBurst(.15,.08);tone(1600,.08,"sawtooth",.06,.02);tone(120,.18,"sine",.07,.10);}
+/* Cyan death — bubbly gurgle that collapses */
+function cyanDeathSound(){
   ensureAudio();
-  sweep(1600, 180, .45, "square", .09);
-  sweep(1200, 140, .45, "sawtooth", .06);
-  tone(80, .30, "sine", .10, .10);
-  tone(60, .35, "sine", .09, .20);
+  tone(1500,.06,"sine",.08,0);
+  tone(1200,.07,"sine",.07,.05);
+  tone(900,.08,"sine",.06,.11);
+  tone(600,.12,"sine",.06,.18);
+  sweep(1400,300,.4,"sine",.05,.05);
+  noiseBurst(.2,.05,.1);
 }
-/* Jam clearing ping */
-function jamClearSound(){
+function overlordDeathSound(){
   ensureAudio();
-  tone(880,.09,"sine",.06,0);
-  tone(1320,.14,"sine",.05,.08);
+  sweep(200,40,2.0,"sawtooth",.10);
+  sweep(260,50,2.0,"square",.07,.08);
+  tone(70,1.1,"sine",.13,.05);
+  tone(50,1.5,"sine",.11,.45);
+  tone(90,1.4,"sine",.09,.9);
+  tone(900,.30,"square",.06,.15);
+  tone(700,.35,"square",.05,.45);
+  tone(550,.40,"square",.05,.75);
+  noiseBurst(1.1,.08,.05);
+  noiseBurst(.9,.06,1.1);
+  noiseBurst(.7,.05,1.8);
+  tone(1760,.6,"sine",.05,1.5);
+  tone(1320,.8,"sine",.05,1.9);
 }
 function playMusicStep(){
  const step=musicStep%16;
@@ -414,48 +562,33 @@ function playMusicStep(){
 /* ============================================================
    RESPONSIVE SCALING
    ============================================================ */
-const BASE_W = 1200;
-const BASE_H = 800;
-const FLOOR = 0.55;
-const BLEND_START = 0.7;
-const MAX_SCALE = 2.6;
-
-let SCALE = 1;
-let scaledSizes = {};
-
-function getGameArea(){
-  const w = game.clientWidth  || window.innerWidth;
-  const h = game.clientHeight || (window.innerHeight - 75);
-  return { w, h };
-}
+const BASE_W=1200, BASE_H=800, FLOOR=0.55, BLEND_START=0.7, MAX_SCALE=2.6;
+let SCALE=1, scaledSizes={};
+function getGameArea(){ return { w: game.clientWidth || window.innerWidth, h: game.clientHeight || (window.innerHeight-75) }; }
 function recomputeScale(){
   const area = getGameArea();
-  const scaleW = area.w / BASE_W;
-  const scaleH = area.h / BASE_H;
-  let s = Math.min(scaleW, scaleH);
-  if(s < BLEND_START){
-    const t = s / BLEND_START;
-    s = FLOOR + (BLEND_START - FLOOR) * t;
-  }
+  let s = Math.min(area.w/BASE_W, area.h/BASE_H);
+  if(s < BLEND_START){ const t=s/BLEND_START; s = FLOOR + (BLEND_START-FLOOR)*t; }
   s = Math.max(FLOOR, Math.min(s, MAX_SCALE));
   SCALE = s;
-
   scaledSizes = {
-    red:    { size: Math.max(24, Math.round(42 * SCALE)), health: 3,  points: 1  },
-    orange: { size: Math.max(32, Math.round(58 * SCALE)), health: 6,  points: 3  },
-    purple: { size: Math.max(26, Math.round(48 * SCALE)), health: 5,  points: 8  },
-    green:  { size: Math.max(18, Math.round(28 * SCALE)), health: 2,  points: 10 },
-    lime:   { size: Math.max(40, Math.round(72 * SCALE)), health: 10, points: 25 },
-    blue:   { size: Math.max(46, Math.round(80 * SCALE)), health: BLUE_HEALTH, points: BLUE_POINTS }
+    red:      { size: Math.max(24, Math.round(42 * SCALE)), health: 3,  points: 1  },
+    orange:   { size: Math.max(32, Math.round(58 * SCALE)), health: 6,  points: 3  },
+    purple:   { size: Math.max(26, Math.round(48 * SCALE)), health: 5,  points: 8  },
+    green:    { size: Math.max(18, Math.round(28 * SCALE)), health: 2,  points: 10 },
+    lime:     { size: Math.max(40, Math.round(72 * SCALE)), health: 10, points: 25 },
+    blue:     { size: Math.max(46, Math.round(80 * SCALE)), health: BLUE_HEALTH, points: BLUE_POINTS },
+    cyan:     { size: Math.max(50, Math.round(88 * SCALE)), health: CYAN_HEALTH, points: CYAN_POINTS },
+    overlord: { size: Math.max(70, Math.round(120 * SCALE)), health: OVERLORD_HEALTH, points: OVERLORD_POINTS }
   };
 }
 function applyScaleToDOM(){
   enemies.forEach(data=>{
     const s = scaledSizes[data.kind].size;
     data.size = s;
-    data.element.style.width  = s+'px';
+    data.element.style.width = s+'px';
     data.element.style.height = s+'px';
-    const maxX = Math.max(0, game.clientWidth  - s);
+    const maxX = Math.max(0, game.clientWidth - s);
     const maxY = Math.max(0, game.clientHeight - s - Math.round(20*SCALE));
     const curX = parseFloat(data.element.style.left) || 0;
     const curY = parseFloat(data.element.style.top)  || 0;
@@ -487,62 +620,66 @@ function updateUI(){
   damageEl.textContent=damage;
   shopScoreEl.textContent=score;
 }
-function getSpawnChances(){
- const minutes=Math.floor(elapsedMs()/60000);
- const orange=Math.min(.01+minutes*.01,.49);
- const purple=Math.min(minutes*.005,.25);
- const green=Math.min(Math.max(0,minutes-1)*.005,.25);
- const lime=Math.min(Math.max(0,minutes-2)*0.0015, 0.08);
- // Blue: starts after 4 minutes, grows very slowly, capped at 4%
- const blue=Math.min(Math.max(0,minutes-4)*0.0008, 0.04);
- const used=orange+purple+green+lime+blue;
- const red=Math.max(0, 1-used);
- return [
-   {name:"Red",chance:red},
-   {name:"Orange",chance:orange},
-   {name:"Purple",chance:purple},
-   {name:"Green",chance:green},
-   {name:"Lime",chance:lime},
-   {name:"Blue",chance:blue}
- ].sort((a,b)=>b.chance-a.chance);
-}
 function updateChancePanel(){
- if(chanceListEl)chanceListEl.innerHTML=getSpawnChances()
-   .map(x=>`<div>${x.name}: ${(x.chance*100).toFixed(1)}%</div>`).join("");
+ if(chanceListEl)chanceListEl.innerHTML=getSpawnChances().map(x=>`<div>${x.name}: ${(x.chance*100).toFixed(1)}%</div>`).join("");
 }
 function updateGameTimer(){
  if(gameOver)return;
- const seconds = elapsedSeconds();
- const mins=Math.floor(seconds/60),secs=seconds%60;
- timerEl.textContent="Time: "+String(mins).padStart(2,"0")+":"+String(secs).padStart(2,"0");
+ const s = elapsedSeconds();
+ const m=Math.floor(s/60),sec=s%60;
+ timerEl.textContent="Time: "+String(m).padStart(2,"0")+":"+String(sec).padStart(2,"0");
  updateChancePanel();
- const spawnSeconds=Math.max(1,3-Math.floor(seconds/300));
- if(spawnTextEl)spawnTextEl.textContent="Spawn: "+spawnSeconds+"s";
- if(seconds>=60&&!notifiedMinutes[1]){notifiedMinutes[1]=true;showNotification("1 MINUTE! Spawn chances increased!");tone(660,.15,"square",.08);}
- if(seconds>=300&&!notifiedMinutes[5]){notifiedMinutes[5]=true;showNotification("5 MINUTES! Spawn time reduced to 2 seconds!");tone(880,.2,"square",.08);}
- if(seconds>=600&&!notifiedMinutes[10]){notifiedMinutes[10]=true;showNotification("10 MINUTES! Spawn time reduced to 1 second!");tone(990,.2,"square",.08);}
- if(seconds>=900&&!notifiedMinutes[15]){notifiedMinutes[15]=true;showNotification("15 MINUTES! Spawn chances increased!");tone(1100,.2,"square",.08);}
+ const sp=Math.max(1,3-Math.floor(s/300));
+ if(spawnTextEl)spawnTextEl.textContent="Spawn: "+sp+"s";
+ if(s>=60&&!notifiedMinutes[1]){notifiedMinutes[1]=true;showNotification("1 MINUTE! Spawn chances increased!");tone(660,.15,"square",.08);}
+ if(s>=300&&!notifiedMinutes[5]){notifiedMinutes[5]=true;showNotification("5 MINUTES! Spawn time reduced to 2 seconds!");tone(880,.2,"square",.08);}
+ if(s>=600&&!notifiedMinutes[10]){notifiedMinutes[10]=true;showNotification("10 MINUTES! Spawn time reduced to 1 second!");tone(990,.2,"square",.08);}
+ if(s>=900&&!notifiedMinutes[15]){notifiedMinutes[15]=true;showNotification("15 MINUTES! Spawn chances increased!");tone(1100,.2,"square",.08);}
+ updateTornadoButton();
 }
-function showNotification(text, className=""){
+function updateTornadoButton(){
+  if(!tornadoOwned) return;
+  const now = Date.now();
+  if(now < tornadoCooldownUntil){
+    if(!tornadoBtn.classList.contains("cooling")){
+      tornadoBtn.classList.add("cooling");
+      tornadoBtn.disabled = true;
+    }
+    const left = Math.ceil((tornadoCooldownUntil - now)/1000);
+    tornadoBtn.querySelector("span:last-child").textContent = "Tornado ("+left+"s)";
+  } else {
+    if(tornadoBtn.classList.contains("cooling")){
+      tornadoBtn.classList.remove("cooling");
+      tornadoBtn.disabled = false;
+    }
+    if(tornadoBtn.classList.contains("armed")){
+      tornadoBtn.querySelector("span:last-child").textContent = "Tap map";
+    } else {
+      tornadoBtn.querySelector("span:last-child").textContent = "Tornado";
+    }
+  }
+}
+function showNotification(text,className=""){
  notificationEl.textContent=text;
- notificationEl.className = className;
+ notificationEl.className=className;
  notificationEl.style.opacity="1";
  clearTimeout(notificationTimeout);
  notificationTimeout=setTimeout(()=>notificationEl.style.opacity="0",3500);
 }
 
 /* ============================================================
-   IN-GAME SHOP
+   SHOP
    ============================================================ */
-function dmgUpgradeCost(){
-  return DMG_STARTING_COST + dmgUpgradeLevel * DMG_COST_STEP;
-}
+function dmgUpgradeCost(){ return DMG_STARTING_COST + dmgUpgradeLevel*DMG_COST_STEP; }
+function cooldownUpgradeLevel(){ return Math.round((HIT_COOLDOWN_BASE_MS - hitCooldownMs)/HIT_COOLDOWN_STEP_MS); }
+function cooldownUpgradeCost(){ return COOLDOWN_STARTING_COST + cooldownUpgradeLevel()*COOLDOWN_COST_STEP; }
+function cooldownMaxed(){ return hitCooldownMs <= HIT_COOLDOWN_MIN_MS+0.01; }
 function refreshShop(){
   shopScoreEl.textContent = score;
   dmgLvlEl.textContent = "Level: " + dmgUpgradeLevel;
-  const dmgCost = dmgUpgradeCost();
-  buyDmgBtn.textContent = "Cost: " + dmgCost;
-  buyDmgBtn.disabled = score < dmgCost;
+  const dcost = dmgUpgradeCost();
+  buyDmgBtn.textContent = "Cost: " + dcost;
+  buyDmgBtn.disabled = score < dcost;
   if(tornadoOwned){
     tornadoLvlEl.textContent = "Owned";
     buyTornadoBtn.textContent = "Owned";
@@ -551,6 +688,22 @@ function refreshShop(){
     tornadoLvlEl.textContent = "Not owned";
     buyTornadoBtn.textContent = "Cost: " + TORNADO_COST;
     buyTornadoBtn.disabled = score < TORNADO_COST;
+  }
+  const cdSec = (hitCooldownMs/1000).toFixed(2);
+  const maxed = cooldownMaxed();
+  if(maxed){
+    cooldownItemEl.classList.add("maxed");
+    cooldownLvlEl.textContent = "Current: " + cdSec + "s (MAX)";
+    cooldownLvlEl.classList.add("max");
+    buyCooldownBtn.textContent = "MAXED";
+    buyCooldownBtn.disabled = true;
+  } else {
+    cooldownItemEl.classList.remove("maxed");
+    cooldownLvlEl.textContent = "Current: " + cdSec + "s";
+    cooldownLvlEl.classList.remove("max");
+    const ccost = cooldownUpgradeCost();
+    buyCooldownBtn.textContent = "Cost: " + ccost;
+    buyCooldownBtn.disabled = score < ccost;
   }
 }
 function toggleShop(){
@@ -563,15 +716,13 @@ function toggleShop(){
     refreshShop();
     shopOverlay.classList.add("open");
   } else {
-    const pausedFor = Date.now() - shopOpenedAt;
-    if(shopOpenedAt){
-      totalPausedMs += pausedFor;
-      shopOpenedAt = 0;
-    }
+    const pausedFor = Date.now()-shopOpenedAt;
+    if(shopOpenedAt){ totalPausedMs += pausedFor; shopOpenedAt=0; }
     shopOverlay.classList.remove("open");
     if(spawnEndsAt) spawnEndsAt += pausedFor;
-    // Push EMP jams forward too so shopping doesn't burn off your jam
-    if(hitJamUntil > 0) hitJamUntil += pausedFor;
+    if(hitJamUntil>0) hitJamUntil += pausedFor;
+    if(lastGlobalHitTime>0) lastGlobalHitTime += pausedFor;
+    if(tornadoCooldownUntil>Date.now()) tornadoCooldownUntil += pausedFor;
     if(!gameOver){
       const remaining = Math.max(0, spawnEndsAt - Date.now());
       spawnTimer = setTimeout(onSpawnTick, remaining);
@@ -581,119 +732,103 @@ function toggleShop(){
 }
 function buyDamageUpgrade(){
   if(gameOver) return;
-  const cost = dmgUpgradeCost();
-  if(score < cost) return;
-  score -= cost;
-  dmgUpgradeLevel++;
-  damage += 1;
-  updateUI();
-  refreshShop();
-  purchaseChime();
+  const c = dmgUpgradeCost();
+  if(score < c) return;
+  score -= c; dmgUpgradeLevel++; damage += 1;
+  updateUI(); refreshShop(); purchaseChime();
 }
 function buyTornadoUpgrade(){
-  if(gameOver) return;
-  if(tornadoOwned) return;
+  if(gameOver||tornadoOwned) return;
   if(score < TORNADO_COST) return;
   score -= TORNADO_COST;
   tornadoOwned = true;
   tornadoBtn.classList.add("unlocked");
-  updateUI();
-  refreshShop();
-  purchaseChime();
+  tornadoBtn.disabled = false;
+  updateUI(); refreshShop(); purchaseChime();
   showNotification("TORNADO UNLOCKED - press the Tornado button!");
+}
+function buyCooldownUpgrade(){
+  if(gameOver||cooldownMaxed()) return;
+  const c = cooldownUpgradeCost();
+  if(score < c) return;
+  score -= c;
+  hitCooldownMs = Math.max(HIT_COOLDOWN_MIN_MS, hitCooldownMs - HIT_COOLDOWN_STEP_MS);
+  updateUI(); refreshShop(); purchaseChime();
 }
 
 /* ============================================================
    TORNADO
    ============================================================ */
 function armTornado(){
-  if(gameOver||shopOpen) return;
-  if(!tornadoOwned) return;
+  if(gameOver||shopOpen||!tornadoOwned) return;
   if(Date.now() < tornadoCooldownUntil) return;
   pressBlip();
   tornadoArmed = !tornadoArmed;
-  if(tornadoArmed){
-    tornadoBtn.classList.add("armed");
-    game.classList.add("arming");
-  } else {
-    tornadoBtn.classList.remove("armed");
-    game.classList.remove("arming");
-  }
+  if(tornadoArmed){ tornadoBtn.classList.add("armed"); game.classList.add("arming"); tornadoBtn.querySelector("span:last-child").textContent = "Tap map"; }
+  else { tornadoBtn.classList.remove("armed"); game.classList.remove("arming"); tornadoBtn.querySelector("span:last-child").textContent = "Tornado"; }
 }
-function dropTornado(clientX, clientY){
-  const rect = game.getBoundingClientRect();
-  const x = clientX - rect.left;
-  const y = clientY - rect.top;
-  tornadoArmed = false;
+function dropTornado(cx,cy){
+  const r = game.getBoundingClientRect();
+  const x = cx - r.left, y = cy - r.top;
+  tornadoArmed=false;
   tornadoBtn.classList.remove("armed");
   game.classList.remove("arming");
   tornadoCooldownUntil = Date.now() + TORNADO_COOLDOWN_MS;
+  updateTornadoButton();
   spawnTornadoAt(x,y);
 }
 function spawnTornadoAt(x,y){
   const radius = TORNADO_RADIUS * SCALE;
   const wrap = document.createElement("div");
   wrap.className="tornado";
-  wrap.style.left = (x-radius)+"px";
-  wrap.style.top  = (y-radius)+"px";
-  wrap.style.width  = (radius*2)+"px";
-  wrap.style.height = (radius*2)+"px";
+  wrap.style.left=(x-radius)+"px";
+  wrap.style.top=(y-radius)+"px";
+  wrap.style.width=(radius*2)+"px";
+  wrap.style.height=(radius*2)+"px";
+  const s = SCALE;
   const c1=document.createElement("div"); c1.className="cone c1";
   const c2=document.createElement("div"); c2.className="cone c2";
   const c3=document.createElement("div"); c3.className="cone c3";
-  const s = SCALE;
-  c1.style.borderLeftWidth = (32*s)+"px";
-  c1.style.borderRightWidth= (32*s)+"px";
-  c1.style.borderTopWidth  = (24*s)+"px";
-  c2.style.top = (18*s)+"px";
-  c2.style.borderLeftWidth = (24*s)+"px";
-  c2.style.borderRightWidth= (24*s)+"px";
-  c2.style.borderTopWidth  = (20*s)+"px";
-  c3.style.top = (34*s)+"px";
-  c3.style.borderLeftWidth = (16*s)+"px";
-  c3.style.borderRightWidth= (16*s)+"px";
-  c3.style.borderTopWidth  = (16*s)+"px";
+  c1.style.borderLeftWidth=(32*s)+"px"; c1.style.borderRightWidth=(32*s)+"px"; c1.style.borderTopWidth=(24*s)+"px";
+  c2.style.top=(18*s)+"px"; c2.style.borderLeftWidth=(24*s)+"px"; c2.style.borderRightWidth=(24*s)+"px"; c2.style.borderTopWidth=(20*s)+"px";
+  c3.style.top=(34*s)+"px"; c3.style.borderLeftWidth=(16*s)+"px"; c3.style.borderRightWidth=(16*s)+"px"; c3.style.borderTopWidth=(16*s)+"px";
   wrap.appendChild(c1);wrap.appendChild(c2);wrap.appendChild(c3);
   game.appendChild(wrap);
   const ring = document.createElement("div");
   ring.className="tornadoRing";
-  ring.style.left = (x-radius)+"px";
-  ring.style.top  = (y-radius)+"px";
-  ring.style.width  = (radius*2)+"px";
-  ring.style.height = (radius*2)+"px";
+  ring.style.left=(x-radius)+"px"; ring.style.top=(y-radius)+"px";
+  ring.style.width=(radius*2)+"px"; ring.style.height=(radius*2)+"px";
   game.appendChild(ring);
   tornadoSpawnSound();
   const dmgTicker = setInterval(()=>{
     if(gameOver||shopOpen) return;
     applyTornadoDamageAt(x,y,radius);
-  }, 1000);
+  },1000);
   applyTornadoDamageAt(x,y,radius);
   setTimeout(()=>{
     clearInterval(dmgTicker);
     tornadoFadeSound();
     wrap.style.transition="opacity .3s, transform .3s";
     ring.style.transition="opacity .3s";
-    wrap.style.opacity="0";
-    ring.style.opacity="0";
+    wrap.style.opacity="0"; ring.style.opacity="0";
     wrap.style.transform="scale(1.3) rotate(90deg)";
-    setTimeout(()=>{ wrap.remove(); ring.remove(); }, 320);
+    setTimeout(()=>{ wrap.remove(); ring.remove(); },320);
   }, TORNADO_DURATION_MS);
 }
 function applyTornadoDamageAt(cx,cy,radius){
-  for(let i=enemies.length-1; i>=0; i--){
+  for(let i=enemies.length-1;i>=0;i--){
     const data = enemies[i];
     if(!data.element.parentNode) continue;
     const ex = data.element.offsetLeft + data.size/2;
     const ey = data.element.offsetTop  + data.size/2;
-    const dx = ex - cx, dy = ey - cy;
-    if(dx*dx + dy*dy <= radius*radius){
+    const dx=ex-cx, dy=ey-cy;
+    if(dx*dx+dy*dy <= radius*radius){
       data.health -= damage;
-      if(data.health <= 0){
-        cleanupEnemy(data);
-        enemies.splice(i,1);
-        score += data.points;
-      } else {
+      if(data.health > 0){
+        hitEffect(data.kind, ex, ey, data.size);
         data.healthFill.style.width=(data.health/data.maxHealth*100)+"%";
+      } else {
+        killEnemy(data);
       }
     }
   }
@@ -701,126 +836,634 @@ function applyTornadoDamageAt(cx,cy,radius){
   if(shopOpen) refreshShop();
 }
 
-/* Remove an enemy and clear its timers */
 function cleanupEnemy(data){
   if(data.teleportTimer) clearInterval(data.teleportTimer);
   if(data.moveTimer) clearInterval(data.moveTimer);
   if(data.healTimer) clearInterval(data.healTimer);
   if(data.empTimer) clearInterval(data.empTimer);
+  if(data.summonTimer) clearInterval(data.summonTimer);
+  if(data.cyanHealTimer) clearInterval(data.cyanHealTimer);
   data.element.remove();
 }
 
-tornadoBtn.addEventListener("click", (e)=>{
-  e.stopPropagation();
-  armTornado();
-});
+/* ============================================================
+   HIT EFFECTS
+   ============================================================ */
+const HIT_COLORS = {
+  red:"#ff4040", orange:"#ff9020", purple:"#c080ff",
+  green:"#40ff80", lime:"#d4ff60", blue:"#60a0ff",
+  cyan:"#00e5e5",
+  overlord:"#ff3030"
+};
+function hitEffect(kind, cx, cy, sizePx){
+  if(kind === "cyan"){
+    // Cyan unique hit: rotating dashed ring
+    const ringBase = Math.max(28, Math.round((sizePx||40) * 1.1));
+    const ring = document.createElement("div");
+    ring.className = "hitCyan";
+    ring.style.width  = ringBase+"px";
+    ring.style.height = ringBase+"px";
+    ring.style.left = (cx - ringBase/2)+"px";
+    ring.style.top  = (cy - ringBase/2)+"px";
+    game.appendChild(ring);
+    setTimeout(()=>ring.remove(), 520);
+
+    // a couple bubbles
+    for(let i=0;i<3;i++){
+      const a = Math.random()*Math.PI*2;
+      const b = document.createElement("div");
+      b.className = "death-cyan-bubble";
+      b.style.width="6px"; b.style.height="6px";
+      b.style.left=(cx-3)+"px"; b.style.top=(cy-3)+"px";
+      game.appendChild(b);
+      const dist = (28 + Math.random()*20) * SCALE;
+      const tx = Math.cos(a)*dist, ty = Math.sin(a)*dist;
+      const start = performance.now();
+      function step(t){
+        const p = Math.min(1, (t-start)/380);
+        b.style.transform = `translate(${tx*p}px, ${ty*p}px)`;
+        b.style.opacity = String(1-p);
+        if(p<1) requestAnimationFrame(step);
+        else b.remove();
+      }
+      requestAnimationFrame(step);
+    }
+    return;
+  }
+  // Standard hit effect
+  const color = HIT_COLORS[kind] || "#ffffff";
+  const isBoss = (kind === "overlord");
+  const ringBase = Math.max(24, Math.round((sizePx||40) * 0.9));
+  const ring = document.createElement("div");
+  ring.className = "hitRing";
+  ring.style.width  = ringBase+"px";
+  ring.style.height = ringBase+"px";
+  ring.style.left = (cx - ringBase/2)+"px";
+  ring.style.top  = (cy - ringBase/2)+"px";
+  ring.style.border = (isBoss ? "4px" : "2px") + " solid " + color;
+  ring.style.boxShadow = "0 0 "+(isBoss?26:14)+"px "+color+", 0 0 "+(isBoss?40:24)+"px "+color+" inset";
+  game.appendChild(ring);
+  setTimeout(()=>ring.remove(), 320);
+  const flash = document.createElement("div");
+  flash.className = "hitFlash";
+  const flashBase = Math.max(14, Math.round((sizePx||40) * 0.55));
+  flash.style.width  = flashBase+"px";
+  flash.style.height = flashBase+"px";
+  flash.style.left = (cx - flashBase/2)+"px";
+  flash.style.top  = (cy - flashBase/2)+"px";
+  flash.style.background = `radial-gradient(circle, ${color}dd, ${color}00 70%)`;
+  flash.style.boxShadow = "0 0 18px "+color;
+  game.appendChild(flash);
+  setTimeout(()=>flash.remove(), 200);
+  const sparkCount = isBoss ? 8 : 4;
+  const sparkSize = isBoss ? 7 : 5;
+  const spread = (isBoss ? 55 : 32) * SCALE;
+  for(let i=0;i<sparkCount;i++){
+    const a = Math.random()*Math.PI*2;
+    const sp = document.createElement("div");
+    sp.className = "hitSpark";
+    sp.style.width = sparkSize+"px";
+    sp.style.height = sparkSize+"px";
+    sp.style.background = color;
+    sp.style.boxShadow = "0 0 8px "+color;
+    sp.style.left = (cx - sparkSize/2)+"px";
+    sp.style.top  = (cy - sparkSize/2)+"px";
+    game.appendChild(sp);
+    const dist = spread * (0.5 + Math.random()*0.7);
+    const tx = Math.cos(a)*dist;
+    const ty = Math.sin(a)*dist;
+    const start = performance.now();
+    function step(t){
+      const p = Math.min(1, (t-start)/280);
+      sp.style.transform = `translate(${tx*p}px, ${ty*p}px)`;
+      sp.style.opacity = String(1-p);
+      if(p<1) requestAnimationFrame(step);
+      else sp.remove();
+    }
+    requestAnimationFrame(step);
+  }
+}
+
+/* ============================================================
+   DEATH EFFECTS
+   ============================================================ */
+function deathEffect(kind, cx, cy, sizePx){
+  switch(kind){
+    case "red":      redDeath(cx,cy);      break;
+    case "orange":   orangeDeath(cx,cy,sizePx); break;
+    case "purple":   purpleDeath(cx,cy,sizePx); break;
+    case "green":    greenDeath(cx,cy);    break;
+    case "lime":     limeDeath(cx,cy,sizePx); break;
+    case "blue":     blueDeath(cx,cy,sizePx); break;
+    case "cyan":     cyanDeath(cx,cy,sizePx); break;
+    case "overlord": overlordDeath(cx,cy,sizePx); break;
+  }
+}
+function redDeath(cx,cy){
+  const r = Math.round(50*SCALE);
+  const puff = document.createElement("div");
+  puff.className = "death-red-puff";
+  puff.style.width=r+"px"; puff.style.height=r+"px";
+  puff.style.left=(cx-r/2)+"px"; puff.style.top=(cy-r/2)+"px";
+  puff.style.boxShadow = "0 0 20px #ff2020";
+  game.appendChild(puff);
+  setTimeout(()=>puff.remove(), 420);
+  for(let i=0;i<3;i++){
+    const a = Math.random()*Math.PI*2;
+    const sh = document.createElement("div");
+    sh.className = "death-shard";
+    sh.style.left=(cx-3)+"px"; sh.style.top=(cy-3)+"px";
+    game.appendChild(sh);
+    const dist = (30 + Math.random()*30) * SCALE;
+    const tx = Math.cos(a)*dist, ty = Math.sin(a)*dist;
+    const start = performance.now();
+    function step(t){
+      const p = Math.min(1, (t-start)/300);
+      sh.style.transform = `translate(${tx*p}px,${ty*p}px) rotate(${p*180}deg)`;
+      sh.style.opacity = String(1-p);
+      if(p<1) requestAnimationFrame(step);
+      else sh.remove();
+    }
+    requestAnimationFrame(step);
+  }
+}
+function orangeDeath(cx,cy,sizePx){
+  const r = Math.round(70*SCALE);
+  const core = document.createElement("div");
+  core.className = "death-orange-core";
+  core.style.width=r+"px"; core.style.height=r+"px";
+  core.style.left=(cx-r/2)+"px"; core.style.top=(cy-r/2)+"px";
+  core.style.boxShadow = "0 0 30px #ff7b00";
+  game.appendChild(core);
+  setTimeout(()=>core.remove(), 520);
+  for(let i=0;i<6;i++){
+    const a = (i/6)*Math.PI*2 + Math.random()*0.3;
+    const frag = document.createElement("div");
+    frag.className = "death-chunk";
+    const sz = Math.max(6, Math.round(14*SCALE));
+    frag.style.width=sz+"px"; frag.style.height=sz+"px";
+    frag.style.left=(cx-sz/2)+"px"; frag.style.top=(cy-sz/2)+"px";
+    game.appendChild(frag);
+    const dist = (40 + Math.random()*40) * SCALE;
+    const tx = Math.cos(a)*dist, ty = Math.sin(a)*dist;
+    const start = performance.now();
+    function step(t){
+      const p = Math.min(1, (t-start)/550);
+      frag.style.transform = `translate(${tx*p}px,${ty*p}px) rotate(${p*720}deg)`;
+      frag.style.opacity = String(1-p);
+      if(p<1) requestAnimationFrame(step);
+      else frag.remove();
+    }
+    requestAnimationFrame(step);
+  }
+}
+function purpleDeath(cx,cy,sizePx){
+  const maxR = Math.round(90*SCALE);
+  const ring = document.createElement("div");
+  ring.className = "death-purple-ring";
+  ring.style.width=maxR+"px"; ring.style.height=maxR+"px";
+  ring.style.left=(cx-maxR/2)+"px"; ring.style.top=(cy-maxR/2)+"px";
+  game.appendChild(ring);
+  setTimeout(()=>ring.remove(), 650);
+  for(let i=0;i<8;i++){
+    const a = (i/8)*Math.PI*2;
+    const sp = document.createElement("div");
+    sp.className = "death-purple-spark";
+    game.appendChild(sp);
+    const startDist = (70 + Math.random()*30) * SCALE;
+    const start = performance.now();
+    function step(t){
+      const p = Math.min(1, (t-start)/550);
+      const cur = startDist * (1-p);
+      const x = cx + Math.cos(a)*cur;
+      const y = cy + Math.sin(a)*cur;
+      sp.style.left=(x-2.5)+"px"; sp.style.top=(y-2.5)+"px";
+      sp.style.opacity = String(p<0.9 ? 1 : (1-p)*10);
+      if(p<1) requestAnimationFrame(step);
+      else sp.remove();
+    }
+    requestAnimationFrame(step);
+  }
+}
+function greenDeath(cx,cy){
+  const dotsPerArc = 3, arcs = 3;
+  for(let arc=0; arc<arcs; arc++){
+    for(let i=0;i<dotsPerArc;i++){
+      const a = -Math.PI/2 + (i - (dotsPerArc-1)/2)*0.35 + arc*0.15;
+      const d = document.createElement("div");
+      d.className = "death-green-dot";
+      const sz = Math.max(5, Math.round(8*SCALE));
+      d.style.width=sz+"px"; d.style.height=sz+"px";
+      d.style.left=(cx-sz/2)+"px"; d.style.top=(cy-sz/2)+"px";
+      game.appendChild(d);
+      const dist = (30 + arc*25 + Math.random()*15) * SCALE;
+      const tx = Math.cos(a)*dist;
+      const ty = Math.sin(a)*dist;
+      const start = performance.now();
+      const delay = i*40 + arc*70;
+      function step(t){
+        const raw = (t-start-delay);
+        if(raw < 0){ requestAnimationFrame(step); return; }
+        const p = Math.min(1, raw/500);
+        const peak = -60 * SCALE * (1 - Math.abs(p*2-1));
+        d.style.transform = `translate(${tx*p}px,${ty*p + peak}px)`;
+        d.style.opacity = String(1-p);
+        if(p<1) requestAnimationFrame(step);
+        else d.remove();
+      }
+      requestAnimationFrame(step);
+    }
+  }
+}
+function limeDeath(cx,cy,sizePx){
+  const maxR = Math.round(100*SCALE);
+  const ring = document.createElement("div");
+  ring.className = "death-lime-ring";
+  ring.style.width=maxR+"px"; ring.style.height=maxR+"px";
+  ring.style.left=(cx-maxR/2)+"px"; ring.style.top=(cy-maxR/2)+"px";
+  game.appendChild(ring);
+  setTimeout(()=>ring.remove(), 850);
+  const cross = document.createElement("div");
+  cross.textContent = "+2";
+  cross.style.position = "absolute";
+  cross.style.color = "#d4ff70";
+  cross.style.fontWeight = "bold";
+  cross.style.fontSize = Math.max(14, Math.round(28*SCALE))+"px";
+  cross.style.textShadow = "0 0 12px #b3ff3b";
+  cross.style.pointerEvents = "none";
+  cross.style.zIndex = "20";
+  cross.style.left = (cx-14)+"px";
+  cross.style.top = (cy-16)+"px";
+  cross.style.transform = "rotate(180deg)";
+  cross.style.transition = "opacity .8s, transform .8s";
+  game.appendChild(cross);
+  requestAnimationFrame(()=>{
+    cross.style.transform = "rotate(540deg) translateY(30px) scale(.4)";
+    cross.style.opacity = "0";
+  });
+  setTimeout(()=>cross.remove(), 900);
+  for(let i=0;i<6;i++){
+    const d = document.createElement("div");
+    d.className = "death-lime-drip";
+    const sz = Math.max(4, Math.round(6*SCALE));
+    d.style.width=sz+"px"; d.style.height=(sz*1.6)+"px";
+    d.style.borderRadius = "40%";
+    const offX = (Math.random()*2-1)*30*SCALE;
+    d.style.left=(cx-3+offX)+"px";
+    d.style.top=(cy-3)+"px";
+    game.appendChild(d);
+    const start = performance.now();
+    const delay = i*60;
+    function step(t){
+      const raw = (t-start-delay);
+      if(raw<0){ requestAnimationFrame(step); return; }
+      const p = Math.min(1, raw/700);
+      d.style.transform = `translateY(${p*80*SCALE}px) scaleY(${1+p*0.8})`;
+      d.style.opacity = String(1-p*0.9);
+      if(p<1) requestAnimationFrame(step);
+      else d.remove();
+    }
+    requestAnimationFrame(step);
+  }
+}
+function blueDeath(cx,cy,sizePx){
+  const flash = document.createElement("div");
+  flash.className = "death-blue-flash";
+  const r = Math.round(120*SCALE);
+  flash.style.width=r+"px"; flash.style.height=r+"px";
+  flash.style.left=(cx-r/2)+"px"; flash.style.top=(cy-r/2)+"px";
+  flash.style.boxShadow = "0 0 40px #3f8fff";
+  game.appendChild(flash);
+  setTimeout(()=>flash.remove(), 380);
+  for(let i=0;i<6;i++){
+    const a = (i/6)*Math.PI*2 + Math.random()*0.5;
+    const b = document.createElement("div");
+    b.className = "death-bolt";
+    const len = (30 + Math.random()*20) * SCALE;
+    b.style.height = len+"px";
+    b.style.left=(cx-1.5)+"px";
+    b.style.top=(cy-len)+"px";
+    b.style.transformOrigin = "50% 100%";
+    b.style.transform = `rotate(${a*180/Math.PI + 180}deg)`;
+    game.appendChild(b);
+    setTimeout(()=>b.remove(), 380);
+  }
+  for(let i=0;i<8;i++){
+    const a = Math.random()*Math.PI*2;
+    const sp = document.createElement("div");
+    sp.className = "death-blue-spark";
+    sp.style.left=(cx-2)+"px"; sp.style.top=(cy-2)+"px";
+    game.appendChild(sp);
+    const dist = (40 + Math.random()*40) * SCALE;
+    const tx=Math.cos(a)*dist, ty=Math.sin(a)*dist;
+    const start = performance.now();
+    function step(t){
+      const p = Math.min(1, (t-start)/400);
+      sp.style.transform = `translate(${tx*p}px,${ty*p}px)`;
+      sp.style.opacity = String(1-p);
+      if(p<1) requestAnimationFrame(step);
+      else sp.remove();
+    }
+    requestAnimationFrame(step);
+  }
+}
+/* Cyan death — imploding rings + bubbling outward */
+function cyanDeath(cx,cy,sizePx){
+  const maxR = Math.round(110*SCALE);
+  const ring = document.createElement("div");
+  ring.className = "death-cyan-ring";
+  ring.style.width=maxR+"px"; ring.style.height=maxR+"px";
+  ring.style.left=(cx-maxR/2)+"px"; ring.style.top=(cy-maxR/2)+"px";
+  game.appendChild(ring);
+  setTimeout(()=>ring.remove(), 850);
+
+  // 8 cyan bubbles drifting outward
+  for(let i=0;i<8;i++){
+    const a = (i/8)*Math.PI*2 + Math.random()*0.4;
+    const b = document.createElement("div");
+    b.className = "death-cyan-bubble";
+    const sz = Math.max(6, Math.round(10*SCALE));
+    b.style.width=sz+"px"; b.style.height=sz+"px";
+    b.style.left=(cx-sz/2)+"px"; b.style.top=(cy-sz/2)+"px";
+    game.appendChild(b);
+    const dist = (40 + Math.random()*40) * SCALE;
+    const tx = Math.cos(a)*dist, ty = Math.sin(a)*dist;
+    const start = performance.now();
+    function step(t){
+      const p = Math.min(1, (t-start)/650);
+      b.style.transform = `translate(${tx*p}px, ${ty*p}px)`;
+      b.style.opacity = String(1-p);
+      if(p<1) requestAnimationFrame(step);
+      else b.remove();
+    }
+    requestAnimationFrame(step);
+  }
+}
+function overlordDeath(cx,cy,sizePx){
+  const flash = document.createElement("div");
+  flash.className = "bossFlash";
+  game.appendChild(flash);
+  setTimeout(()=>flash.remove(), 650);
+  const bigR = Math.round(240*SCALE);
+  const burst = document.createElement("div");
+  burst.className = "bossDeathFX";
+  burst.style.width=bigR+"px"; burst.style.height=bigR+"px";
+  burst.style.left=(cx-bigR/2)+"px"; burst.style.top=(cy-bigR/2)+"px";
+  game.appendChild(burst);
+  setTimeout(()=>burst.remove(), 2700);
+  for(let i=0;i<6;i++){
+    setTimeout(()=>{
+      const ring = document.createElement("div");
+      ring.className = "bossDeathRing";
+      const rSize = Math.round((120 + i*50) * SCALE);
+      ring.style.width=rSize+"px"; ring.style.height=rSize+"px";
+      ring.style.left=(cx-rSize/2)+"px"; ring.style.top=(cy-rSize/2)+"px";
+      ring.style.borderColor = i%2===0 ? "#ff6666" : "#ffcc44";
+      game.appendChild(ring);
+      setTimeout(()=>ring.remove(), 2600);
+    }, i*160);
+  }
+  for(let i=0;i<18;i++){
+    const e = document.createElement("div");
+    e.className = "bossEmber";
+    const sz = Math.max(4, Math.round(8*SCALE));
+    e.style.width=sz+"px"; e.style.height=sz+"px";
+    const offX = (Math.random()*2-1)*200*SCALE;
+    e.style.left=(cx-4+offX)+"px";
+    e.style.top=(cy-4)+"px";
+    game.appendChild(e);
+    const start = performance.now();
+    const delay = i*60;
+    const fallDist = (100 + Math.random()*120) * SCALE;
+    function step(t){
+      const raw = (t-start-delay);
+      if(raw<0){ requestAnimationFrame(step); return; }
+      const p = Math.min(1, raw/1500);
+      e.style.transform = `translate(${(Math.random()*2-1)*30*p}px,${fallDist*p}px)`;
+      e.style.opacity = String(1-p);
+      if(p<1) requestAnimationFrame(step);
+      else e.remove();
+    }
+    requestAnimationFrame(step);
+  }
+}
+
+tornadoBtn.addEventListener("click", (e)=>{ e.stopPropagation(); armTornado(); });
 game.addEventListener("pointerdown", (e)=>{
   if(!tornadoArmed) return;
-  e.preventDefault();
-  e.stopPropagation();
+  e.preventDefault(); e.stopPropagation();
   dropTornado(e.clientX, e.clientY);
 }, true);
 
 /* ============================================================
-   BLUE SQUARE EMP
+   BLUE EMP
    ============================================================ */
-function fireEMP(enemy, data){
-  if(gameOver) return;
-  if(!enemy.parentNode) return;
-  if(shopOpen) return; // paused
-
-  const size = data.size;
-  const cx = enemy.offsetLeft + size/2;
-  const cy = enemy.offsetTop  + size/2;
-
-  // Visual: expanding ring
-  const ring = document.createElement("div");
-  ring.className = "empRing";
-  const ringSize = Math.round(180 * SCALE);
-  ring.style.width  = ringSize+"px";
-  ring.style.height = ringSize+"px";
-  ring.style.left = (cx - ringSize/2)+"px";
-  ring.style.top  = (cy - ringSize/2)+"px";
+function fireEMP(enemy,data){
+  if(gameOver||shopOpen||!enemy.parentNode) return;
+  const size=data.size;
+  const cx=enemy.offsetLeft+size/2, cy=enemy.offsetTop+size/2;
+  const ring=document.createElement("div");
+  ring.className="empRing";
+  const rSize=Math.round(180*SCALE);
+  ring.style.width=rSize+"px"; ring.style.height=rSize+"px";
+  ring.style.left=(cx-rSize/2)+"px"; ring.style.top=(cy-rSize/2)+"px";
   game.appendChild(ring);
-  setTimeout(()=>ring.remove(), 750);
-
-  // Shake the square
+  setTimeout(()=>ring.remove(),750);
   enemy.classList.add("emp-fire");
-  setTimeout(()=>{ if(enemy.parentNode) enemy.classList.remove("emp-fire"); }, 480);
-
-  // Sound
+  setTimeout(()=>{ if(enemy.parentNode) enemy.classList.remove("emp-fire"); },480);
   empSound();
-
-  // Disable Hit for 3 seconds
-  const now = Date.now();
-  const wasJammed = hitIsJammed();
-  hitJamUntil = Math.max(hitJamUntil, now) + BLUE_JAM_DURATION_MS;
-  if(!wasJammed){
-    // First time we enter jam — show notification
-    showNotification("SIGNAL JAMMED - Hit disabled " + (BLUE_JAM_DURATION_MS/1000) + "s", "jam");
-  } else {
-    // Refresh the timer quietly with a smaller note
-    showNotification("SIGNAL JAMMED EXTENDED", "jam");
-  }
-  applyJamClass();
-
-  // Schedule the jam-clearing UI update
+  const now=Date.now();
+  const wasJammed=hitIsJammed();
+  hitJamUntil=Math.max(hitJamUntil,now)+BLUE_JAM_DURATION_MS;
+  if(!wasJammed) showNotification("SIGNAL JAMMED - Hit disabled "+(BLUE_JAM_DURATION_MS/1000)+"s","jam");
+  else showNotification("SIGNAL JAMMED EXTENDED","jam");
+  game.classList.add("jammed");
   if(hitJamTimer) clearTimeout(hitJamTimer);
-  const msLeft = hitJamUntil - Date.now();
-  hitJamTimer = setTimeout(clearJamUI, msLeft + 30);
-}
-function applyJamClass(){
-  if(hitIsJammed()){
-    game.classList.add("jammed");
-  } else {
-    game.classList.remove("jammed");
-  }
+  hitJamTimer=setTimeout(clearJamUI, (hitJamUntil-Date.now())+30);
 }
 function clearJamUI(){
-  hitJamUntil = 0;
+  hitJamUntil=0;
   game.classList.remove("jammed");
   jamClearSound();
   showNotification("SIGNAL RESTORED");
 }
 
 /* ============================================================
-   START / END
+   CYAN GLOBAL HEAL
+   ============================================================ */
+function cyanHealAll(enemy, data){
+  if(gameOver||shopOpen||!enemy.parentNode) return;
+  const size=data.size;
+  const cx=enemy.offsetLeft+size/2, cy=enemy.offsetTop+size/2;
+
+  // Full-screen cyan pulse
+  const pulse=document.createElement("div");
+  pulse.className="cyanHealPulse";
+  game.appendChild(pulse);
+  setTimeout(()=>pulse.remove(),1150);
+
+  // Expanding ring from cyan
+  const ring=document.createElement("div");
+  ring.className="cyanHealRing";
+  const rSize=Math.round(220*SCALE);
+  ring.style.width=rSize+"px"; ring.style.height=rSize+"px";
+  ring.style.left=(cx-rSize/2)+"px"; ring.style.top=(cy-rSize/2)+"px";
+  game.appendChild(ring);
+  setTimeout(()=>ring.remove(),1250);
+
+  // Brief scale jolt on the cyan square
+  enemy.style.transform = "scale(1.15)";
+  setTimeout(()=>{ if(enemy.parentNode) enemy.style.transform = ""; }, 250);
+
+  cyanHealSound();
+
+  // Heal every other enemy by CYAN_HEAL_AMOUNT (not the cyan itself)
+  for(const e of enemies){
+    if(e === data) continue;
+    if(!e.element.parentNode) continue;
+    if(e.health < e.maxHealth){
+      e.health = Math.min(e.maxHealth, e.health + CYAN_HEAL_AMOUNT);
+      e.healthFill.style.width = (e.health/e.maxHealth*100)+"%";
+    }
+  }
+}
+
+/* ============================================================
+   OVERLORD SUMMON
+   ============================================================ */
+function overlordSummon(enemy,data){
+  if(gameOver||shopOpen||!enemy.parentNode) return;
+  const size=data.size;
+  const cx=enemy.offsetLeft+size/2, cy=enemy.offsetTop+size/2;
+  overlordSummonSound();
+  const fx=document.createElement("div");
+  fx.className="summonFX";
+  const fSize=Math.round(160*SCALE);
+  fx.style.width=fSize+"px"; fx.style.height=fSize+"px";
+  fx.style.left=(cx-fSize/2)+"px"; fx.style.top=(cy-fSize/2)+"px";
+  game.appendChild(fx);
+  setTimeout(()=>fx.remove(),800);
+  enemy.style.transform="scale(1.15)";
+  setTimeout(()=>{ if(enemy.parentNode) enemy.style.transform=""; },200);
+  const offsets=[{dx:0,dy:-1},{dx:1,dy:0},{dx:0,dy:1},{dx:-1,dy:0}];
+  const radius = size + Math.round(30*SCALE);
+  offsets.forEach(off=>{
+    spawnRedAt(cx + off.dx*radius, cy + off.dy*radius);
+  });
+}
+function spawnRedAt(cx,cy){
+  if(gameOver||shopOpen) return;
+  if(enemies.length >= MAX_ALIVE) return;
+  const conf = scaledSizes.red;
+  const size = conf.size;
+  const maxHealth = conf.health;
+  const points = conf.points;
+  const enemy = document.createElement("div");
+  enemy.className="enemy red";
+  enemy.style.width=size+"px"; enemy.style.height=size+"px";
+  const maxX=Math.max(0,game.clientWidth-size);
+  const maxY=Math.max(0,game.clientHeight-size-Math.round(20*SCALE));
+  const px=Math.min(Math.max(0,cx-size/2),maxX);
+  const py=Math.min(Math.max(0,cy-size/2),maxY);
+  enemy.style.left=px+"px"; enemy.style.top=py+"px";
+  const hb=document.createElement("div"); hb.className="health";
+  hb.style.height=Math.max(4,Math.round(7*SCALE))+"px";
+  hb.style.bottom=(-Math.max(8,Math.round(15*SCALE)))+"px";
+  const hf=document.createElement("div"); hf.className="healthFill";
+  hb.appendChild(hf); enemy.appendChild(hb); game.appendChild(enemy);
+  const flash=document.createElement("div");
+  flash.className="death-red-puff";
+  const fSize=Math.round(50*SCALE);
+  flash.style.width=fSize+"px"; flash.style.height=fSize+"px";
+  flash.style.left=(px+size/2-fSize/2)+"px";
+  flash.style.top=(py+size/2-fSize/2)+"px";
+  flash.style.boxShadow="0 0 24px #ff3030";
+  game.appendChild(flash);
+  setTimeout(()=>flash.remove(),450);
+  const data={element:enemy,health:maxHealth,maxHealth,kind:"red",points,healthFill:hf,healthBar:hb,size,summoned:true};
+  enemies.push(data); updateUI();
+  function handleHit(e){
+    if(e.cancelable) e.preventDefault();
+    e.stopPropagation();
+    if(gameOver||shopOpen) return;
+    if(hitIsJammed()) return;
+    const now=Date.now();
+    if(now - lastGlobalHitTime < hitCooldownMs) return;
+    lastGlobalHitTime = now;
+    data.health-=damage;
+    if(data.health > 0){
+      hitSound(false);
+      hitEffect("red", enemy.offsetLeft+size/2, enemy.offsetTop+size/2, size);
+      data.healthFill.style.width=(data.health/data.maxHealth*100)+"%";
+      enemy.style.transform="scale(.85)";
+      setTimeout(()=>{if(enemy.parentNode)enemy.style.transform=""},80);
+    } else {
+      killEnemy(data);
+    }
+  }
+  enemy.addEventListener("pointerdown",handleHit);
+}
+
+/* ============================================================
+   KILL
+   ============================================================ */
+function killEnemy(data){
+  const kind = data.kind;
+  const cx = data.element.offsetLeft + data.size/2;
+  const cy = data.element.offsetTop  + data.size/2;
+  deathEffect(kind, cx, cy, data.size);
+  switch(kind){
+    case "red":      redDeathSound();      break;
+    case "orange":   orangeDeathSound();   break;
+    case "purple":   purpleDeathSound();   break;
+    case "green":    greenDeathSound();    break;
+    case "lime":     limeDeathSound();     break;
+    case "blue":     blueDeathSound();     break;
+    case "cyan":     cyanDeathSound();     break;
+    case "overlord": overlordDeathSound(); break;
+  }
+  if(kind === "overlord") showNotification("RED OVERLORD DESTROYED!", "boss");
+  cleanupEnemy(data);
+  const idx = enemies.indexOf(data);
+  if(idx >= 0) enemies.splice(idx,1);
+  score += data.points;
+  updateUI();
+  if(shopOpen) refreshShop();
+}
+
+/* ============================================================
+   START/END
    ============================================================ */
 startBtn.addEventListener("click", ()=>{ startChime(); startGame(); });
-
 function startGame(){
   ensureAudio();
   menu.style.display="none";
   loseScreen.style.display="none";
   gameScreen.style.display="block";
-
   score=0;damage=1;gameOver=false;enemies=[];
   dmgUpgradeLevel=0;
-  tornadoOwned=false;
-  tornadoArmed=false;
-  tornadoCooldownUntil=0;
-  shopOpen=false;
-  shopOpenedAt=0;
-  totalPausedMs=0;
-  spawnEndsAt=0;
+  hitCooldownMs=HIT_COOLDOWN_BASE_MS;
+  lastGlobalHitTime = 0;
+  tornadoOwned=false; tornadoArmed=false; tornadoCooldownUntil=0;
+  shopOpen=false; shopOpenedAt=0; totalPausedMs=0; spawnEndsAt=0;
   hitJamUntil=0;
-  if(hitJamTimer) { clearTimeout(hitJamTimer); hitJamTimer=null; }
+  if(hitJamTimer){ clearTimeout(hitJamTimer); hitJamTimer=null; }
   shopOverlay.classList.remove("open");
   tornadoBtn.classList.remove("unlocked");
   tornadoBtn.classList.remove("armed");
+  tornadoBtn.classList.remove("cooling");
+  tornadoBtn.disabled = false;
+  tornadoBtn.querySelector("span:last-child").textContent = "Tornado";
   game.classList.remove("arming");
   game.classList.remove("jammed");
-
   game.innerHTML="<div id=\"timer\">Time: 00:00</div><div id=\"notification\"></div><div id=\"chancePanel\"><h3>Spawn chances</h3><div id=\"chanceList\"></div></div>";
   timerEl=document.getElementById("timer");
   notificationEl=document.getElementById("notification");
   chanceListEl=document.getElementById("chanceList");
-  gameStartTime=Date.now();notifiedMinutes={};
+  gameStartTime=Date.now(); notifiedMinutes={};
   spawnTextEl=document.getElementById("spawnText");
   timerEl.textContent="Time: 00:00";
-  updateUI();
-  refreshShop();
-
+  updateUI(); refreshShop();
   requestAnimationFrame(()=>{
     recomputeScale();
     clearInterval(timerInterval);
@@ -831,21 +1474,18 @@ function startGame(){
   });
 }
 function endGame(){
-  gameOver=true;
-  shopOpen=false;
-  shopOpenedAt=0;
-  tornadoArmed=false;
-  hitJamUntil=0;
+  gameOver=true; shopOpen=false; shopOpenedAt=0;
+  tornadoArmed=false; hitJamUntil=0;
   if(hitJamTimer){ clearTimeout(hitJamTimer); hitJamTimer=null; }
   tornadoBtn.classList.remove("armed");
+  tornadoBtn.classList.remove("cooling");
   game.classList.remove("arming");
   game.classList.remove("jammed");
   shopOverlay.classList.remove("open");
-  clearTimeout(spawnTimer);
-  spawnTimer=null;
+  clearTimeout(spawnTimer); spawnTimer=null;
   clearInterval(timerInterval);
   stopMusic();
-  if(score>getHighscore())localStorage.setItem("destroySquaresHighscore",score);
+  if(score>getHighscore()) localStorage.setItem("destroySquaresHighscore",score);
   finalScoreEl.textContent=score;
   loseHighscoreEl.textContent=getHighscore();
   gameScreen.style.display="none";
@@ -853,16 +1493,14 @@ function endGame(){
   enemies.forEach(e=>cleanupEnemy(e));
 }
 function goToMenu(){
-  clearTimeout(spawnTimer);
-  spawnTimer=null;
+  clearTimeout(spawnTimer); spawnTimer=null;
   clearInterval(timerInterval);
   stopMusic();
-  shopOpen=false;
-  shopOpenedAt=0;
-  tornadoArmed=false;
-  hitJamUntil=0;
+  shopOpen=false; shopOpenedAt=0;
+  tornadoArmed=false; hitJamUntil=0;
   if(hitJamTimer){ clearTimeout(hitJamTimer); hitJamTimer=null; }
   tornadoBtn.classList.remove("armed");
+  tornadoBtn.classList.remove("cooling");
   game.classList.remove("arming");
   game.classList.remove("jammed");
   shopOverlay.classList.remove("open");
@@ -912,17 +1550,17 @@ function healEffect(x,y){
    SPAWNING
    ============================================================ */
 function currentSpawnInterval(){
-  const elapsed = elapsedMs();
-  return Math.max(1000, 3000 - Math.floor(elapsed/300000)*1000);
+  const e = elapsedMs();
+  return Math.max(1000, 3000 - Math.floor(e/300000)*1000);
 }
 function scheduleNextSpawn(){
-  if(gameOver || shopOpen) return;
+  if(gameOver||shopOpen) return;
   const interval = currentSpawnInterval();
   spawnEndsAt = Date.now() + interval;
   spawnTimer = setTimeout(onSpawnTick, interval);
 }
 function onSpawnTick(){
-  if(gameOver || shopOpen) return;
+  if(gameOver||shopOpen) return;
   spawnEnemy();
   if(!gameOver && !shopOpen) scheduleNextSpawn();
 }
@@ -930,139 +1568,131 @@ function spawnEnemy(){
  if(gameOver||shopOpen)return;
  if(enemies.length>=MAX_ALIVE){endGame();return}
 
- const roll=Math.random();
- let kind="red";
- const minutes=Math.floor(elapsedMs()/60000);
- const orangeChance=Math.min(0.01+minutes*0.01,0.49);
- const purpleChance=Math.min(minutes*0.005,0.25);
- const greenChance=Math.min(Math.max(0,minutes-1)*0.005,0.25);
- const limeChance = Math.min(Math.max(0,minutes-2)*0.0015, 0.08);
- const blueChance = Math.min(Math.max(0,minutes-4)*0.0008, 0.04);
- const redChance = 1 - orangeChance - purpleChance - greenChance - limeChance - blueChance;
+ const chances = getSpawnChances();
+ const roll = Math.random();
+ let acc = 0;
+ let kind = "red";
+ for(const c of chances){
+   acc += c.chance;
+   if(roll < acc){
+     kind = c.name.toLowerCase();
+     break;
+   }
+ }
 
- if(roll < redChance){kind="red"}
- else if(roll < redChance + orangeChance){kind="orange"}
- else if(roll < redChance + orangeChance + purpleChance){kind="purple"}
- else if(roll < redChance + orangeChance + purpleChance + greenChance){kind="green"}
- else if(roll < redChance + orangeChance + purpleChance + greenChance + limeChance){kind="lime"}
- else { kind="blue" }
-
- const conf = scaledSizes[kind];
- const size = conf.size;
- const maxHealth = conf.health;
- const points = conf.points;
-
+ const conf=scaledSizes[kind];
+ const size=conf.size, maxHealth=conf.health, points=conf.points;
  const enemy=document.createElement("div");
  enemy.className="enemy "+kind;
- enemy.style.width  = size+"px";
- enemy.style.height = size+"px";
-
- const maxX = Math.max(0, game.clientWidth  - size);
- const maxY = Math.max(0, game.clientHeight - size - Math.round(20*SCALE));
- enemy.style.left = Math.max(0, Math.random()*maxX)+"px";
- enemy.style.top  = Math.max(0, Math.random()*maxY)+"px";
-
- const healthBar=document.createElement("div");
- healthBar.className="health";
- healthBar.style.height = Math.max(4, Math.round(7*SCALE))+"px";
- healthBar.style.bottom = (-Math.max(8, Math.round(15*SCALE)))+"px";
- const healthFill=document.createElement("div");
- healthFill.className="healthFill";
- healthBar.appendChild(healthFill);
- enemy.appendChild(healthBar);
- game.appendChild(enemy);
-
- const data={
-   element:enemy, health:maxHealth, maxHealth, kind, points,
-   healthFill, healthBar, size, lastHitTime:0
- };
+ enemy.style.width=size+"px"; enemy.style.height=size+"px";
+ const maxX=Math.max(0,game.clientWidth-size);
+ const maxY=Math.max(0,game.clientHeight-size-Math.round(20*SCALE));
+ enemy.style.left=Math.max(0,Math.random()*maxX)+"px";
+ enemy.style.top=Math.max(0,Math.random()*maxY)+"px";
+ const hb=document.createElement("div"); hb.className="health";
+ hb.style.height=Math.max(4,Math.round(7*SCALE))+"px";
+ hb.style.bottom=(-Math.max(8,Math.round(15*SCALE)))+"px";
+ const hf=document.createElement("div"); hf.className="healthFill"+(kind==="overlord"?" boss":"");
+ hb.appendChild(hf); enemy.appendChild(hb); game.appendChild(enemy);
+ const data={element:enemy,health:maxHealth,maxHealth,kind,points,healthFill:hf,healthBar:hb,size};
  enemies.push(data);updateUI();
 
- /* Purple teleport */
+ if(kind==="overlord"){
+   showNotification("RED OVERLORD HAS ARRIVED","boss");
+   bossSpawnSound();
+ }
+
  if(kind==="purple"){
   data.teleportTimer=setInterval(()=>{
    if(!enemy.parentNode){clearInterval(data.teleportTimer);return}
    if(gameOver||shopOpen) return;
    const ox=enemy.offsetLeft+size/2,oy=enemy.offsetTop+size/2;
    teleportEffect(ox,oy);
-   const mx = Math.max(0, game.clientWidth  - size);
-   const my = Math.max(0, game.clientHeight - size - Math.round(20*SCALE));
+   const mx=Math.max(0,game.clientWidth-size);
+   const my=Math.max(0,game.clientHeight-size-Math.round(20*SCALE));
    enemy.style.left=Math.max(0,Math.random()*mx)+"px";
-   enemy.style.top =Math.max(0,Math.random()*my)+"px";
+   enemy.style.top=Math.max(0,Math.random()*my)+"px";
    teleportEffect(enemy.offsetLeft+size/2,enemy.offsetTop+size/2);
   },1000);
  }
-
- /* Green movement */
  if(kind==="green"){
   let vx=(Math.random()<.5?-1:1)*(3+Math.random()*2)*SCALE;
   let vy=(Math.random()<.5?-1:1)*(3+Math.random()*2)*SCALE;
   data.moveTimer=setInterval(()=>{
    if(!enemy.parentNode){clearInterval(data.moveTimer);return}
    if(gameOver||shopOpen) return;
-   const mx = Math.max(0, game.clientWidth  - size);
-   const my = Math.max(0, game.clientHeight - size - Math.round(20*SCALE));
+   const mx=Math.max(0,game.clientWidth-size);
+   const my=Math.max(0,game.clientHeight-size-Math.round(20*SCALE));
    let x=enemy.offsetLeft+vx,y=enemy.offsetTop+vy;
    if(x<=0||x>=mx)vx*=-1;
    if(y<=0||y>=my)vy*=-1;
    enemy.style.left=Math.max(0,Math.min(mx,x))+"px";
-   enemy.style.top =Math.max(0,Math.min(my,y))+"px";
+   enemy.style.top=Math.max(0,Math.min(my,y))+"px";
   },30);
  }
-
- /* Lime heal */
  if(kind==="lime"){
-   data.healTimer = setInterval(()=>{
+   data.healTimer=setInterval(()=>{
      if(!enemy.parentNode){clearInterval(data.healTimer);return}
      if(gameOver||shopOpen) return;
-     if(data.health < data.maxHealth){
-       data.health = Math.min(data.maxHealth, data.health + 2);
-       data.healthFill.style.width = (data.health/data.maxHealth*100)+"%";
-       const cx = enemy.offsetLeft + size/2;
-       const cy = enemy.offsetTop + size/2;
-       healEffect(cx, cy);
-       enemy.style.boxShadow = "0 0 42px #eaffb0";
-       setTimeout(()=>{ if(enemy.parentNode) enemy.style.boxShadow = "0 0 26px #b3ff3b"; }, 180);
+     if(data.health<data.maxHealth){
+       data.health=Math.min(data.maxHealth,data.health+2);
+       data.healthFill.style.width=(data.health/data.maxHealth*100)+"%";
+       const cx=enemy.offsetLeft+size/2, cy=enemy.offsetTop+size/2;
+       healEffect(cx,cy);
+       enemy.style.boxShadow="0 0 42px #eaffb0";
+       setTimeout(()=>{ if(enemy.parentNode) enemy.style.boxShadow="0 0 26px #b3ff3b"; },180);
      }
-   }, 2000);
+   },2000);
  }
-
- /* Blue EMP — ALWAYS fires every 5 seconds */
  if(kind==="blue"){
-   data.empTimer = setInterval(()=>{
+   data.empTimer=setInterval(()=>{
      if(!enemy.parentNode){clearInterval(data.empTimer);return}
      if(gameOver||shopOpen) return;
-     fireEMP(enemy, data);
-   }, BLUE_EMP_INTERVAL_MS);
+     fireEMP(enemy,data);
+   },BLUE_EMP_INTERVAL_MS);
  }
-
- /* Hit handler */
+ if(kind==="cyan"){
+   data.cyanHealTimer=setInterval(()=>{
+     if(!enemy.parentNode){clearInterval(data.cyanHealTimer);return}
+     if(gameOver||shopOpen) return;
+     cyanHealAll(enemy,data);
+   }, CYAN_HEAL_INTERVAL_MS);
+ }
+ if(kind==="overlord"){
+   setTimeout(()=>{
+     if(!gameOver && enemy.parentNode) overlordSummon(enemy,data);
+   },1500);
+   data.summonTimer=setInterval(()=>{
+     if(!enemy.parentNode){clearInterval(data.summonTimer);return}
+     if(gameOver||shopOpen) return;
+     overlordSummon(enemy,data);
+   }, OVERLORD_SUMMON_INTERVAL_MS);
+ }
  function handleHit(e){
   if(e.cancelable) e.preventDefault();
   e.stopPropagation();
   if(gameOver||shopOpen) return;
-
-  // If jammed, swallow the click (no damage, no feedback)
   if(hitIsJammed()) return;
-
-  const now = Date.now();
-  if(now - data.lastHitTime < HIT_COOLDOWN_MS) return;
-  data.lastHitTime = now;
-
-  data.health -= damage;
-  if(data.health <= 0){
-    cleanupEnemy(data);
-    enemies = enemies.filter(x=>x!==data);
-    score += data.points;
-    updateUI();
-    if(shopOpen) refreshShop();
+  const now=Date.now();
+  if(now - lastGlobalHitTime < hitCooldownMs) return;
+  lastGlobalHitTime = now;
+  data.health-=damage;
+  if(data.health<=0){
+    killEnemy(data);
   } else {
+    if(kind === "cyan"){
+      cyanHitSound();
+    } else {
+      const isBoss = (kind === "overlord");
+      hitSound(isBoss);
+    }
+    hitEffect(kind, enemy.offsetLeft+size/2, enemy.offsetTop+size/2, size);
     data.healthFill.style.width=(data.health/data.maxHealth*100)+"%";
     enemy.style.transform="scale(.85)";
     setTimeout(()=>{if(enemy.parentNode)enemy.style.transform=""},80);
   }
  }
- enemy.addEventListener("pointerdown", handleHit);
+ enemy.addEventListener("pointerdown",handleHit);
 }
 
 /* ============================================================
@@ -1076,4 +1706,4 @@ window.addEventListener('load',()=>{
 });
 </script>
 </body>
-</html>
+  </html>
