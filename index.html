@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Destroy Squares · Temporary Betrayal</title>
+<title>Destroy Squares · Faster Spawns</title>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;height:100%;width:100%;overflow:hidden}
@@ -102,83 +102,22 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 .overlord::before{content:"";position:absolute;inset:-6px;border:2px solid #ff6666;border-radius:8px;animation:overlordAura 1.6s ease-in-out infinite;pointer-events:none}
 @keyframes overlordAura{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
 
-/* ---- ALLY LIME (Temporary Betrayal) ---- */
-.allyLime{
-  position:absolute;
-  width:34px;height:34px;
-  background:#9acd32;
-  border:2px solid #d4ff70;
-  box-shadow:0 0 20px #b3ff3b, 0 0 40px #b3ff3b inset;
-  z-index:13;
-  pointer-events:none;
-  animation:allyBob 0.8s ease-in-out infinite;
-}
-@keyframes allyBob{
-  0%,100%{transform:translateY(0)}
-  50%{transform:translateY(-3px)}
-}
-.allyLime::before{
-  content:"";
-  position:absolute;inset:-4px;
-  border:2px solid rgba(212,255,112,.6);
-  border-radius:4px;
-  animation:allyAura 1.2s ease-in-out infinite;
-  pointer-events:none;
-}
+.allyLime{position:absolute;width:34px;height:34px;background:#9acd32;border:2px solid #d4ff70;box-shadow:0 0 20px #b3ff3b, 0 0 40px #b3ff3b inset;z-index:13;pointer-events:none;animation:allyBob 0.8s ease-in-out infinite}
+@keyframes allyBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.allyLime::before{content:"";position:absolute;inset:-4px;border:2px solid rgba(212,255,112,.6);border-radius:4px;animation:allyAura 1.2s ease-in-out infinite;pointer-events:none}
 @keyframes allyAura{0%,100%{opacity:.35;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
 
-/* Projectile */
-.allyShot{
-  position:absolute;width:14px;height:14px;
-  background:radial-gradient(circle, #d4ff70, #9acd32 70%);
-  border-radius:50%;
-  box-shadow:0 0 12px #b3ff3b, 0 0 24px #b3ff3b inset;
-  pointer-events:none;
-  z-index:15;
-}
+.allyShot{position:absolute;width:14px;height:14px;background:radial-gradient(circle, #d4ff70, #9acd32 70%);border-radius:50%;box-shadow:0 0 12px #b3ff3b, 0 0 24px #b3ff3b inset;pointer-events:none;z-index:15}
 
-/* Ally shot hit effect */
-.allyHitRing{
-  position:absolute;border-radius:50%;pointer-events:none;z-index:18;
-  border:2px solid #d4ff70;
-  box-shadow:0 0 18px #b3ff3b, 0 0 30px #b3ff3b inset;
-  animation:allyHitAnim .3s ease-out forwards;
-}
-@keyframes allyHitAnim{
-  0%{opacity:1;transform:scale(.5)}
-  100%{opacity:0;transform:scale(1.5)}
-}
-.allyHitSpark{
-  position:absolute;width:4px;height:4px;border-radius:50%;
-  background:#d4ff70;box-shadow:0 0 8px #b3ff3b;pointer-events:none;z-index:18;
-}
+.allyHitRing{position:absolute;border-radius:50%;pointer-events:none;z-index:18;border:2px solid #d4ff70;box-shadow:0 0 18px #b3ff3b, 0 0 30px #b3ff3b inset;animation:allyHitAnim .3s ease-out forwards}
+@keyframes allyHitAnim{0%{opacity:1;transform:scale(.5)}100%{opacity:0;transform:scale(1.5)}}
+.allyHitSpark{position:absolute;width:4px;height:4px;border-radius:50%;background:#d4ff70;box-shadow:0 0 8px #b3ff3b;pointer-events:none;z-index:18}
 
-/* Ally death effect */
-.allyDeathRing{
-  position:absolute;border:3px solid #d4ff70;border-radius:50%;
-  pointer-events:none;z-index:19;
-  box-shadow:0 0 24px #b3ff3b, 0 0 40px #b3ff3b inset;
-  animation:allyDeathRing .8s ease-out forwards;
-}
-@keyframes allyDeathRing{
-  0%{opacity:1;transform:scale(.4)}
-  100%{opacity:0;transform:scale(1.8)}
-}
-.allyDeathCross{
-  position:absolute;
-  color:#d4ff70;font-weight:bold;pointer-events:none;
-  text-shadow:0 0 12px #b3ff3b;z-index:20;
-  animation:allyCrossFlip 1s ease-out forwards;
-}
-@keyframes allyCrossFlip{
-  0%{opacity:1;transform:rotate(0) translateY(0) scale(.9)}
-  100%{opacity:0;transform:rotate(360deg) translateY(40px) scale(.4)}
-}
-.allyDeathDot{
-  position:absolute;width:8px;height:8px;background:#9acd32;
-  border-radius:50%;pointer-events:none;z-index:19;
-  box-shadow:0 0 10px #b3ff3b;
-}
+.allyDeathRing{position:absolute;border:3px solid #d4ff70;border-radius:50%;pointer-events:none;z-index:19;box-shadow:0 0 24px #b3ff3b, 0 0 40px #b3ff3b inset;animation:allyDeathRing .8s ease-out forwards}
+@keyframes allyDeathRing{0%{opacity:1;transform:scale(.4)}100%{opacity:0;transform:scale(1.8)}}
+.allyDeathCross{position:absolute;color:#d4ff70;font-weight:bold;pointer-events:none;text-shadow:0 0 12px #b3ff3b;z-index:20;animation:allyCrossFlip 1s ease-out forwards}
+@keyframes allyCrossFlip{0%{opacity:1;transform:rotate(0) translateY(0) scale(.9)}100%{opacity:0;transform:rotate(360deg) translateY(40px) scale(.4)}}
+.allyDeathDot{position:absolute;width:8px;height:8px;background:#9acd32;border-radius:50%;pointer-events:none;z-index:19;box-shadow:0 0 10px #b3ff3b}
 
 .cyanHealRing{position:absolute;border:3px solid #00e5e5;border-radius:50%;pointer-events:none;z-index:19;box-shadow:0 0 40px #00e5e5, 0 0 80px #00e5e5 inset;animation:cyanHealRing 1.2s ease-out forwards}
 @keyframes cyanHealRing{0%{opacity:0;transform:scale(.3)}20%{opacity:1}100%{opacity:0;transform:scale(6)}}
@@ -294,14 +233,8 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
     <div>Alive: <span id="alive">0</span>/50</div>
     <div>Damage: <span id="damage">1</span></div>
     <div id="spawnText">Spawn: 3s</div>
-    <button id="tornadoBtn" title="Tornado">
-      <span class="miniTornado"></span>
-      <span>Tornado</span>
-    </button>
-    <button id="betrayalBtn" title="Temporary Betrayal">
-      <span class="miniLime"></span>
-      <span>Betrayal</span>
-    </button>
+    <button id="tornadoBtn" title="Tornado"><span class="miniTornado"></span><span>Tornado</span></button>
+    <button id="betrayalBtn" title="Temporary Betrayal"><span class="miniLime"></span><span>Betrayal</span></button>
     <button id="shopBtn" onclick="toggleShop()">SHOP</button>
   </div>
   <div id="game"><div id="timer">Time: 00:00</div><div id="notification"></div><div id="chancePanel"><h3>Spawn chances</h3><div id="chanceList"></div></div></div>
@@ -398,7 +331,7 @@ let shopOpen=false;
 let dmgUpgradeLevel=0;
 let tornadoOwned=false, tornadoArmed=false, tornadoCooldownUntil=0;
 let betrayalOwned=false, betrayalCooldownUntil=0;
-let activeBetrayal=null;   // { element, shootTimer, expireTimer }
+let activeBetrayal=null;
 let hitJamUntil=0, hitJamTimer=null;
 let lastGlobalHitTime = 0;
 
@@ -572,30 +505,9 @@ function startChime(){ensureAudio();tone(523.25,.12,"sine",.09,0);tone(783.99,.1
 function pressBlip(){ensureAudio();tone(880,.06,"square",.05,0);}
 function tornadoSpawnSound(){ensureAudio();sweep(180,900,.35,"sawtooth",.07);sweep(220,1100,.35,"square",.04);tone(1200,.08,"sine",.05,.30);}
 function tornadoFadeSound(){ensureAudio();sweep(900,200,.35,"sawtooth",.06);sweep(1100,180,.35,"sine",.04);}
-
-/* Betrayal sounds */
-function betrayalSpawnSound(){
-  ensureAudio();
-  tone(523,.10,"sine",.09,0);
-  tone(659,.10,"sine",.09,.07);
-  tone(784,.12,"sine",.08,.14);
-  tone(1046,.20,"sine",.07,.22);
-  sweep(400,1800,.5,"sine",.04,.05);
-}
-function betrayalShotSound(){
-  ensureAudio();
-  tone(1500,.05,"square",.06,0);
-  tone(1800,.06,"sine",.05,.03);
-  noiseBurst(.03,.04,0);
-}
-function betrayalExpireSound(){
-  ensureAudio();
-  tone(784,.10,"sine",.07,0);
-  tone(523,.14,"sine",.06,.09);
-  tone(392,.20,"sine",.05,.18);
-  sweep(1200,300,.5,"sine",.04,.05);
-}
-
+function betrayalSpawnSound(){ensureAudio();tone(523,.10,"sine",.09,0);tone(659,.10,"sine",.09,.07);tone(784,.12,"sine",.08,.14);tone(1046,.20,"sine",.07,.22);sweep(400,1800,.5,"sine",.04,.05);}
+function betrayalShotSound(){ensureAudio();tone(1500,.05,"square",.06,0);tone(1800,.06,"sine",.05,.03);noiseBurst(.03,.04,0);}
+function betrayalExpireSound(){ensureAudio();tone(784,.10,"sine",.07,0);tone(523,.14,"sine",.06,.09);tone(392,.20,"sine",.05,.18);sweep(1200,300,.5,"sine",.04,.05);}
 function empSound(){ensureAudio();sweep(1600,180,.45,"square",.09);sweep(1200,140,.45,"sawtooth",.06);tone(80,.30,"sine",.10,.10);tone(60,.35,"sine",.09,.20);}
 function jamClearSound(){ensureAudio();tone(880,.09,"sine",.06,0);tone(1320,.14,"sine",.05,.08);}
 function overlordSummonSound(){ensureAudio();sweep(120,900,.5,"sawtooth",.07);sweep(180,1200,.5,"square",.05);tone(60,.35,"sine",.09);tone(90,.30,"sine",.06,.15);}
@@ -699,12 +611,13 @@ function updateGameTimer(){
  const m=Math.floor(s/60),sec=s%60;
  timerEl.textContent="Time: "+String(m).padStart(2,"0")+":"+String(sec).padStart(2,"0");
  updateChancePanel();
- const sp=Math.max(1,3-Math.floor(s/300));
- if(spawnTextEl)spawnTextEl.textContent="Spawn: "+sp+"s";
+ // Spawn interval display now reflects the new 0.5s cap
+ const sp = currentSpawnInterval()/1000;
+ if(spawnTextEl)spawnTextEl.textContent="Spawn: "+(sp<1?sp.toFixed(1):sp)+"s";
  if(s>=60&&!notifiedMinutes[1]){notifiedMinutes[1]=true;showNotification("1 MINUTE! Spawn chances increased!");tone(660,.15,"square",.08);}
  if(s>=300&&!notifiedMinutes[5]){notifiedMinutes[5]=true;showNotification("5 MINUTES! Spawn time reduced to 2 seconds!");tone(880,.2,"square",.08);}
  if(s>=600&&!notifiedMinutes[10]){notifiedMinutes[10]=true;showNotification("10 MINUTES! Spawn time reduced to 1 second!");tone(990,.2,"square",.08);}
- if(s>=900&&!notifiedMinutes[15]){notifiedMinutes[15]=true;showNotification("15 MINUTES! Spawn chances increased!");tone(1100,.2,"square",.08);}
+ if(s>=900&&!notifiedMinutes[15]){notifiedMinutes[15]=true;showNotification("15 MINUTES! Spawn time reduced to 0.5 seconds!");tone(1100,.2,"square",.08);}
  updateTornadoButton();
  updateBetrayalButton();
 }
@@ -965,7 +878,6 @@ function armBetrayal(){
   spawnAllyLime();
 }
 function spawnAllyLime(){
-  // Pick a random spawn location away from edges
   const size = Math.round(34 * SCALE);
   const margin = 60 * SCALE;
   const maxX = Math.max(margin, game.clientWidth - size - margin);
@@ -982,7 +894,6 @@ function spawnAllyLime(){
   el.style.pointerEvents = "none";
   game.appendChild(el);
 
-  // Spawn FX
   const spawnRing = document.createElement("div");
   spawnRing.className = "allyDeathRing";
   const rSize = Math.round(60*SCALE);
@@ -996,36 +907,24 @@ function spawnAllyLime(){
 
   betrayalSpawnSound();
 
-  const ally = {
-    element: el,
-    size: size,
-    shootTimer: null,
-    expireTimer: null
-  };
+  const ally = { element: el, size: size, shootTimer: null, expireTimer: null };
   activeBetrayal = ally;
   updateBetrayalButton();
 
-  // Shoot every 1s
   ally.shootTimer = setInterval(()=>{
     if(gameOver||shopOpen) return;
     if(!el.parentNode) return;
     shootFromAlly(ally);
   }, BETRAYAL_SHOOT_INTERVAL_MS);
 
-  // Immediately shoot once so it feels responsive
   setTimeout(()=>shootFromAlly(ally), 150);
 
-  // Expire after 10s
-  ally.expireTimer = setTimeout(()=>{
-    expireAllyLime(ally);
-  }, BETRAYAL_DURATION_MS);
+  ally.expireTimer = setTimeout(()=>{ expireAllyLime(ally); }, BETRAYAL_DURATION_MS);
 }
-
 function shootFromAlly(ally){
   if(gameOver||shopOpen) return;
   if(!ally.element.parentNode) return;
 
-  // Find nearest enemy
   const ax = ally.element.offsetLeft + ally.size/2;
   const ay = ally.element.offsetTop  + ally.size/2;
   let nearest = null;
@@ -1035,17 +934,13 @@ function shootFromAlly(ally){
     const ex = e.element.offsetLeft + e.size/2;
     const ey = e.element.offsetTop  + e.size/2;
     const d2 = (ex-ax)*(ex-ax) + (ey-ay)*(ey-ay);
-    if(d2 < nearestDist2){
-      nearestDist2 = d2;
-      nearest = e;
-    }
+    if(d2 < nearestDist2){ nearestDist2 = d2; nearest = e; }
   }
   if(!nearest) return;
 
   const tx = nearest.element.offsetLeft + nearest.size/2;
   const ty = nearest.element.offsetTop  + nearest.size/2;
 
-  // Projectile
   const shot = document.createElement("div");
   shot.className = "allyShot";
   shot.style.left = (ax - 7)+"px";
@@ -1054,7 +949,7 @@ function shootFromAlly(ally){
   betrayalShotSound();
 
   const sx = ax, sy = ay;
-  const duration = 180; // ms
+  const duration = 180;
   const start = performance.now();
   function step(t){
     if(!shot.parentNode) return;
@@ -1067,7 +962,6 @@ function shootFromAlly(ally){
       requestAnimationFrame(step);
     } else {
       shot.remove();
-      // Apply damage + hit effect
       if(nearest && nearest.element.parentNode && enemies.includes(nearest)){
         nearest.health -= damage;
         if(nearest.health <= 0){
@@ -1083,9 +977,7 @@ function shootFromAlly(ally){
   }
   requestAnimationFrame(step);
 }
-
 function allyShotHitEffect(cx, cy, sizePx){
-  // Ring
   const ringBase = Math.max(20, Math.round((sizePx||40) * 0.8));
   const ring = document.createElement("div");
   ring.className = "allyHitRing";
@@ -1095,8 +987,6 @@ function allyShotHitEffect(cx, cy, sizePx){
   ring.style.top  = (cy - ringBase/2)+"px";
   game.appendChild(ring);
   setTimeout(()=>ring.remove(), 320);
-
-  // Sparks
   for(let i=0;i<4;i++){
     const a = Math.random()*Math.PI*2;
     const sp = document.createElement("div");
@@ -1118,7 +1008,6 @@ function allyShotHitEffect(cx, cy, sizePx){
     requestAnimationFrame(step);
   }
 }
-
 function expireAllyLime(ally){
   if(!ally) return;
   if(ally.shootTimer) clearInterval(ally.shootTimer);
@@ -1129,7 +1018,6 @@ function expireAllyLime(ally){
     const cx = el.offsetLeft + ally.size/2;
     const cy = el.offsetTop  + ally.size/2;
 
-    // Death visual
     const ring = document.createElement("div");
     ring.className = "allyDeathRing";
     const maxR = Math.round(100*SCALE);
@@ -1140,7 +1028,6 @@ function expireAllyLime(ally){
     game.appendChild(ring);
     setTimeout(()=>ring.remove(), 850);
 
-    // Cross flip
     const cross = document.createElement("div");
     cross.className = "allyDeathCross";
     cross.textContent = "+2";
@@ -1150,7 +1037,6 @@ function expireAllyLime(ally){
     game.appendChild(cross);
     setTimeout(()=>cross.remove(), 1050);
 
-    // Green dots in arcs
     for(let i=0;i<9;i++){
       const a = (i/9)*Math.PI*2;
       const d = document.createElement("div");
@@ -1890,7 +1776,6 @@ function startGame(){
   betrayalBtn.querySelector("span:last-child").textContent = "Betrayal";
   game.classList.remove("arming");
   game.classList.remove("jammed");
-  // Remove any leftover ally
   document.querySelectorAll(".allyLime").forEach(n=>n.remove());
   game.innerHTML="<div id=\"timer\">Time: 00:00</div><div id=\"notification\"></div><div id=\"chancePanel\"><h3>Spawn chances</h3><div id=\"chanceList\"></div></div>";
   timerEl=document.getElementById("timer");
@@ -2000,11 +1885,18 @@ function healEffect(x,y){
 }
 
 /* ============================================================
-   SPAWNING
+   SPAWNING — interval now caps at 0.5s after 15 minutes
    ============================================================ */
 function currentSpawnInterval(){
   const e = elapsedMs();
-  return Math.max(1000, 3000 - Math.floor(e/300000)*1000);
+  // 0-5min: 3s
+  // 5-10min: 2s
+  // 10-15min: 1s
+  // 15min+: 0.5s (the true maximum)
+  if(e < 300000) return 3000;
+  if(e < 600000) return 2000;
+  if(e < 900000) return 1000;
+  return 500;
 }
 function scheduleNextSpawn(){
   if(gameOver||shopOpen) return;
