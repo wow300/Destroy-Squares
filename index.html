@@ -26,6 +26,10 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 }
 #shopBtn{background:#1a7a1a;border:2px solid #3fb83f;color:#fff;padding:6px 12px;font-size:clamp(11px,1.5vw,17px);border-radius:6px;cursor:pointer;margin:0;font-family:inherit;pointer-events:auto}
 #shopBtn:hover{background:#26a326}
+#betrayalBtn{position:relative;background:#315b22;border:2px solid #8aff4f;color:#fff;padding:6px 12px;font-size:clamp(11px,1.5vw,17px);border-radius:6px;cursor:pointer;margin:0;font-family:inherit;display:none;align-items:center;gap:6px;pointer-events:auto}
+#betrayalBtn.unlocked{display:inline-flex}
+#betrayalBtn.cooling{background:#333;border-color:#555;color:#888;cursor:not-allowed}
+#betrayalBtn.armed{background:#237a23;border-color:#b3ff3b;animation:armedPulse .8s ease-in-out infinite}
 #tornadoBtn{position:relative;background:#1a3a7a;border:2px solid #3f8fff;color:#fff;padding:6px 12px;font-size:clamp(11px,1.5vw,17px);border-radius:6px;cursor:pointer;margin:0;font-family:inherit;display:none;align-items:center;gap:6px;pointer-events:auto}
 #tornadoBtn.unlocked{display:inline-flex}
 #tornadoBtn:hover:not(:disabled){background:#2651a3}
@@ -215,6 +219,7 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
     <div>Alive: <span id="alive">0</span>/50</div>
     <div>Damage: <span id="damage">1</span></div>
     <div id="spawnText">Spawn: 3s</div>
+    <button id="betrayalBtn" title="Temporary Betrayal">⚔ <span>Temporary Betrayal</span></button>
     <button id="tornadoBtn" title="Tornado"><span class="miniTornado"></span><span>Tornado</span></button>
     <button id="shopBtn">SHOP</button>
   </div>
@@ -233,6 +238,11 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
         <h4><span class="miniTornado"></span> Tornado</h4>
         <div class="desc">Unlocks a Tornado ability. Press the Tornado button, then tap the map to drop it. It spins for 3 seconds, dealing your current damage every second to any enemy inside. 6 second cooldown.</div>
         <div class="row"><span class="lvl" id="tornadoLvl">Not owned</span><button id="buyTornadoBtn">Cost: 50</button></div>
+      </div>
+      <div class="shopItem" id="betrayalItem">
+        <h4>Temporary Betrayal</h4>
+        <div class="desc">Summon a friendly Green Square at a location. It stays for 10 seconds and fires your current damage at the nearest enemy. 20 second cooldown.</div>
+        <div class="row"><span class="lvl" id="betrayalLvl">Not owned</span><button id="buyBetrayalBtn">Cost: 70</button></div>
       </div>
       <div class="shopItem" id="cooldownItem">
         <h4>Hit Cooldown</h4>
@@ -267,6 +277,9 @@ const shopScoreEl=document.getElementById("shopScore");
 const dmgLvlEl=document.getElementById("dmgLvl");
 const buyDmgBtn=document.getElementById("buyDmgBtn");
 const tornadoBtn=document.getElementById("tornadoBtn");
+const betrayalBtn=document.getElementById("betrayalBtn");
+const buyBetrayalBtn=document.getElementById("buyBetrayalBtn");
+const betrayalLvlEl=document.getElementById("betrayalLvl");
 const tornadoLvlEl=document.getElementById("tornadoLvl");
 const buyTornadoBtn=document.getElementById("buyTornadoBtn");
 const cooldownLvlEl=document.getElementById("cooldownLvl");
@@ -286,6 +299,7 @@ let audioCtx=null, musicTimer=null, musicStep=0;
 let shopOpen=false;
 let dmgUpgradeLevel=0;
 let tornadoOwned=false, tornadoArmed=false, tornadoCooldownUntil=0;
+let betrayalOwned=false, betrayalArmed=false, betrayalCooldownUntil=0;
 let hitJamUntil=0, hitJamTimer=null;
 let lastGlobalHitTime = 0;
 
@@ -302,6 +316,7 @@ const COOLDOWN_COST_STEP     = 20;
 const TORNADO_DURATION_MS = 3000;
 const TORNADO_RADIUS = 90;
 const TORNADO_COOLDOWN_MS = 6000;
+const BETRAYAL_COST = 70, BETRAYAL_COOLDOWN_MS = 20000, BETRAYAL_DURATION_MS = 10000;
 
 const BLUE_HEALTH = 12;
 const BLUE_POINTS = 30;
@@ -339,7 +354,7 @@ function getSpawnChances(){
     cyan:   GROWTH.cyan   * Math.max(0, m - 5),
     black:  GROWTH.black  * Math.max(0, m - 6),
     overlord: GROWTH.overlord * Math.max(0, m - 7),
-    factory:  GROWTH.factory  * Math.max(0, m - 9)
+    factory:  GROWTH.factory  * Math.max(0, m - 7)
   };
   let sumOthers = 0;
   for(const k of ["orange","purple","green","lime","blue","cyan","black","overlord","factory"]) sumOthers += raw[k];
@@ -573,7 +588,14 @@ function updateGameTimer(){
  updateTornadoButton();
 }
 function updateTornadoButton(){
-  if(!tornadoOwned) return;
+  if(!tornadoOwned){
+    tornadoBtn.classList.remove("unlocked","armed","cooling");
+    tornadoBtn.style.display="none";
+    tornadoBtn.disabled=true;
+    return;
+  }
+  tornadoBtn.classList.add("unlocked");
+  tornadoBtn.style.display="inline-flex";
   const now = Date.now();
   if(now < tornadoCooldownUntil){
     if(!tornadoBtn.classList.contains("cooling")){
@@ -624,6 +646,9 @@ function refreshShop(){
     buyTornadoBtn.textContent = "Cost: " + TORNADO_COST;
     buyTornadoBtn.disabled = score < TORNADO_COST;
   }
+  if(betrayalOwned){
+    betrayalLvlEl.textContent="Owned"; buyBetrayalBtn.textContent="Owned"; buyBetrayalBtn.disabled=true;
+  } else { betrayalLvlEl.textContent="Not owned"; buyBetrayalBtn.textContent="Cost: "+BETRAYAL_COST; buyBetrayalBtn.disabled=score<BETRAYAL_COST; }
   const cdSec = (hitCooldownMs/1000).toFixed(2);
   const maxed = cooldownMaxed();
   if(maxed){
@@ -681,6 +706,44 @@ function buyTornadoUpgrade(){
   tornadoBtn.disabled = false;
   updateUI(); refreshShop(); purchaseChime();
   showNotification("TORNADO UNLOCKED - press the Tornado button!");
+}
+function buyBetrayalUpgrade(){
+ if(gameOver||betrayalOwned||score<BETRAYAL_COST)return;
+ score-=BETRAYAL_COST; betrayalOwned=true; betrayalBtn.classList.add("unlocked");
+ updateUI(); refreshShop(); purchaseChime(); showNotification("TEMPORARY BETRAYAL UNLOCKED!");
+}
+function armBetrayal(){
+ if(gameOver||shopOpen||!betrayalOwned||Date.now()<betrayalCooldownUntil)return;
+ betrayalArmed=!betrayalArmed; betrayalBtn.classList.toggle("armed",betrayalArmed); game.classList.toggle("arming",betrayalArmed);
+ betrayalBtn.querySelector("span").textContent=betrayalArmed?"Tap map":"Temporary Betrayal";
+}
+function summonBetrayal(cx,cy){
+ const r=game.getBoundingClientRect(),x=cx-r.left,y=cy-r.top;
+ betrayalArmed=false; betrayalBtn.classList.remove("armed"); game.classList.remove("arming");
+ betrayalCooldownUntil=Date.now()+BETRAYAL_COOLDOWN_MS; updateBetrayalButton();
+ const size=Math.max(18,Math.round(28*SCALE)), el=document.createElement("div");
+ el.className="enemy green"; el.style.cssText=`width:${size}px;height:${size}px;left:${Math.max(0,Math.min(game.clientWidth-size,x-size/2))}px;top:${Math.max(0,Math.min(game.clientHeight-size,y-size/2))}px;`;
+ game.appendChild(el); const d={element:el,kind:"friendlyBetrayal",size,health:1,maxHealth:1,points:0,healthFill:null,healthBar:null,friendly:true};
+ const ring=document.createElement("div"); ring.className="factorySpawnFX"; ring.style.cssText=`width:${size*2}px;height:${size*2}px;left:${x-size}px;top:${y-size}px`; game.appendChild(ring); setTimeout(()=>ring.remove(),800);
+ const started=Date.now(); d.timer=setInterval(()=>{ if(!el.parentNode){clearInterval(d.timer);return} if(Date.now()-started>=BETRAYAL_DURATION_MS){clearInterval(d.timer);el.remove();return} fireBetrayalShot(d); },900);
+ setTimeout(()=>{if(el.parentNode)el.remove();clearInterval(d.timer)},BETRAYAL_DURATION_MS);
+}
+function fireBetrayalShot(d){
+ let target=null,best=Infinity;
+ for(const e of enemies){if(e.friendly||!e.element.parentNode)continue;const dx=e.element.offsetLeft-d.element.offsetLeft,dy=e.element.offsetTop-d.element.offsetTop,dist=dx*dx+dy*dy;if(dist<best){best=dist;target=e}}
+ if(!target)return;
+ const x=d.element.offsetLeft+d.size/2,y=d.element.offsetTop+d.size/2,tx=target.element.offsetLeft+target.size/2,ty=target.element.offsetTop+target.size/2;
+ const b=document.createElement("div"); b.style.cssText=`position:absolute;width:${Math.max(4,Math.round(7*SCALE))}px;height:${Math.max(4,Math.round(7*SCALE))}px;background:#49ff49;border:2px solid #caffca;border-radius:50%;box-shadow:0 0 12px #16d64b;z-index:18;left:${x}px;top:${y}px;pointer-events:none`; game.appendChild(b);
+ try{ensureAudio();tone(720,.07,"square",.07);sweep(900,500,.08,"sine",.04)}catch(e){}
+ const dx=tx-x,dy=ty-y,len=Math.hypot(dx,dy)||1,vx=dx/len*8*SCALE,vy=dy/len*8*SCALE;
+ const iv=setInterval(()=>{if(!b.parentNode){clearInterval(iv);return} b.style.left=(b.offsetLeft+vx)+"px";b.style.top=(b.offsetTop+vy)+"px";
+  if(Math.hypot(b.offsetLeft-tx,b.offsetTop-ty)<Math.max(14,target.size/2)){clearInterval(iv);b.remove(); if(target.element.parentNode&&!target.dying){target.health-=damage; try{tone(180,.09,"triangle",.06)}catch(e){} if(target.health<=0)killEnemy(target);else{target.healthFill.style.width=(target.health/target.maxHealth*100)+"%";hitEffect(target.kind,tx,ty,target.size)}}}
+  else if(b.offsetLeft<0||b.offsetTop<0||b.offsetLeft>game.clientWidth||b.offsetTop>game.clientHeight){clearInterval(iv);b.remove()}
+ },30);
+}
+function updateBetrayalButton(){
+ if(!betrayalOwned)return; const left=Math.ceil(Math.max(0,betrayalCooldownUntil-Date.now())/1000);
+ betrayalBtn.disabled=left>0; betrayalBtn.classList.toggle("cooling",left>0); betrayalBtn.querySelector("span").textContent=left>0?"Temporary Betrayal ("+left+"s)":(betrayalArmed?"Tap map":"Temporary Betrayal");
 }
 function buyCooldownUpgrade(){
   if(gameOver||cooldownMaxed()) return;
@@ -1334,11 +1397,13 @@ shopBtn.addEventListener("click", (e)=>{ e.stopPropagation(); toggleShop(); });
 closeShopBtn.addEventListener("click", (e)=>{ e.stopPropagation(); toggleShop(); });
 buyDmgBtn.addEventListener("click", (e)=>{ e.stopPropagation(); buyDamageUpgrade(); });
 buyTornadoBtn.addEventListener("click", (e)=>{ e.stopPropagation(); buyTornadoUpgrade(); });
+buyBetrayalBtn.addEventListener("click", (e)=>{e.stopPropagation();buyBetrayalUpgrade()});
+betrayalBtn.addEventListener("click",(e)=>{e.stopPropagation();armBetrayal()});
 buyCooldownBtn.addEventListener("click", (e)=>{ e.stopPropagation(); buyCooldownUpgrade(); });
 game.addEventListener("pointerdown", (e)=>{
-  if(!tornadoArmed) return;
+  if(!tornadoArmed && !betrayalArmed) return;
   e.preventDefault(); e.stopPropagation();
-  dropTornado(e.clientX, e.clientY);
+  if(tornadoArmed) dropTornado(e.clientX, e.clientY); else summonBetrayal(e.clientX,e.clientY);
 }, true);
 
 /* ============================================================
@@ -1661,7 +1726,7 @@ function startGame(){
   hitCooldownMs=HIT_COOLDOWN_BASE_MS;
   lastGlobalHitTime = 0;
   lastChanceMinute = -1;
-  tornadoOwned=false; tornadoArmed=false; tornadoCooldownUntil=0;
+  tornadoOwned=false; tornadoArmed=false; tornadoCooldownUntil=0; betrayalOwned=false; betrayalArmed=false; betrayalCooldownUntil=0;
   shopOpen=false; shopOpenedAt=0; totalPausedMs=0; spawnEndsAt=0;
   hitJamUntil=0;
   if(hitJamTimer){ clearTimeout(hitJamTimer); hitJamTimer=null; }
