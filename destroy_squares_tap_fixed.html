@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Destroy Squares</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#111;color:#fff;font-family:Arial,sans-serif;overflow:hidden;user-select:none}
+.screen{position:absolute;inset:0;background:#111;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center}
+h1{font-size:48px;color:#f22;margin:10px;text-shadow:0 0 15px red}
+h2{color:#ddd;font-weight:normal}
+button{background:#d40000;color:#fff;border:2px solid #f44;padding:14px 35px;font-size:22px;cursor:pointer;border-radius:6px;margin:10px}
+button:hover{background:#f22}
+#menu{z-index:20}
+#highscoreText{font-size:24px;color:#ffd700;margin:15px}
+#gameScreen{display:none;position:absolute;inset:0}
+#top{height:75px;background:#1c1c1c;border-bottom:2px solid #444;display:flex;align-items:center;justify-content:space-around;font-size:20px;position:relative;z-index:5}
+#game{position:relative;width:100vw;height:calc(100vh - 75px);overflow:hidden}
+#timer{position:absolute;left:12px;bottom:10px;font-size:18px;color:#fff;background:rgba(0,0,0,.55);padding:7px 10px;border:1px solid #555;border-radius:5px;z-index:10;pointer-events:none}
+#notification{position:absolute;top:90px;left:50%;transform:translateX(-50%);font-size:24px;font-weight:bold;color:#ffd700;text-shadow:0 0 10px #ff8c00;background:rgba(0,0,0,.7);padding:10px 18px;border-radius:6px;opacity:0;pointer-events:none;z-index:15;transition:opacity .25s;white-space:nowrap}
+#chancePanel{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:190px;background:rgba(0,0,0,.78);border:1px solid #555;border-radius:6px;padding:10px;font-size:14px;line-height:1.55;z-index:1;pointer-events:none!important;user-select:none}
+#chancePanel h3{margin:0 0 5px;color:#ffd700;font-size:16px}
+.enemy{pointer-events:auto;position:absolute;width:42px;height:42px;background:#e00000;border:2px solid #ff5555;cursor:crosshair;box-shadow:0 0 12px #f00;transition:transform .08s;z-index:12}
+.enemy:hover{transform:scale(1.08)}
+
+.orange{width:58px;height:58px;background:#f07800;border-color:#ffb347;box-shadow:0 0 18px #ff7b00}
+.purple{width:48px;height:48px;background:#8b20d9;border-color:#d58aff;box-shadow:0 0 18px #a020f0}
+.green{width:28px;height:28px;background:#16d64b;border-color:#8aff9b;box-shadow:0 0 16px #16d64b}
+.teleportFX{position:absolute;width:70px;height:70px;border:3px solid #d58aff;border-radius:50%;pointer-events:none;animation:tele .45s ease-out forwards}
+@keyframes tele{from{opacity:1;transform:scale(.3)}to{opacity:0;transform:scale(1.8)}}
+.health{position:absolute;bottom:-15px;left:0;width:100%;height:7px;background:#333;border:1px solid #111}
+.healthFill{height:100%;background:#00e83b;width:100%}
+#loseScreen{display:none;z-index:30}
+#loseScreen p{font-size:25px}
+#finalScore,#loseHighscore{color:#ffd700}
+</style>
+</head>
+<body>
+<div id="menu" class="screen">
+<h1>DESTROY SQUARES</h1>
+<h2>Destroy the squares before 50 are alive!</h2>
+<div id="highscoreText">Highscore: 0</div>
+<button onclick="startGame()">START</button>
+</div>
+
+<div id="gameScreen">
+<div id="top">
+<div>Score: <span id="score">0</span></div>
+<div>Alive: <span id="alive">0</span>/50</div>
+<div>Damage: <span id="damage">1</span></div>
+<div id="spawnText">Spawn: 3 seconds</div>
+</div>
+<div id="game"><div id="timer">Time: 00:00</div><div id="notification"></div><div id="chancePanel"><h3>Spawn chances</h3><div id="chanceList"></div></div></div>
+</div>
+
+<div id="loseScreen" class="screen">
+<h1>You lost!</h1>
+<p>50 red squares were alive.</p>
+<p>Score: <span id="finalScore">0</span></p>
+<p>Highscore: <span id="loseHighscore">0</span></p>
+<button onclick="goToMenu()">GO TO MENU</button>
+</div>
+
+<script>
+const menu=document.getElementById("menu"),gameScreen=document.getElementById("gameScreen"),loseScreen=document.getElementById("loseScreen"),game=document.getElementById("game");
+const scoreEl=document.getElementById("score"),aliveEl=document.getElementById("alive"),highscoreText=document.getElementById("highscoreText"),finalScoreEl=document.getElementById("finalScore"),loseHighscoreEl=document.getElementById("loseHighscore");
+let timerEl=document.getElementById("timer"),notificationEl=document.getElementById("notification"),chanceListEl=null,spawnTextEl=document.getElementById("spawnText");
+let score=0,damage=1,enemies=[],gameOver=false,spawnTimer=null;
+let gameStartTime=0, lastFrame=0, timerInterval=null, notificationTimeout=null, notifiedMinutes={};
+let audioCtx=null, musicTimer=null, musicStep=0;
+
+function startMusic(){
+ if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+ if(audioCtx.state==="suspended") audioCtx.resume();
+ clearInterval(musicTimer);
+ musicStep=0;
+ musicTimer=setInterval(playMusicStep,250);
+ playMusicStep();
+}
+function stopMusic(){
+ clearInterval(musicTimer);
+ musicTimer=null;
+}
+function tone(freq,duration,type="square",volume=.045){
+ if(!audioCtx)return;
+ const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+ osc.type=type; osc.frequency.value=freq;
+ gain.gain.setValueAtTime(volume,audioCtx.currentTime);
+ gain.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+duration);
+ osc.connect(gain);gain.connect(audioCtx.destination);
+ osc.start();osc.stop(audioCtx.currentTime+duration);
+}
+function playMusicStep(){
+ const step=musicStep%16;
+ const bass=[55,55,73.42,55,65.41,65.41,82.41,65.41][Math.floor(step/2)];
+ if(step%2===0)tone(bass,.18,"sawtooth",.06);
+ if([0,4,8,12].includes(step))tone(110,.06,"sine",.08);
+ if([2,6,10,14].includes(step))tone(220,.035,"square",.025);
+ musicStep++;
+}
+const ENEMY_HEALTH=3,MAX_ALIVE=50,ENEMY_SIZE=42;
+function getHighscore(){return Number(localStorage.getItem("destroySquaresHighscore"))||0}
+function updateMenu(){highscoreText.textContent="Highscore: "+getHighscore()}
+function updateUI(){scoreEl.textContent=score;aliveEl.textContent=enemies.length}
+function showNotification(text){
+ notificationEl.textContent=text;notificationEl.style.opacity="1";
+ clearTimeout(notificationTimeout);notificationTimeout=setTimeout(()=>notificationEl.style.opacity="0",3500);
+}
+function getSpawnChances(){
+ const minutes=Math.floor((Date.now()-gameStartTime)/60000);
+ const orange=Math.min(.01+minutes*.01,.49);
+ const purple=Math.min(minutes*.005,.25);
+ const green=Math.min(Math.max(0,minutes-1)*.005,.25);
+ const red=Math.max(0,1-orange-purple-green);
+ return [{name:"Red",chance:red},{name:"Orange",chance:orange},{name:"Purple",chance:purple},{name:"Green",chance:green}].sort((a,b)=>b.chance-a.chance);
+}
+function updateChancePanel(){
+ if(chanceListEl)chanceListEl.innerHTML=getSpawnChances().map(x=>`<div>${x.name}: ${(x.chance*100).toFixed(1)}%</div>`).join("");
+}
+function updateGameTimer(){
+ if(gameOver)return;
+ const seconds=Math.floor((Date.now()-gameStartTime)/1000);
+ const mins=Math.floor(seconds/60),secs=seconds%60;
+ timerEl.textContent="Time: "+String(mins).padStart(2,"0")+":"+String(secs).padStart(2,"0");
+ updateChancePanel();
+ const spawnSeconds=Math.max(1,3-Math.floor(seconds/300));
+ if(spawnTextEl)spawnTextEl.textContent="Spawn: "+spawnSeconds+" second"+(spawnSeconds===1?"":"s");
+ if(seconds>=60&&!notifiedMinutes[1]){notifiedMinutes[1]=true;showNotification("1 MINUTE! Spawn chances increased!");tone(660,.15,"square",.08);}
+ if(seconds>=300&&!notifiedMinutes[5]){notifiedMinutes[5]=true;showNotification("5 MINUTES! Spawn time reduced to 2 seconds!");tone(880,.2,"square",.08);}
+ if(seconds>=600&&!notifiedMinutes[10]){notifiedMinutes[10]=true;showNotification("10 MINUTES! Spawn time reduced to 1 second!");tone(990,.2,"square",.08);}
+ if(seconds>=900&&!notifiedMinutes[15]){notifiedMinutes[15]=true;showNotification("15 MINUTES! Spawn chances increased!");tone(1100,.2,"square",.08);}
+}
+function startGame(){
+ menu.style.display="none";loseScreen.style.display="none";gameScreen.style.display="block";
+ score=0;damage=1;gameOver=false;enemies=[];game.innerHTML="<div id=\"timer\">Time: 00:00</div><div id=\"notification\"></div><div id=\"chancePanel\"><h3>Spawn chances</h3><div id=\"chanceList\"></div></div>";timerEl=document.getElementById("timer");notificationEl=document.getElementById("notification");chanceListEl=document.getElementById("chanceList");gameStartTime=Date.now();notifiedMinutes={};spawnTextEl=document.getElementById("spawnText");timerEl.textContent="Time: 00:00";updateUI();clearInterval(timerInterval);timerInterval=setInterval(updateGameTimer,250);
+ startMusic();
+ clearInterval(spawnTimer);scheduleSpawns();
+}
+
+function teleportEffect(x,y){
+ const fx=document.createElement("div");fx.className="teleportFX";
+ fx.style.left=(x-35)+"px";fx.style.top=(y-35)+"px";game.appendChild(fx);
+ setTimeout(()=>fx.remove(),500);
+ tone(330,.08,"sine",.08);setTimeout(()=>tone(660,.12,"sine",.06),45);
+}
+function scheduleSpawns(){
+ const elapsed=Date.now()-gameStartTime;
+ const interval=Math.max(1000,3000-Math.floor(elapsed/300000)*1000);
+ spawnTimer=setTimeout(()=>{spawnEnemy();if(!gameOver)scheduleSpawns()},interval);
+}
+function spawnEnemy(){
+ if(gameOver)return;
+ if(enemies.length>=MAX_ALIVE){endGame();return}
+ const enemy=document.createElement("div");
+ const roll=Math.random();
+ let kind="red", maxHealth=3, size=42, points=1;
+ const minutes=Math.floor((Date.now()-gameStartTime)/60000);
+ const orangeChance=Math.min(0.01+minutes*0.01,0.49);
+ const purpleChance=Math.min(minutes*0.005,0.25);
+ const greenChance=Math.min(Math.max(0,minutes-1)*0.005,0.25);
+  const redChance=1-orangeChance-purpleChance-greenChance;
+ if(roll<redChance){kind="red";maxHealth=3;size=42;points=1}
+ else if(roll<redChance+orangeChance){kind="orange";maxHealth=6;size=58;points=3}
+ else if(roll<redChance+orangeChance+purpleChance){kind="purple";maxHealth=5;size=48;points=8}
+ else {kind="green";maxHealth=2;size=28;points=10}
+ enemy.className="enemy "+kind;
+ const maxX=game.clientWidth-size,maxY=game.clientHeight-size-20;
+ enemy.style.left=Math.max(0,Math.random()*maxX)+"px";
+ enemy.style.top=Math.max(0,Math.random()*maxY)+"px";
+ const healthBar=document.createElement("div");healthBar.className="health";
+ const healthFill=document.createElement("div");healthFill.className="healthFill";
+ healthBar.appendChild(healthFill);enemy.appendChild(healthBar);game.appendChild(enemy);
+ const data={element:enemy,health:maxHealth, maxHealth, kind, points, healthFill};
+ enemies.push(data);updateUI();
+ if(kind==="purple"){
+  data.teleportTimer=setInterval(()=>{
+   if(gameOver||!enemy.parentNode){clearInterval(data.teleportTimer);return}
+   const ox=enemy.offsetLeft+size/2,oy=enemy.offsetTop+size/2;
+   teleportEffect(ox,oy);
+   enemy.style.left=Math.max(0,Math.random()*(game.clientWidth-size))+"px";
+   enemy.style.top=Math.max(0,Math.random()*(game.clientHeight-size-20))+"px";
+   teleportEffect(enemy.offsetLeft+size/2,enemy.offsetTop+size/2);
+  },1000);
+ }
+ if(kind==="green"){
+  let vx=(Math.random()<.5?-1:1)*(3+Math.random()*2), vy=(Math.random()<.5?-1:1)*(3+Math.random()*2);
+  data.moveTimer=setInterval(()=>{
+   if(gameOver||!enemy.parentNode){clearInterval(data.moveTimer);return}
+   let x=enemy.offsetLeft+vx,y=enemy.offsetTop+vy;
+   if(x<=0||x>=game.clientWidth-size)vx*=-1;
+   if(y<=0||y>=game.clientHeight-size-20)vy*=-1;
+   enemy.style.left=Math.max(0,Math.min(game.clientWidth-size,x))+"px";
+   enemy.style.top=Math.max(0,Math.min(game.clientHeight-size-20,y))+"px";
+  },30);
+ }
+ enemy.addEventListener("click",e=>{
+  e.stopPropagation();if(gameOver)return;data.health-=damage;
+  if(data.health<=0){enemy.remove();enemies=enemies.filter(x=>x!==data);score+=data.points;updateUI()}
+  else{data.healthFill.style.width=(data.health/data.maxHealth*100)+"%";enemy.style.transform="scale(.85)";setTimeout(()=>{if(enemy.parentNode)enemy.style.transform=""},80)}
+ });
+}
+function endGame(){
+ gameOver=true;clearTimeout(spawnTimer);clearInterval(timerInterval);stopMusic();if(score>getHighscore())localStorage.setItem("destroySquaresHighscore",score);
+ finalScoreEl.textContent=score;loseHighscoreEl.textContent=getHighscore();gameScreen.style.display="none";loseScreen.style.display="flex";
+}
+function goToMenu(){
+ clearTimeout(spawnTimer);clearInterval(timerInterval);stopMusic();enemies.forEach(e=>e.element.remove());enemies=[];
+ loseScreen.style.display="none";gameScreen.style.display="none";menu.style.display="flex";updateMenu();
+}
+updateMenu();
+</script>
+</body>
+</html>
