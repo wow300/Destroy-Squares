@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Destroy Squares · Faster Spawns</title>
+<title>Destroy Squares · Leaderboard</title>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;height:100%;width:100%;overflow:hidden}
@@ -32,20 +32,17 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 #tornadoBtn.armed{background:#1a7a1a;border-color:#3fb83f;animation:armedPulse .8s ease-in-out infinite}
 #tornadoBtn.cooling{background:#333;border-color:#555;color:#888;cursor:not-allowed}
 @keyframes armedPulse{0%,100%{box-shadow:0 0 0 0 rgba(63,184,63,.7)}50%{box-shadow:0 0 0 8px rgba(63,184,63,0)}}
-
 #betrayalBtn{position:relative;background:#4a3a10;border:2px solid #9acd32;color:#fff;padding:6px 12px;font-size:clamp(11px,1.5vw,17px);border-radius:6px;cursor:pointer;margin:0;font-family:inherit;display:none;align-items:center;gap:6px}
 #betrayalBtn.unlocked{display:inline-flex}
 #betrayalBtn:hover:not(:disabled){background:#6a5a20}
 #betrayalBtn.cooling{background:#333;border-color:#555;color:#888;cursor:not-allowed}
 #betrayalBtn.active{background:#3a6a20;border-color:#d4ff70;animation:betrayalPulse .9s ease-in-out infinite}
 @keyframes betrayalPulse{0%,100%{box-shadow:0 0 0 0 rgba(212,255,112,.7)}50%{box-shadow:0 0 0 8px rgba(212,255,112,0)}}
-
 .miniTornado{position:relative;display:inline-block;width:16px;height:16px}
 .miniTornado::before,.miniTornado::after{content:"";position:absolute;left:50%;transform:translateX(-50%);border-style:solid;border-color:#cfe4ff transparent transparent transparent;width:0;height:0}
 .miniTornado::before{top:0;border-left-width:8px;border-right-width:8px;border-top-width:6px}
 .miniTornado::after{top:6px;border-left-width:5px;border-right-width:5px;border-top-width:5px;border-color:#9dc4ff transparent transparent transparent}
 .miniLime{position:relative;display:inline-block;width:14px;height:14px;background:#9acd32;border:2px solid #d4ff70;box-shadow:0 0 8px #b3ff3b}
-
 .tornado{position:absolute;pointer-events:none;z-index:11;transform-origin:50% 50%;animation:spin 0.6s linear infinite}
 .tornado .cone{position:absolute;left:50%;transform:translateX(-50%);border-style:solid;border-color:#cfe4ff transparent transparent transparent}
 .tornado .cone.c1{top:0;border-left-width:32px;border-right-width:32px;border-top-width:24px;opacity:.95}
@@ -54,41 +51,21 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 .tornadoRing{position:absolute;border:2px dashed rgba(160,200,255,.55);border-radius:50%;pointer-events:none;z-index:10;animation:ringPulse 0.6s linear infinite}
 @keyframes ringPulse{0%,100%{opacity:.35}50%{opacity:.9}}
-
 #game{position:relative;width:100vw;height:calc(100% - clamp(50px,8vh,75px));overflow:hidden}
 #game.arming{cursor:crosshair}
 #game.jammed::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%, rgba(70,130,255,.10), rgba(70,130,255,.28));pointer-events:none;z-index:14;animation:jamPulse 0.8s ease-in-out infinite}
 @keyframes jamPulse{0%,100%{opacity:.6}50%{opacity:1}}
-
 #timer{position:absolute;left:12px;bottom:10px;font-size:clamp(12px,1.5vw,18px);color:#fff;background:rgba(0,0,0,.55);padding:6px 10px;border:1px solid #555;border-radius:5px;z-index:10;pointer-events:none}
 #notification{position:absolute;top:12px;left:50%;transform:translateX(-50%);font-size:clamp(14px,2vw,24px);font-weight:bold;color:#ffd700;text-shadow:0 0 10px #ff8c00;background:rgba(0,0,0,.7);padding:8px 16px;border-radius:6px;opacity:0;pointer-events:none;z-index:15;transition:opacity .25s;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
 #notification.jam{color:#8fc4ff;text-shadow:0 0 12px #3f8fff}
 #notification.boss{color:#ff4444;text-shadow:0 0 16px #ff0000;font-size:clamp(16px,2.4vw,28px)}
-
-#chancePanel{
-  position:absolute;right:8px;top:50%;transform:translateY(-50%);
-  width:clamp(120px,17vw,200px);
-  max-height:calc(100% - 40px);
-  overflow-y:auto;overflow-x:hidden;
-  background:rgba(0,0,0,.78);
-  border:1px solid #555;border-radius:6px;
-  padding:8px 10px;
-  font-size:clamp(10px,1.2vw,14px);
-  line-height:1.5;z-index:1;
-  pointer-events:auto;user-select:none;
-  -webkit-overflow-scrolling:touch;
-  scrollbar-width:thin;
-  scrollbar-color:#ffcc44 #111;
-}
+#chancePanel{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:clamp(120px,17vw,200px);max-height:calc(100% - 40px);overflow-y:auto;overflow-x:hidden;background:rgba(0,0,0,.78);border:1px solid #555;border-radius:6px;padding:8px 10px;font-size:clamp(10px,1.2vw,14px);line-height:1.5;z-index:1;pointer-events:auto;user-select:none;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#ffcc44 #111}
 #chancePanel::-webkit-scrollbar{width:6px}
 #chancePanel::-webkit-scrollbar-track{background:#111;border-radius:3px}
 #chancePanel::-webkit-scrollbar-thumb{background:#ffcc44;border-radius:3px}
-#chancePanel::-webkit-scrollbar-thumb:hover{background:#ffaa00}
 #chancePanel h3{margin:0 0 5px;color:#ffd700;font-size:clamp(12px,1.4vw,16px)}
-
 .enemy{pointer-events:auto;position:absolute;cursor:crosshair;transition:transform .08s;z-index:12;touch-action:manipulation;overflow:visible}
 .enemy:hover{transform:scale(1.08)}
-
 .red{background:#e00000;border:2px solid #ff5555;box-shadow:0 0 12px #f00}
 .orange{background:#f07800;border:2px solid #ffb347;box-shadow:0 0 18px #ff7b00}
 .purple{background:#8b20d9;border:2px solid #d58aff;box-shadow:0 0 18px #a020f0}
@@ -101,62 +78,50 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 .overlord{background:linear-gradient(135deg,#8a0000,#ff2020,#8a0000);border:3px solid #ff8888;box-shadow:0 0 40px #ff0000, 0 0 80px #ff0000 inset;border-radius:4px}
 .overlord::before{content:"";position:absolute;inset:-6px;border:2px solid #ff6666;border-radius:8px;animation:overlordAura 1.6s ease-in-out infinite;pointer-events:none}
 @keyframes overlordAura{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
-
 .allyLime{position:absolute;width:34px;height:34px;background:#9acd32;border:2px solid #d4ff70;box-shadow:0 0 20px #b3ff3b, 0 0 40px #b3ff3b inset;z-index:13;pointer-events:none;animation:allyBob 0.8s ease-in-out infinite}
 @keyframes allyBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
 .allyLime::before{content:"";position:absolute;inset:-4px;border:2px solid rgba(212,255,112,.6);border-radius:4px;animation:allyAura 1.2s ease-in-out infinite;pointer-events:none}
 @keyframes allyAura{0%,100%{opacity:.35;transform:scale(1)}50%{opacity:1;transform:scale(1.08)}}
-
 .allyShot{position:absolute;width:14px;height:14px;background:radial-gradient(circle, #d4ff70, #9acd32 70%);border-radius:50%;box-shadow:0 0 12px #b3ff3b, 0 0 24px #b3ff3b inset;pointer-events:none;z-index:15}
-
 .allyHitRing{position:absolute;border-radius:50%;pointer-events:none;z-index:18;border:2px solid #d4ff70;box-shadow:0 0 18px #b3ff3b, 0 0 30px #b3ff3b inset;animation:allyHitAnim .3s ease-out forwards}
 @keyframes allyHitAnim{0%{opacity:1;transform:scale(.5)}100%{opacity:0;transform:scale(1.5)}}
 .allyHitSpark{position:absolute;width:4px;height:4px;border-radius:50%;background:#d4ff70;box-shadow:0 0 8px #b3ff3b;pointer-events:none;z-index:18}
-
 .allyDeathRing{position:absolute;border:3px solid #d4ff70;border-radius:50%;pointer-events:none;z-index:19;box-shadow:0 0 24px #b3ff3b, 0 0 40px #b3ff3b inset;animation:allyDeathRing .8s ease-out forwards}
 @keyframes allyDeathRing{0%{opacity:1;transform:scale(.4)}100%{opacity:0;transform:scale(1.8)}}
 .allyDeathCross{position:absolute;color:#d4ff70;font-weight:bold;pointer-events:none;text-shadow:0 0 12px #b3ff3b;z-index:20;animation:allyCrossFlip 1s ease-out forwards}
 @keyframes allyCrossFlip{0%{opacity:1;transform:rotate(0) translateY(0) scale(.9)}100%{opacity:0;transform:rotate(360deg) translateY(40px) scale(.4)}}
 .allyDeathDot{position:absolute;width:8px;height:8px;background:#9acd32;border-radius:50%;pointer-events:none;z-index:19;box-shadow:0 0 10px #b3ff3b}
-
 .cyanHealRing{position:absolute;border:3px solid #00e5e5;border-radius:50%;pointer-events:none;z-index:19;box-shadow:0 0 40px #00e5e5, 0 0 80px #00e5e5 inset;animation:cyanHealRing 1.2s ease-out forwards}
 @keyframes cyanHealRing{0%{opacity:0;transform:scale(.3)}20%{opacity:1}100%{opacity:0;transform:scale(6)}}
 .cyanHealPulse{position:absolute;inset:0;pointer-events:none;z-index:14;background:radial-gradient(circle at 50% 50%, rgba(0,229,229,.12), rgba(0,229,229,.28));animation:cyanPulse 1.1s ease-out forwards}
 @keyframes cyanPulse{0%{opacity:0}25%{opacity:.9}100%{opacity:0}}
-
 .stealRing{position:absolute;border:3px solid #444;border-radius:50%;pointer-events:none;z-index:19;box-shadow:0 0 20px #000, 0 0 30px #000 inset;animation:stealCollapse .7s ease-out forwards}
 @keyframes stealCollapse{0%{opacity:0;transform:scale(2.2)}20%{opacity:1}100%{opacity:0;transform:scale(.15)}}
 .stealPulse{position:absolute;inset:0;pointer-events:none;z-index:14;background:radial-gradient(circle at 50% 50%, rgba(0,0,0,.35), rgba(0,0,0,0) 70%);animation:stealPulse 1s ease-out forwards}
 @keyframes stealPulse{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
 .stealScoreText{position:absolute;color:#ff4466;font-weight:bold;pointer-events:none;z-index:21;text-shadow:0 0 14px #ff0033;animation:stealFloat 1.1s ease-out forwards}
 @keyframes stealFloat{0%{opacity:1;transform:translateY(0) scale(.8)}100%{opacity:0;transform:translateY(-55px) scale(1.4)}}
-
 .blue.emp-fire{animation:empShake .45s ease-out;box-shadow:0 0 60px #8fc4ff, 0 0 100px #3f8fff}
 @keyframes empShake{0%{transform:translate(0,0) scale(1)}20%{transform:translate(-3px,2px) scale(1.06)}40%{transform:translate(3px,-2px) scale(1.06)}60%{transform:translate(-2px,-2px) scale(1.04)}80%{transform:translate(2px,2px) scale(1.02)}100%{transform:translate(0,0) scale(1)}}
 .empRing{position:absolute;border:3px solid #8fc4ff;border-radius:50%;pointer-events:none;animation:empExpand .7s ease-out forwards;box-shadow:0 0 30px #3f8fff, 0 0 60px #3f8fff inset;z-index:19}
 @keyframes empExpand{0%{opacity:1;transform:scale(.2)}100%{opacity:0;transform:scale(2.4)}}
-
 .teleportFX{position:absolute;border:3px solid #d58aff;border-radius:50%;pointer-events:none;animation:tele .45s ease-out forwards}
 @keyframes tele{from{opacity:1;transform:scale(.3)}to{opacity:0;transform:scale(1.8)}}
 .healFX{position:absolute;border:3px solid #b3ff3b;border-radius:50%;pointer-events:none;animation:healRing .6s ease-out forwards;box-shadow:0 0 22px #b3ff3b inset}
 @keyframes healRing{0%{opacity:1;transform:scale(.4);box-shadow:0 0 10px #b3ff3b}100%{opacity:0;transform:scale(1.6);box-shadow:0 0 40px #b3ff3b}}
 .healCross{position:absolute;color:#d4ff70;font-weight:bold;pointer-events:none;text-shadow:0 0 12px #b3ff3b;animation:healFloat .9s ease-out forwards;z-index:20}
 @keyframes healFloat{0%{opacity:1;transform:translateY(0) scale(.6)}100%{opacity:0;transform:translateY(-45px) scale(1.2)}}
-
 .summonFX{position:absolute;border:3px solid #ff4444;border-radius:50%;pointer-events:none;animation:summonPulse .7s ease-out forwards;box-shadow:0 0 30px #ff0000, 0 0 60px #ff0000 inset;z-index:19}
 @keyframes summonPulse{0%{opacity:0;transform:scale(.1)}40%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1.8)}}
-
 .hitRing{position:absolute;border-radius:50%;pointer-events:none;z-index:18;animation:hitRingAnim .28s ease-out forwards}
 @keyframes hitRingAnim{0%{opacity:1;transform:scale(.6)}100%{opacity:0;transform:scale(1.6)}}
 .hitSpark{position:absolute;width:5px;height:5px;border-radius:50%;pointer-events:none;z-index:18}
 .hitFlash{position:absolute;border-radius:50%;pointer-events:none;z-index:18;animation:hitFlashAnim .18s ease-out forwards}
 @keyframes hitFlashAnim{0%{opacity:.85;transform:scale(.9)}100%{opacity:0;transform:scale(1.3)}}
-
 .hitCyan{position:absolute;pointer-events:none;z-index:18;border-radius:50%;border:3px dashed #00e5e5;box-shadow:0 0 24px #00e5e5, 0 0 48px #00e5e5 inset;animation:hitCyanAnim .5s ease-out forwards}
 @keyframes hitCyanAnim{0%{opacity:1;transform:scale(.5) rotate(0deg)}100%{opacity:0;transform:scale(1.7) rotate(180deg)}}
 .hitBlack{position:absolute;pointer-events:none;z-index:18;border-radius:50%;border:3px solid #666;box-shadow:0 0 26px #000, 0 0 40px #000 inset;animation:hitBlackAnim .45s ease-out forwards}
 @keyframes hitBlackAnim{0%{opacity:1;transform:scale(1.5)}100%{opacity:0;transform:scale(.35)}}
-
 .death-red-puff{position:absolute;border-radius:50%;pointer-events:none;z-index:19;background:radial-gradient(circle, rgba(255,60,60,.9), rgba(255,0,0,0) 65%);animation:redPuff .4s ease-out forwards}
 @keyframes redPuff{0%{opacity:1;transform:scale(.5)}100%{opacity:0;transform:scale(1.8)}}
 .death-shard{position:absolute;width:6px;height:6px;background:#ff4040;pointer-events:none;z-index:19;border-radius:1px;box-shadow:0 0 8px #ff2020}
@@ -190,43 +155,60 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 .bossEmber{position:absolute;width:8px;height:8px;background:#ff5522;border-radius:50%;pointer-events:none;z-index:21;box-shadow:0 0 12px #ff0000}
 .bossFlash{position:absolute;inset:0;background:#ffffff;pointer-events:none;z-index:22;animation:bossFlash .6s ease-out forwards}
 @keyframes bossFlash{0%{opacity:0}8%{opacity:.75}20%{opacity:.25}100%{opacity:0}}
-
 .health{position:absolute;left:0;width:100%;background:#333;border:1px solid #111;pointer-events:none}
 .healthFill{height:100%;background:#00e83b;width:100%;pointer-events:none}
 .healthFill.boss{background:linear-gradient(90deg,#ff4444,#ff8800)}
 #loseScreen{display:none;z-index:30}
 #loseScreen p{font-size:clamp(14px,2vw,25px);margin:6px 0}
 #finalScore,#loseHighscore{color:#ffd700}
-
-#shopOverlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,.82);z-index:25;align-items:center;justify-content:center;padding:16px}
-#shopOverlay.open{display:flex}
-#shopPanel{background:#1c1c1c;border:2px solid #ffcc44;border-radius:10px;padding:18px 20px;width:min(500px, 94vw);text-align:center;box-shadow:0 0 30px rgba(255,200,60,.35);max-height:92vh;overflow-y:auto}
-#shopPanel h3{margin:0 0 8px;color:#ffcc44;font-size:clamp(20px,4vw,30px);text-shadow:0 0 10px #ff9900}
-#shopPanel .shopScore{font-size:clamp(14px,2vw,18px);color:#ffd700;margin-bottom:14px}
-.shopItem{background:#111;border:2px solid #444;border-radius:8px;padding:12px 14px;margin:10px 0;text-align:left}
-.shopItem.owned{border-color:#3fb83f}
-.shopItem.maxed{border-color:#ffcc44}
-.shopItem h4{margin:0 0 4px;font-size:clamp(15px,2vw,18px);color:#fff;display:flex;align-items:center;gap:8px}
-.shopItem .desc{font-size:clamp(11px,1.4vw,13px);color:#bbb;margin-bottom:8px}
-.shopItem .row{display:flex;justify-content:space-between;align-items:center}
-.shopItem .lvl{font-size:clamp(11px,1.4vw,13px);color:#8aff9b}
-.shopItem .lvl.max{color:#ffd700}
-.shopItem button{padding:8px 16px;font-size:clamp(13px,1.6vw,15px);margin:0;background:#1a7a1a;border-color:#3fb83f}
-.shopItem button:hover:not(:disabled){background:#26a326}
-.shopItem button:disabled{background:#333;border-color:#555;color:#888}
-#closeShopBtn{margin-top:6px;background:#444;border-color:#777;padding:10px 28px;font-size:clamp(14px,1.8vw,18px)}
-#closeShopBtn:hover{background:#555}
+#namePrompt{display:flex;flex-direction:column;align-items:center;margin:14px 0;gap:10px}
+#namePrompt label{font-size:clamp(13px,1.8vw,18px);color:#ffcc44}
+#nameInput{padding:12px 16px;font-size:clamp(15px,2vw,20px);font-family:inherit;border:2px solid #ffcc44;border-radius:6px;background:#111;color:#fff;outline:none;width:min(280px, 80vw);text-align:center}
+#nameInput:focus{border-color:#ffd700;box-shadow:0 0 12px rgba(255,200,60,.5)}
+#submitScoreBtn{background:#1a7a1a;border-color:#3fb83f;padding:10px 28px;font-size:clamp(14px,1.8vw,18px);margin:4px}
+#submitScoreBtn:disabled{background:#333;border-color:#555;color:#888}
+#submitStatus{font-size:clamp(12px,1.6vw,15px);color:#8aff9b;min-height:20px;margin:4px 0}
+#leaderboardScreen{display:none;z-index:40;justify-content:flex-start;padding-top:24px}
+#leaderboardTitle{color:#ffd700;text-shadow:0 0 14px #ff9900;font-size:clamp(24px,5vw,42px);margin:0 0 12px}
+#leaderboardList{width:min(560px, 94vw);max-height:min(65vh, 520px);overflow-y:auto;overflow-x:hidden;background:#1a1a1a;border:2px solid #ffcc44;border-radius:8px;padding:10px 8px;text-align:left;scrollbar-width:thin;scrollbar-color:#ffcc44 #111}
+#leaderboardList::-webkit-scrollbar{width:8px}
+#leaderboardList::-webkit-scrollbar-track{background:#111;border-radius:4px}
+#leaderboardList::-webkit-scrollbar-thumb{background:#ffcc44;border-radius:4px}
+#leaderboardList::-webkit-scrollbar-thumb:hover{background:#ffaa00}
+.lbRow{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid #333;font-size:clamp(13px,1.8vw,18px)}
+.lbRow:last-child{border-bottom:none}
+.lbRank{color:#888;min-width:44px;font-weight:bold}
+.lbName{flex:1;color:#fff;text-align:left;padding:0 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lbScore{color:#ffd700;font-weight:bold;min-width:70px;text-align:right}
+.lbRow.top1{background:linear-gradient(90deg, rgba(255,215,0,.18), transparent);border-left:4px solid #ffd700}
+.lbRow.top2{background:linear-gradient(90deg, rgba(192,192,192,.15), transparent);border-left:4px solid #c0c0c0}
+.lbRow.top3{background:linear-gradient(90deg, rgba(205,127,50,.15), transparent);border-left:4px solid #cd7f32}
+#lbStatus{color:#888;font-size:clamp(12px,1.6vw,15px);margin:8px 0;min-height:20px}
+#leaderboardBack{margin-top:16px;background:#444;border-color:#777;padding:10px 28px;font-size:clamp(14px,1.8vw,18px)}
+#leaderboardBack:hover{background:#555}
+#onlineLbBtn{background:#1a3a7a;border-color:#3f8fff}
+#onlineLbBtn:hover{background:#2651a3}
 </style>
 </head>
 <body>
 
+<!-- ============ MENU ============ -->
 <div id="menu" class="screen">
   <h1>DESTROY SQUARES</h1>
   <h2>Destroy the squares before 50 are alive!</h2>
   <div id="highscoreText">Highscore: 0</div>
   <button id="startBtn">START</button>
+  <button id="onlineLbBtn">ONLINE LEADERBOARD</button>
 </div>
 
+<!-- ============ LEADERBOARD ============ -->
+<div id="leaderboardScreen" class="screen">
+  <h1 id="leaderboardTitle">ONLINE LEADERBOARD</h1>
+  <div id="leaderboardList"><div id="lbStatus">Loading…</div></div>
+  <button id="leaderboardBack">BACK TO MENU</button>
+</div>
+
+<!-- ============ GAME ============ -->
 <div id="gameScreen">
   <div id="top">
     <div>Score: <span id="score">0</span></div>
@@ -246,55 +228,63 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
       <div class="shopItem" id="dmgItem">
         <h4>+1 Damage</h4>
         <div class="desc">Instantly increases your click damage by 1 for the rest of this run.</div>
-        <div class="row">
-          <span class="lvl" id="dmgLvl">Level: 0</span>
-          <button id="buyDmgBtn" onclick="buyDamageUpgrade()">Cost: 25</button>
-        </div>
+        <div class="row"><span class="lvl" id="dmgLvl">Level: 0</span><button id="buyDmgBtn" onclick="buyDamageUpgrade()">Cost: 25</button></div>
       </div>
       <div class="shopItem" id="tornadoItem">
         <h4><span class="miniTornado"></span> Tornado</h4>
         <div class="desc">Unlocks a Tornado ability. Press the Tornado button, then tap the map to drop it. It spins for 3 seconds, dealing your current damage every second to any enemy inside. 6 second cooldown.</div>
-        <div class="row">
-          <span class="lvl" id="tornadoLvl">Not owned</span>
-          <button id="buyTornadoBtn" onclick="buyTornadoUpgrade()">Cost: 50</button>
-        </div>
+        <div class="row"><span class="lvl" id="tornadoLvl">Not owned</span><button id="buyTornadoBtn" onclick="buyTornadoUpgrade()">Cost: 50</button></div>
       </div>
       <div class="shopItem" id="betrayalItem">
         <h4><span class="miniLime"></span> Temporary Betrayal</h4>
         <div class="desc">Unlocks a Betrayal ability. Press the Betrayal button to spawn an ally Lime square that auto-shoots the nearest enemy every second for 10 seconds, dealing your current damage per shot. 25 second cooldown.</div>
-        <div class="row">
-          <span class="lvl" id="betrayalLvl">Not owned</span>
-          <button id="buyBetrayalBtn" onclick="buyBetrayalUpgrade()">Cost: 150</button>
-        </div>
+        <div class="row"><span class="lvl" id="betrayalLvl">Not owned</span><button id="buyBetrayalBtn" onclick="buyBetrayalUpgrade()">Cost: 150</button></div>
       </div>
       <div class="shopItem" id="cooldownItem">
         <h4>Hit Cooldown</h4>
         <div class="desc">Reduces the global cooldown between hits by 0.05s. You cannot buy below 0.10s.</div>
-        <div class="row">
-          <span class="lvl" id="cooldownLvl">Current: 0.50s</span>
-          <button id="buyCooldownBtn" onclick="buyCooldownUpgrade()">Cost: 60</button>
-        </div>
+        <div class="row"><span class="lvl" id="cooldownLvl">Current: 0.50s</span><button id="buyCooldownBtn" onclick="buyCooldownUpgrade()">Cost: 60</button></div>
       </div>
       <button id="closeShopBtn" onclick="toggleShop()">RESUME</button>
     </div>
   </div>
 </div>
 
+<!-- ============ LOSE ============ -->
 <div id="loseScreen" class="screen">
-  <h1>You lost!</h1>
-  <p>50 red squares were alive.</p>
+  <h1>You died to the squares!</h1>
   <p>Score: <span id="finalScore">0</span></p>
   <p>Highscore: <span id="loseHighscore">0</span></p>
+  <div id="namePrompt">
+    <label for="nameInput">Enter your name for the leaderboard:</label>
+    <input id="nameInput" type="text" maxlength="20" placeholder="Your name" autocomplete="off">
+    <button id="submitScoreBtn">SUBMIT SCORE</button>
+    <div id="submitStatus"></div>
+  </div>
   <button onclick="goToMenu()">GO TO MENU</button>
 </div>
 
 <script>
+/* ============================================================
+   GITHUB LEADERBOARD CONFIG
+   ------------------------------------------------------------
+   Fill these in with your own values. The token is the ONLY
+   place it goes. Do NOT paste it into scores.json or the YAML.
+   ============================================================ */
+const GITHUB_CONFIG = {
+  owner: "wow300",
+  repo:  "Destroy-Squares",
+  branch:"main",
+  token: "PASTE_YOUR_TOKEN_HERE"   // <-- PUT YOUR NEW TOKEN HERE
+};
+
 /* ============================================================
    ELEMENT REFS
    ============================================================ */
 const menu=document.getElementById("menu");
 const gameScreen=document.getElementById("gameScreen");
 const loseScreen=document.getElementById("loseScreen");
+const leaderboardScreen=document.getElementById("leaderboardScreen");
 const game=document.getElementById("game");
 const scoreEl=document.getElementById("score");
 const aliveEl=document.getElementById("alive");
@@ -316,6 +306,12 @@ const cooldownLvlEl=document.getElementById("cooldownLvl");
 const buyCooldownBtn=document.getElementById("buyCooldownBtn");
 const cooldownItemEl=document.getElementById("cooldownItem");
 const startBtn=document.getElementById("startBtn");
+const onlineLbBtn=document.getElementById("onlineLbBtn");
+const leaderboardBack=document.getElementById("leaderboardBack");
+const leaderboardList=document.getElementById("leaderboardList");
+const nameInput=document.getElementById("nameInput");
+const submitScoreBtn=document.getElementById("submitScoreBtn");
+const submitStatus=document.getElementById("submitStatus");
 let timerEl=document.getElementById("timer");
 let notificationEl=document.getElementById("notification");
 let chanceListEl=null;
@@ -334,6 +330,7 @@ let betrayalOwned=false, betrayalCooldownUntil=0;
 let activeBetrayal=null;
 let hitJamUntil=0, hitJamTimer=null;
 let lastGlobalHitTime = 0;
+let runScoreSubmitted = false;
 
 const HIT_COOLDOWN_BASE_MS = 500;
 const HIT_COOLDOWN_STEP_MS = 50;
@@ -375,21 +372,101 @@ const OVERLORD_POINTS = 100;
 const OVERLORD_SUMMON_INTERVAL_MS = 5000;
 
 /* ============================================================
+   LEADERBOARD
+   ============================================================ */
+async function submitScoreToGithub(name, finalScore){
+  const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/dispatches`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Authorization": `token ${GITHUB_CONFIG.token}`,
+      "Accept": "application/vnd.github.v3+json",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      event_type: "new_high_score",
+      client_payload: { name: name, score: finalScore }
+    })
+  });
+  if(!res.ok){
+    const text = await res.text();
+    throw new Error(`HTTP ${res.status}: ${text.slice(0,120)}`);
+  }
+  return true;
+}
+
+async function loadLeaderboard(){
+  leaderboardList.innerHTML = '<div id="lbStatus">Loading…</div>';
+  try{
+    const url = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/scores.json?t=${Date.now()}`;
+    const res = await fetch(url, { cache: "no-store" });
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    if(!Array.isArray(data) || data.length === 0){
+      leaderboardList.innerHTML = '<div id="lbStatus">No scores yet. Be the first!</div>';
+      return;
+    }
+    const sorted = data.slice().sort((a,b)=>(b.score||0)-(a.score||0));
+    let html = "";
+    sorted.forEach((entry, i)=>{
+      const rank = i+1;
+      const cls = rank===1 ? "top1" : rank===2 ? "top2" : rank===3 ? "top3" : "";
+      const safeName = String(entry.name || "Anonymous").replace(/[<>&"]/g, c => ({"<":"&lt;",">":"&gt;","&":"&amp;","\"":"&quot;"}[c]));
+      html += `<div class="lbRow ${cls}"><span class="lbRank">#${rank}</span><span class="lbName">${safeName}</span><span class="lbScore">${entry.score||0}</span></div>`;
+    });
+    leaderboardList.innerHTML = html;
+  }catch(err){
+    leaderboardList.innerHTML = '<div id="lbStatus">Could not load leaderboard. Check back soon.</div>';
+    console.error(err);
+  }
+}
+
+onlineLbBtn.addEventListener("click", ()=>{
+  menu.style.display="none";
+  leaderboardScreen.style.display="flex";
+  loadLeaderboard();
+});
+leaderboardBack.addEventListener("click", ()=>{
+  leaderboardScreen.style.display="none";
+  menu.style.display="flex";
+});
+
+submitScoreBtn.addEventListener("click", async ()=>{
+  const name = (nameInput.value || "").trim();
+  if(!name){
+    submitStatus.textContent = "Please enter a name.";
+    submitStatus.style.color = "#ff6666";
+    return;
+  }
+  if(runScoreSubmitted){
+    submitStatus.textContent = "Already submitted for this run.";
+    return;
+  }
+  submitScoreBtn.disabled = true;
+  submitStatus.style.color = "#8aff9b";
+  submitStatus.textContent = "Submitting…";
+  try{
+    await submitScoreToGithub(name, score);
+    runScoreSubmitted = true;
+    submitStatus.textContent = "Submitted! It may take a minute to appear.";
+    // Remember name for next time
+    try{ localStorage.setItem("destroySquaresPlayerName", name); }catch(e){}
+  }catch(err){
+    console.error(err);
+    submitStatus.style.color = "#ff6666";
+    submitStatus.textContent = "Submit failed. Try again later.";
+    submitScoreBtn.disabled = false;
+  }
+});
+
+/* ============================================================
    SPAWN CHANCE — STACKING CASCADE
    ============================================================ */
 const CASCADE_ORDER = ["red","orange","purple","green","lime","blue","cyan","black","overlord"];
 const GROWTH = {
-  red:      0,
-  orange:   0.020,
-  purple:   0.020,
-  green:    0.020,
-  lime:     0.020,
-  blue:     0.020,
-  cyan:     0.025,
-  black:    0.022,
-  overlord: 0.020
+  red:0, orange:0.020, purple:0.020, green:0.020, lime:0.020,
+  blue:0.020, cyan:0.025, black:0.022, overlord:0.020
 };
-
 function getSpawnChances(){
   const m = Math.floor(elapsedMs()/60000);
   const raw = {
@@ -424,14 +501,14 @@ function getSpawnChances(){
     for(const key in raw) raw[key] *= k;
   }
   const list = [
-    { name:"Red",      chance:raw.red },
-    { name:"Orange",   chance:raw.orange },
-    { name:"Purple",   chance:raw.purple },
-    { name:"Green",    chance:raw.green },
-    { name:"Lime",     chance:raw.lime },
-    { name:"Blue",     chance:raw.blue },
-    { name:"Cyan",     chance:raw.cyan },
-    { name:"Black",    chance:raw.black },
+    { name:"Red", chance:raw.red },
+    { name:"Orange", chance:raw.orange },
+    { name:"Purple", chance:raw.purple },
+    { name:"Green", chance:raw.green },
+    { name:"Lime", chance:raw.lime },
+    { name:"Blue", chance:raw.blue },
+    { name:"Cyan", chance:raw.cyan },
+    { name:"Black", chance:raw.black },
     { name:"Overlord", chance:raw.overlord }
   ];
   return list.sort((a,b)=>b.chance-a.chance);
@@ -611,7 +688,6 @@ function updateGameTimer(){
  const m=Math.floor(s/60),sec=s%60;
  timerEl.textContent="Time: "+String(m).padStart(2,"0")+":"+String(sec).padStart(2,"0");
  updateChancePanel();
- // Spawn interval display now reflects the new 0.5s cap
  const sp = currentSpawnInterval()/1000;
  if(spawnTextEl)spawnTextEl.textContent="Spawn: "+(sp<1?sp.toFixed(1):sp)+"s";
  if(s>=60&&!notifiedMinutes[1]){notifiedMinutes[1]=true;showNotification("1 MINUTE! Spawn chances increased!");tone(660,.15,"square",.08);}
@@ -884,7 +960,6 @@ function spawnAllyLime(){
   const maxY = Math.max(margin, game.clientHeight - size - margin);
   const px = margin + Math.random()*(maxX - margin);
   const py = margin + Math.random()*(maxY - margin);
-
   const el = document.createElement("div");
   el.className = "allyLime";
   el.style.width = size+"px";
@@ -893,7 +968,6 @@ function spawnAllyLime(){
   el.style.top  = py+"px";
   el.style.pointerEvents = "none";
   game.appendChild(el);
-
   const spawnRing = document.createElement("div");
   spawnRing.className = "allyDeathRing";
   const rSize = Math.round(60*SCALE);
@@ -904,27 +978,21 @@ function spawnAllyLime(){
   spawnRing.style.animationDirection = "reverse";
   game.appendChild(spawnRing);
   setTimeout(()=>spawnRing.remove(), 800);
-
   betrayalSpawnSound();
-
   const ally = { element: el, size: size, shootTimer: null, expireTimer: null };
   activeBetrayal = ally;
   updateBetrayalButton();
-
   ally.shootTimer = setInterval(()=>{
     if(gameOver||shopOpen) return;
     if(!el.parentNode) return;
     shootFromAlly(ally);
   }, BETRAYAL_SHOOT_INTERVAL_MS);
-
   setTimeout(()=>shootFromAlly(ally), 150);
-
   ally.expireTimer = setTimeout(()=>{ expireAllyLime(ally); }, BETRAYAL_DURATION_MS);
 }
 function shootFromAlly(ally){
   if(gameOver||shopOpen) return;
   if(!ally.element.parentNode) return;
-
   const ax = ally.element.offsetLeft + ally.size/2;
   const ay = ally.element.offsetTop  + ally.size/2;
   let nearest = null;
@@ -937,17 +1005,14 @@ function shootFromAlly(ally){
     if(d2 < nearestDist2){ nearestDist2 = d2; nearest = e; }
   }
   if(!nearest) return;
-
   const tx = nearest.element.offsetLeft + nearest.size/2;
   const ty = nearest.element.offsetTop  + nearest.size/2;
-
   const shot = document.createElement("div");
   shot.className = "allyShot";
   shot.style.left = (ax - 7)+"px";
   shot.style.top  = (ay - 7)+"px";
   game.appendChild(shot);
   betrayalShotSound();
-
   const sx = ax, sy = ay;
   const duration = 180;
   const start = performance.now();
@@ -1012,12 +1077,10 @@ function expireAllyLime(ally){
   if(!ally) return;
   if(ally.shootTimer) clearInterval(ally.shootTimer);
   if(ally.expireTimer) clearTimeout(ally.expireTimer);
-
   const el = ally.element;
   if(el && el.parentNode){
     const cx = el.offsetLeft + ally.size/2;
     const cy = el.offsetTop  + ally.size/2;
-
     const ring = document.createElement("div");
     ring.className = "allyDeathRing";
     const maxR = Math.round(100*SCALE);
@@ -1027,7 +1090,6 @@ function expireAllyLime(ally){
     ring.style.top  = (cy - maxR/2)+"px";
     game.appendChild(ring);
     setTimeout(()=>ring.remove(), 850);
-
     const cross = document.createElement("div");
     cross.className = "allyDeathCross";
     cross.textContent = "+2";
@@ -1036,7 +1098,6 @@ function expireAllyLime(ally){
     cross.style.top  = (cy-16)+"px";
     game.appendChild(cross);
     setTimeout(()=>cross.remove(), 1050);
-
     for(let i=0;i<9;i++){
       const a = (i/9)*Math.PI*2;
       const d = document.createElement("div");
@@ -1060,11 +1121,9 @@ function expireAllyLime(ally){
       }
       requestAnimationFrame(step);
     }
-
     betrayalExpireSound();
     el.remove();
   }
-
   activeBetrayal = null;
   betrayalCooldownUntil = Date.now() + BETRAYAL_COOLDOWN_MS;
   updateBetrayalButton();
@@ -1751,6 +1810,7 @@ function startGame(){
   ensureAudio();
   menu.style.display="none";
   loseScreen.style.display="none";
+  leaderboardScreen.style.display="none";
   gameScreen.style.display="block";
   score=0;damage=1;gameOver=false;enemies=[];
   dmgUpgradeLevel=0;
@@ -1762,6 +1822,7 @@ function startGame(){
   activeBetrayal=null;
   shopOpen=false; shopOpenedAt=0; totalPausedMs=0; spawnEndsAt=0;
   hitJamUntil=0;
+  runScoreSubmitted = false;
   if(hitJamTimer){ clearTimeout(hitJamTimer); hitJamTimer=null; }
   shopOverlay.classList.remove("open");
   tornadoBtn.classList.remove("unlocked");
@@ -1786,6 +1847,13 @@ function startGame(){
   timerEl.textContent="Time: 00:00";
   updateUI(); refreshShop();
   updateChancePanel();
+  // Reset the name prompt for next time
+  try{
+    const savedName = localStorage.getItem("destroySquaresPlayerName");
+    if(savedName) nameInput.value = savedName;
+  }catch(e){}
+  submitScoreBtn.disabled = false;
+  submitStatus.textContent = "";
   requestAnimationFrame(()=>{
     recomputeScale();
     clearInterval(timerInterval);
@@ -1846,6 +1914,7 @@ function goToMenu(){
   enemies=[];
   loseScreen.style.display="none";
   gameScreen.style.display="none";
+  leaderboardScreen.style.display="none";
   menu.style.display="flex";
   updateMenu();
 }
@@ -1885,14 +1954,10 @@ function healEffect(x,y){
 }
 
 /* ============================================================
-   SPAWNING — interval now caps at 0.5s after 15 minutes
+   SPAWNING
    ============================================================ */
 function currentSpawnInterval(){
   const e = elapsedMs();
-  // 0-5min: 3s
-  // 5-10min: 2s
-  // 10-15min: 1s
-  // 15min+: 0.5s (the true maximum)
   if(e < 300000) return 3000;
   if(e < 600000) return 2000;
   if(e < 900000) return 1000;
