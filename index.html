@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Destroy Squares · Responsive Lime Update</title>
+<title>Destroy Squares · Blue Square Update</title>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;height:100%;width:100%;overflow:hidden}
@@ -11,8 +11,9 @@ body{background:#111;color:#fff;font-family:Arial,sans-serif;user-select:none;-w
 .screen{position:absolute;inset:0;background:#111;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px}
 h1{font-size:clamp(28px,7vw,56px);color:#f22;margin:10px;text-shadow:0 0 15px red}
 h2{font-size:clamp(14px,2.4vw,22px);color:#ddd;font-weight:normal;margin:5px 0}
-button{background:#d40000;color:#fff;border:2px solid #f44;padding:14px 35px;font-size:clamp(16px,2.2vw,22px);cursor:pointer;border-radius:6px;margin:10px;touch-action:manipulation}
+button{background:#d40000;color:#fff;border:2px solid #f44;padding:14px 35px;font-size:clamp(16px,2.2vw,22px);cursor:pointer;border-radius:6px;margin:10px;touch-action:manipulation;font-family:inherit}
 button:hover{background:#f22}
+button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 #menu{z-index:20}
 #highscoreText{font-size:clamp(16px,2.2vw,24px);color:#ffd700;margin:15px}
 #gameScreen{display:none;position:absolute;inset:0}
@@ -23,14 +24,68 @@ button:hover{background:#f22}
   display:flex;
   align-items:center;
   justify-content:space-around;
-  font-size:clamp(12px,1.6vw,20px);
+  font-size:clamp(11px,1.5vw,19px);
   position:relative;
   z-index:5;
-  padding:0 6px;
-  gap:4px;
+  padding:0 4px;
+  gap:3px;
   white-space:nowrap;
 }
+#shopBtn{
+  background:#1a7a1a;border:2px solid #3fb83f;color:#fff;
+  padding:6px 12px;font-size:clamp(11px,1.5vw,17px);
+  border-radius:6px;cursor:pointer;margin:0;font-family:inherit;
+}
+#shopBtn:hover{background:#26a326}
+
+#tornadoBtn{
+  position:relative;
+  background:#1a3a7a;border:2px solid #3f8fff;color:#fff;
+  padding:6px 12px;font-size:clamp(11px,1.5vw,17px);
+  border-radius:6px;cursor:pointer;margin:0;font-family:inherit;
+  display:none;
+  align-items:center;gap:6px;
+}
+#tornadoBtn.unlocked{display:inline-flex}
+#tornadoBtn:hover{background:#2651a3}
+#tornadoBtn.armed{
+  background:#1a7a1a;border-color:#3fb83f;
+  animation:armedPulse .8s ease-in-out infinite;
+}
+@keyframes armedPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(63,184,63,.7)}
+  50%{box-shadow:0 0 0 8px rgba(63,184,63,0)}
+}
+.miniTornado{position:relative;display:inline-block;width:16px;height:16px}
+.miniTornado::before,.miniTornado::after{
+  content:"";position:absolute;left:50%;transform:translateX(-50%);
+  border-style:solid;border-color:#cfe4ff transparent transparent transparent;
+  width:0;height:0;
+}
+.miniTornado::before{top:0;border-left-width:8px;border-right-width:8px;border-top-width:6px}
+.miniTornado::after{top:6px;border-left-width:5px;border-right-width:5px;border-top-width:5px;border-color:#9dc4ff transparent transparent transparent}
+
+.tornado{position:absolute;pointer-events:none;z-index:11;transform-origin:50% 50%;animation:spin 0.6s linear infinite}
+.tornado .cone{position:absolute;left:50%;transform:translateX(-50%);border-style:solid;border-color:#cfe4ff transparent transparent transparent}
+.tornado .cone.c1{top:0;border-left-width:32px;border-right-width:32px;border-top-width:24px;opacity:.95}
+.tornado .cone.c2{top:18px;border-left-width:24px;border-right-width:24px;border-top-width:20px;opacity:.8;border-top-color:#9dc4ff}
+.tornado .cone.c3{top:34px;border-left-width:16px;border-right-width:16px;border-top-width:16px;opacity:.6;border-top-color:#7aabff}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.tornadoRing{position:absolute;border:2px dashed rgba(160,200,255,.55);border-radius:50%;pointer-events:none;z-index:10;animation:ringPulse 0.6s linear infinite}
+@keyframes ringPulse{0%,100%{opacity:.35}50%{opacity:.9}}
+
 #game{position:relative;width:100vw;height:calc(100% - clamp(50px,8vh,75px));overflow:hidden}
+#game.arming{cursor:crosshair}
+#game.jammed::after{
+  content:"";
+  position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 50%, rgba(70,130,255,.10), rgba(70,130,255,.28));
+  pointer-events:none;
+  z-index:14;
+  animation:jamPulse 0.8s ease-in-out infinite;
+}
+@keyframes jamPulse{0%,100%{opacity:.6}50%{opacity:1}}
+
 #timer{
   position:absolute;left:12px;bottom:10px;
   font-size:clamp(12px,1.5vw,18px);
@@ -45,6 +100,10 @@ button:hover{background:#f22}
   padding:8px 16px;border-radius:6px;opacity:0;pointer-events:none;
   z-index:15;transition:opacity .25s;white-space:nowrap;max-width:90vw;
   overflow:hidden;text-overflow:ellipsis;
+}
+#notification.jam{
+  color:#8fc4ff;
+  text-shadow:0 0 12px #3f8fff;
 }
 #chancePanel{
   position:absolute;right:8px;top:50%;transform:translateY(-50%);
@@ -67,58 +126,121 @@ button:hover{background:#f22}
 .purple{background:#8b20d9;border:2px solid #d58aff;box-shadow:0 0 18px #a020f0}
 .green{background:#16d64b;border:2px solid #8aff9b;box-shadow:0 0 16px #16d64b}
 .lime{background:#9acd32;border:2px solid #d4ff70;box-shadow:0 0 26px #b3ff3b}
+.blue{background:#1e6bff;border:2px solid #8fc4ff;box-shadow:0 0 28px #3f8fff}
+
+.blue.emp-fire{
+  animation:empShake .45s ease-out;
+  box-shadow:0 0 60px #8fc4ff, 0 0 100px #3f8fff;
+}
+@keyframes empShake{
+  0%{transform:translate(0,0) scale(1)}
+  20%{transform:translate(-3px,2px) scale(1.06)}
+  40%{transform:translate(3px,-2px) scale(1.06)}
+  60%{transform:translate(-2px,-2px) scale(1.04)}
+  80%{transform:translate(2px,2px) scale(1.02)}
+  100%{transform:translate(0,0) scale(1)}
+}
+.empRing{
+  position:absolute;border:3px solid #8fc4ff;border-radius:50%;
+  pointer-events:none;animation:empExpand .7s ease-out forwards;
+  box-shadow:0 0 30px #3f8fff, 0 0 60px #3f8fff inset;
+  z-index:19;
+}
+@keyframes empExpand{
+  0%{opacity:1;transform:scale(.2)}
+  100%{opacity:0;transform:scale(2.4)}
+}
 
 .teleportFX{position:absolute;border:3px solid #d58aff;border-radius:50%;pointer-events:none;animation:tele .45s ease-out forwards}
 @keyframes tele{from{opacity:1;transform:scale(.3)}to{opacity:0;transform:scale(1.8)}}
-
 .healFX{position:absolute;border:3px solid #b3ff3b;border-radius:50%;pointer-events:none;animation:healRing .6s ease-out forwards;box-shadow:0 0 22px #b3ff3b inset}
 @keyframes healRing{
   0%{opacity:1;transform:scale(.4);box-shadow:0 0 10px #b3ff3b}
   100%{opacity:0;transform:scale(1.6);box-shadow:0 0 40px #b3ff3b}
 }
-.healCross{
-  position:absolute;color:#d4ff70;font-weight:bold;pointer-events:none;
-  text-shadow:0 0 12px #b3ff3b;animation:healFloat .9s ease-out forwards;z-index:20;
-}
+.healCross{position:absolute;color:#d4ff70;font-weight:bold;pointer-events:none;text-shadow:0 0 12px #b3ff3b;animation:healFloat .9s ease-out forwards;z-index:20}
 @keyframes healFloat{
   0%{opacity:1;transform:translateY(0) scale(.6)}
   100%{opacity:0;transform:translateY(-45px) scale(1.2)}
 }
-
-.health{
-  position:absolute;left:0;width:100%;background:#333;border:1px solid #111;
-  pointer-events:none;
-}
+.health{position:absolute;left:0;width:100%;background:#333;border:1px solid #111;pointer-events:none}
 .healthFill{height:100%;background:#00e83b;width:100%;pointer-events:none}
 #loseScreen{display:none;z-index:30}
 #loseScreen p{font-size:clamp(14px,2vw,25px);margin:6px 0}
 #finalScore,#loseHighscore{color:#ffd700}
+
+#shopOverlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,.82);z-index:25;align-items:center;justify-content:center;padding:16px}
+#shopOverlay.open{display:flex}
+#shopPanel{background:#1c1c1c;border:2px solid #ffcc44;border-radius:10px;padding:18px 20px;width:min(440px, 94vw);text-align:center;box-shadow:0 0 30px rgba(255,200,60,.35);max-height:92vh;overflow-y:auto}
+#shopPanel h3{margin:0 0 8px;color:#ffcc44;font-size:clamp(20px,4vw,30px);text-shadow:0 0 10px #ff9900}
+#shopPanel .shopScore{font-size:clamp(14px,2vw,18px);color:#ffd700;margin-bottom:14px}
+.shopItem{background:#111;border:2px solid #444;border-radius:8px;padding:12px 14px;margin:10px 0;text-align:left}
+.shopItem.owned{border-color:#3fb83f}
+.shopItem h4{margin:0 0 4px;font-size:clamp(15px,2vw,18px);color:#fff;display:flex;align-items:center;gap:8px}
+.shopItem .desc{font-size:clamp(11px,1.4vw,13px);color:#bbb;margin-bottom:8px}
+.shopItem .row{display:flex;justify-content:space-between;align-items:center}
+.shopItem .lvl{font-size:clamp(11px,1.4vw,13px);color:#8aff9b}
+.shopItem button{padding:8px 16px;font-size:clamp(13px,1.6vw,15px);margin:0;background:#1a7a1a;border-color:#3fb83f}
+.shopItem button:hover:not(:disabled){background:#26a326}
+.shopItem button:disabled{background:#333;border-color:#555;color:#888}
+#closeShopBtn{margin-top:6px;background:#444;border-color:#777;padding:10px 28px;font-size:clamp(14px,1.8vw,18px)}
+#closeShopBtn:hover{background:#555}
 </style>
 </head>
 <body>
+
 <div id="menu" class="screen">
-<h1>DESTROY SQUARES</h1>
-<h2>Destroy the squares before 50 are alive!</h2>
-<div id="highscoreText">Highscore: 0</div>
-<button onclick="startGame()">START</button>
+  <h1>DESTROY SQUARES</h1>
+  <h2>Destroy the squares before 50 are alive!</h2>
+  <div id="highscoreText">Highscore: 0</div>
+  <button id="startBtn">START</button>
 </div>
 
 <div id="gameScreen">
-<div id="top">
-<div>Score: <span id="score">0</span></div>
-<div>Alive: <span id="alive">0</span>/50</div>
-<div>Damage: <span id="damage">1</span></div>
-<div id="spawnText">Spawn: 3s</div>
-</div>
-<div id="game"><div id="timer">Time: 00:00</div><div id="notification"></div><div id="chancePanel"><h3>Spawn chances</h3><div id="chanceList"></div></div></div>
+  <div id="top">
+    <div>Score: <span id="score">0</span></div>
+    <div>Alive: <span id="alive">0</span>/50</div>
+    <div>Damage: <span id="damage">1</span></div>
+    <div id="spawnText">Spawn: 3s</div>
+    <button id="tornadoBtn" title="Tornado">
+      <span class="miniTornado"></span>
+      <span>Tornado</span>
+    </button>
+    <button id="shopBtn" onclick="toggleShop()">SHOP</button>
+  </div>
+  <div id="game"><div id="timer">Time: 00:00</div><div id="notification"></div><div id="chancePanel"><h3>Spawn chances</h3><div id="chanceList"></div></div></div>
+
+  <div id="shopOverlay">
+    <div id="shopPanel">
+      <h3>SHOP</h3>
+      <div class="shopScore">Score: <span id="shopScore">0</span></div>
+      <div class="shopItem" id="dmgItem">
+        <h4>+1 Damage</h4>
+        <div class="desc">Instantly increases your click damage by 1 for the rest of this run.</div>
+        <div class="row">
+          <span class="lvl" id="dmgLvl">Level: 0</span>
+          <button id="buyDmgBtn" onclick="buyDamageUpgrade()">Cost: 25</button>
+        </div>
+      </div>
+      <div class="shopItem" id="tornadoItem">
+        <h4><span class="miniTornado"></span> Tornado</h4>
+        <div class="desc">Unlocks a Tornado ability. Press the Tornado button, then tap the map to drop it. It spins for 3 seconds and deals your current damage every second to any enemy inside.</div>
+        <div class="row">
+          <span class="lvl" id="tornadoLvl">Not owned</span>
+          <button id="buyTornadoBtn" onclick="buyTornadoUpgrade()">Cost: 50</button>
+        </div>
+      </div>
+      <button id="closeShopBtn" onclick="toggleShop()">RESUME</button>
+    </div>
+  </div>
 </div>
 
 <div id="loseScreen" class="screen">
-<h1>You lost!</h1>
-<p>50 red squares were alive.</p>
-<p>Score: <span id="finalScore">0</span></p>
-<p>Highscore: <span id="loseHighscore">0</span></p>
-<button onclick="goToMenu()">GO TO MENU</button>
+  <h1>You lost!</h1>
+  <p>50 red squares were alive.</p>
+  <p>Score: <span id="finalScore">0</span></p>
+  <p>Highscore: <span id="loseHighscore">0</span></p>
+  <button onclick="goToMenu()">GO TO MENU</button>
 </div>
 
 <script>
@@ -131,9 +253,18 @@ const loseScreen=document.getElementById("loseScreen");
 const game=document.getElementById("game");
 const scoreEl=document.getElementById("score");
 const aliveEl=document.getElementById("alive");
+const damageEl=document.getElementById("damage");
 const highscoreText=document.getElementById("highscoreText");
 const finalScoreEl=document.getElementById("finalScore");
 const loseHighscoreEl=document.getElementById("loseHighscore");
+const shopOverlay=document.getElementById("shopOverlay");
+const shopScoreEl=document.getElementById("shopScore");
+const dmgLvlEl=document.getElementById("dmgLvl");
+const buyDmgBtn=document.getElementById("buyDmgBtn");
+const tornadoBtn=document.getElementById("tornadoBtn");
+const tornadoLvlEl=document.getElementById("tornadoLvl");
+const buyTornadoBtn=document.getElementById("buyTornadoBtn");
+const startBtn=document.getElementById("startBtn");
 let timerEl=document.getElementById("timer");
 let notificationEl=document.getElementById("notification");
 let chanceListEl=null;
@@ -145,13 +276,143 @@ let spawnTextEl=document.getElementById("spawnText");
 let score=0,damage=1,enemies=[],gameOver=false,spawnTimer=null;
 let gameStartTime=0, timerInterval=null, notificationTimeout=null, notifiedMinutes={};
 let audioCtx=null, musicTimer=null, musicStep=0;
+let shopOpen=false;
+let dmgUpgradeLevel=0;
 
-/* Hit cooldown per enemy: 500ms. Prevents double-fire from
-   touchstart + click, and stops accidental double-taps. */
+let tornadoOwned=false;
+let tornadoArmed=false;
+let tornadoCooldownUntil=0;
+
+/* Blue Square EMP state */
+let hitJamUntil = 0;       // timestamp until which hitting is disabled
+let hitJamTimer = null;    // UI updater
+
 const HIT_COOLDOWN_MS = 500;
 
+/* ---------- PRICES ---------- */
+const DMG_STARTING_COST = 25;
+const DMG_COST_STEP     = 3;
+const TORNADO_COST      = 50;
+
+const TORNADO_DURATION_MS = 3000;
+const TORNADO_RADIUS = 90;
+const TORNADO_COOLDOWN_MS = 600;
+
+/* ---------- BLUE SQUARE ---------- */
+const BLUE_HEALTH = 12;
+const BLUE_POINTS = 30;
+const BLUE_EMP_INTERVAL_MS = 5000;   // fires EVERY 5 seconds
+const BLUE_JAM_DURATION_MS = 3000;   // Hit disabled for 3s
+
 /* ============================================================
-   RESPONSIVE SCALING SYSTEM
+   PAUSE SYSTEM
+   ============================================================ */
+let totalPausedMs = 0;
+let shopOpenedAt = 0;
+let spawnEndsAt = 0;
+
+function elapsedMs(){
+  const raw = Date.now() - gameStartTime;
+  const currentlyPaused = shopOpenedAt ? (Date.now() - shopOpenedAt) : 0;
+  return raw - totalPausedMs - currentlyPaused;
+}
+function elapsedSeconds(){
+  return Math.floor(elapsedMs()/1000);
+}
+function hitIsJammed(){
+  return Date.now() < hitJamUntil;
+}
+
+/* ============================================================
+   AUDIO
+   ============================================================ */
+function ensureAudio(){
+  if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==="suspended") audioCtx.resume();
+}
+function startMusic(){
+ ensureAudio();
+ clearInterval(musicTimer);
+ musicStep=0;
+ musicTimer=setInterval(playMusicStep,250);
+ playMusicStep();
+}
+function stopMusic(){ clearInterval(musicTimer); musicTimer=null; }
+
+function tone(freq,duration,type="square",volume=.045,delay=0){
+ if(!audioCtx)return;
+ const t0 = audioCtx.currentTime + delay;
+ const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+ osc.type=type; osc.frequency.value=freq;
+ gain.gain.setValueAtTime(volume,t0);
+ gain.gain.exponentialRampToValueAtTime(.001,t0+duration);
+ osc.connect(gain);gain.connect(audioCtx.destination);
+ osc.start(t0);osc.stop(t0+duration);
+}
+function sweep(freqStart, freqEnd, duration, type="sawtooth", volume=.06, delay=0){
+  if(!audioCtx)return;
+  const t0=audioCtx.currentTime + delay;
+  const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
+  osc.type=type;
+  osc.frequency.setValueAtTime(freqStart,t0);
+  osc.frequency.exponentialRampToValueAtTime(Math.max(20,freqEnd),t0+duration);
+  gain.gain.setValueAtTime(volume,t0);
+  gain.gain.exponentialRampToValueAtTime(.001,t0+duration);
+  osc.connect(gain);gain.connect(audioCtx.destination);
+  osc.start(t0);osc.stop(t0+duration);
+}
+function purchaseChime(){
+  ensureAudio();
+  tone(660,.10,"sine",.10,0);
+  tone(990,.10,"sine",.10,.08);
+  tone(1320,.20,"sine",.09,.16);
+}
+function startChime(){
+  ensureAudio();
+  tone(523.25,.12,"sine",.09,0);
+  tone(783.99,.12,"sine",.09,.10);
+  tone(1046.50,.25,"sine",.08,.20);
+}
+function pressBlip(){
+  ensureAudio();
+  tone(880,.06,"square",.05,0);
+}
+function tornadoSpawnSound(){
+  ensureAudio();
+  sweep(180, 900, .35, "sawtooth", .07);
+  sweep(220, 1100, .35, "square", .04);
+  tone(1200,.08,"sine",.05,.30);
+}
+function tornadoFadeSound(){
+  ensureAudio();
+  sweep(900, 200, .35, "sawtooth", .06);
+  sweep(1100, 180, .35, "sine", .04);
+}
+/* Blue Square EMP zap: descending warble + low thud */
+function empSound(){
+  ensureAudio();
+  sweep(1600, 180, .45, "square", .09);
+  sweep(1200, 140, .45, "sawtooth", .06);
+  tone(80, .30, "sine", .10, .10);
+  tone(60, .35, "sine", .09, .20);
+}
+/* Jam clearing ping */
+function jamClearSound(){
+  ensureAudio();
+  tone(880,.09,"sine",.06,0);
+  tone(1320,.14,"sine",.05,.08);
+}
+function playMusicStep(){
+ const step=musicStep%16;
+ const bass=[55,55,73.42,55,65.41,65.41,82.41,65.41][Math.floor(step/2)];
+ if(step%2===0)tone(bass,.18,"sawtooth",.06);
+ if([0,4,8,12].includes(step))tone(110,.06,"sine",.08);
+ if([2,6,10,14].includes(step))tone(220,.035,"square",.025);
+ musicStep++;
+}
+
+/* ============================================================
+   RESPONSIVE SCALING
    ============================================================ */
 const BASE_W = 1200;
 const BASE_H = 800;
@@ -167,18 +428,15 @@ function getGameArea(){
   const h = game.clientHeight || (window.innerHeight - 75);
   return { w, h };
 }
-
 function recomputeScale(){
   const area = getGameArea();
   const scaleW = area.w / BASE_W;
   const scaleH = area.h / BASE_H;
   let s = Math.min(scaleW, scaleH);
-
   if(s < BLEND_START){
     const t = s / BLEND_START;
     s = FLOOR + (BLEND_START - FLOOR) * t;
   }
-
   s = Math.max(FLOOR, Math.min(s, MAX_SCALE));
   SCALE = s;
 
@@ -187,96 +445,65 @@ function recomputeScale(){
     orange: { size: Math.max(32, Math.round(58 * SCALE)), health: 6,  points: 3  },
     purple: { size: Math.max(26, Math.round(48 * SCALE)), health: 5,  points: 8  },
     green:  { size: Math.max(18, Math.round(28 * SCALE)), health: 2,  points: 10 },
-    lime:   { size: Math.max(40, Math.round(72 * SCALE)), health: 10, points: 25 }
+    lime:   { size: Math.max(40, Math.round(72 * SCALE)), health: 10, points: 25 },
+    blue:   { size: Math.max(46, Math.round(80 * SCALE)), health: BLUE_HEALTH, points: BLUE_POINTS }
   };
 }
-
 function applyScaleToDOM(){
   enemies.forEach(data=>{
     const s = scaledSizes[data.kind].size;
     data.size = s;
     data.element.style.width  = s+'px';
     data.element.style.height = s+'px';
-
     const maxX = Math.max(0, game.clientWidth  - s);
     const maxY = Math.max(0, game.clientHeight - s - Math.round(20*SCALE));
     const curX = parseFloat(data.element.style.left) || 0;
     const curY = parseFloat(data.element.style.top)  || 0;
     data.element.style.left = Math.min(Math.max(0, curX), maxX)+'px';
     data.element.style.top  = Math.min(Math.max(0, curY), maxY)+'px';
-
     data.healthBar.style.height = Math.max(4, Math.round(7*SCALE))+'px';
     data.healthBar.style.bottom = (-Math.max(8, Math.round(15*SCALE)))+'px';
   });
 }
-
 let resizeTimeout=null;
 function handleResize(){
   clearTimeout(resizeTimeout);
-  resizeTimeout=setTimeout(()=>{
-    recomputeScale();
-    applyScaleToDOM();
-  },120);
+  resizeTimeout=setTimeout(()=>{ recomputeScale(); applyScaleToDOM(); },120);
 }
 window.addEventListener('resize', handleResize);
 window.addEventListener('orientationchange', ()=>setTimeout(handleResize,300));
-if(window.visualViewport){
-  window.visualViewport.addEventListener('resize', handleResize);
-}
+if(window.visualViewport) window.visualViewport.addEventListener('resize', handleResize);
 document.addEventListener('fullscreenchange', ()=>setTimeout(handleResize,150));
-
-/* ============================================================
-   AUDIO
-   ============================================================ */
-function startMusic(){
- if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
- if(audioCtx.state==="suspended") audioCtx.resume();
- clearInterval(musicTimer);
- musicStep=0;
- musicTimer=setInterval(playMusicStep,250);
- playMusicStep();
-}
-function stopMusic(){ clearInterval(musicTimer); musicTimer=null; }
-function tone(freq,duration,type="square",volume=.045){
- if(!audioCtx)return;
- const osc=audioCtx.createOscillator(), gain=audioCtx.createGain();
- osc.type=type; osc.frequency.value=freq;
- gain.gain.setValueAtTime(volume,audioCtx.currentTime);
- gain.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+duration);
- osc.connect(gain);gain.connect(audioCtx.destination);
- osc.start();osc.stop(audioCtx.currentTime+duration);
-}
-function playMusicStep(){
- const step=musicStep%16;
- const bass=[55,55,73.42,55,65.41,65.41,82.41,65.41][Math.floor(step/2)];
- if(step%2===0)tone(bass,.18,"sawtooth",.06);
- if([0,4,8,12].includes(step))tone(110,.06,"sine",.08);
- if([2,6,10,14].includes(step))tone(220,.035,"square",.025);
- musicStep++;
-}
 
 /* ============================================================
    UI
    ============================================================ */
 const MAX_ALIVE=50;
 function getHighscore(){return Number(localStorage.getItem("destroySquaresHighscore"))||0}
-function updateMenu(){highscoreText.textContent="Highscore: "+getHighscore()}
-function updateUI(){scoreEl.textContent=score;aliveEl.textContent=enemies.length}
-
+function updateMenu(){ highscoreText.textContent="Highscore: "+getHighscore(); }
+function updateUI(){
+  scoreEl.textContent=score;
+  aliveEl.textContent=enemies.length;
+  damageEl.textContent=damage;
+  shopScoreEl.textContent=score;
+}
 function getSpawnChances(){
- const minutes=Math.floor((Date.now()-gameStartTime)/60000);
+ const minutes=Math.floor(elapsedMs()/60000);
  const orange=Math.min(.01+minutes*.01,.49);
  const purple=Math.min(minutes*.005,.25);
  const green=Math.min(Math.max(0,minutes-1)*.005,.25);
  const lime=Math.min(Math.max(0,minutes-2)*0.0015, 0.08);
- const used=orange+purple+green+lime;
+ // Blue: starts after 4 minutes, grows very slowly, capped at 4%
+ const blue=Math.min(Math.max(0,minutes-4)*0.0008, 0.04);
+ const used=orange+purple+green+lime+blue;
  const red=Math.max(0, 1-used);
  return [
    {name:"Red",chance:red},
    {name:"Orange",chance:orange},
    {name:"Purple",chance:purple},
    {name:"Green",chance:green},
-   {name:"Lime",chance:lime}
+   {name:"Lime",chance:lime},
+   {name:"Blue",chance:blue}
  ].sort((a,b)=>b.chance-a.chance);
 }
 function updateChancePanel(){
@@ -285,7 +512,7 @@ function updateChancePanel(){
 }
 function updateGameTimer(){
  if(gameOver)return;
- const seconds=Math.floor((Date.now()-gameStartTime)/1000);
+ const seconds = elapsedSeconds();
  const mins=Math.floor(seconds/60),secs=seconds%60;
  timerEl.textContent="Time: "+String(mins).padStart(2,"0")+":"+String(secs).padStart(2,"0");
  updateChancePanel();
@@ -296,63 +523,359 @@ function updateGameTimer(){
  if(seconds>=600&&!notifiedMinutes[10]){notifiedMinutes[10]=true;showNotification("10 MINUTES! Spawn time reduced to 1 second!");tone(990,.2,"square",.08);}
  if(seconds>=900&&!notifiedMinutes[15]){notifiedMinutes[15]=true;showNotification("15 MINUTES! Spawn chances increased!");tone(1100,.2,"square",.08);}
 }
-function showNotification(text){
- notificationEl.textContent=text;notificationEl.style.opacity="1";
+function showNotification(text, className=""){
+ notificationEl.textContent=text;
+ notificationEl.className = className;
+ notificationEl.style.opacity="1";
  clearTimeout(notificationTimeout);
  notificationTimeout=setTimeout(()=>notificationEl.style.opacity="0",3500);
 }
 
 /* ============================================================
-   START / END
+   IN-GAME SHOP
    ============================================================ */
-function startGame(){
- menu.style.display="none";
- loseScreen.style.display="none";
- gameScreen.style.display="block";
- score=0;damage=1;gameOver=false;enemies=[];
- game.innerHTML="<div id=\"timer\">Time: 00:00</div><div id=\"notification\"></div><div id=\"chancePanel\"><h3>Spawn chances</h3><div id=\"chanceList\"></div></div>";
- timerEl=document.getElementById("timer");
- notificationEl=document.getElementById("notification");
- chanceListEl=document.getElementById("chanceList");
- gameStartTime=Date.now();notifiedMinutes={};
- spawnTextEl=document.getElementById("spawnText");
- timerEl.textContent="Time: 00:00";
- updateUI();
-
- requestAnimationFrame(()=>{
-   recomputeScale();
-   clearInterval(timerInterval);
-   timerInterval=setInterval(updateGameTimer,250);
-   startMusic();
-   clearInterval(spawnTimer);
-   scheduleSpawns();
- });
+function dmgUpgradeCost(){
+  return DMG_STARTING_COST + dmgUpgradeLevel * DMG_COST_STEP;
 }
-function endGame(){
- gameOver=true;clearTimeout(spawnTimer);clearInterval(timerInterval);stopMusic();
- if(score>getHighscore())localStorage.setItem("destroySquaresHighscore",score);
- finalScoreEl.textContent=score;loseHighscoreEl.textContent=getHighscore();
- gameScreen.style.display="none";loseScreen.style.display="flex";
- enemies.forEach(e=>{
-   if(e.teleportTimer) clearInterval(e.teleportTimer);
-   if(e.moveTimer) clearInterval(e.moveTimer);
-   if(e.healTimer) clearInterval(e.healTimer);
- });
+function refreshShop(){
+  shopScoreEl.textContent = score;
+  dmgLvlEl.textContent = "Level: " + dmgUpgradeLevel;
+  const dmgCost = dmgUpgradeCost();
+  buyDmgBtn.textContent = "Cost: " + dmgCost;
+  buyDmgBtn.disabled = score < dmgCost;
+  if(tornadoOwned){
+    tornadoLvlEl.textContent = "Owned";
+    buyTornadoBtn.textContent = "Owned";
+    buyTornadoBtn.disabled = true;
+  } else {
+    tornadoLvlEl.textContent = "Not owned";
+    buyTornadoBtn.textContent = "Cost: " + TORNADO_COST;
+    buyTornadoBtn.disabled = score < TORNADO_COST;
+  }
 }
-function goToMenu(){
- clearTimeout(spawnTimer);clearInterval(timerInterval);stopMusic();
- enemies.forEach(e=>{
-   if(e.teleportTimer) clearInterval(e.teleportTimer);
-   if(e.moveTimer) clearInterval(e.moveTimer);
-   if(e.healTimer) clearInterval(e.healTimer);
-   e.element.remove();
- });
- enemies=[];
- loseScreen.style.display="none";gameScreen.style.display="none";menu.style.display="flex";updateMenu();
+function toggleShop(){
+  if(gameOver) return;
+  pressBlip();
+  shopOpen = !shopOpen;
+  if(shopOpen){
+    shopOpenedAt = Date.now();
+    clearTimeout(spawnTimer); spawnTimer=null;
+    refreshShop();
+    shopOverlay.classList.add("open");
+  } else {
+    const pausedFor = Date.now() - shopOpenedAt;
+    if(shopOpenedAt){
+      totalPausedMs += pausedFor;
+      shopOpenedAt = 0;
+    }
+    shopOverlay.classList.remove("open");
+    if(spawnEndsAt) spawnEndsAt += pausedFor;
+    // Push EMP jams forward too so shopping doesn't burn off your jam
+    if(hitJamUntil > 0) hitJamUntil += pausedFor;
+    if(!gameOver){
+      const remaining = Math.max(0, spawnEndsAt - Date.now());
+      spawnTimer = setTimeout(onSpawnTick, remaining);
+    }
+    updateGameTimer();
+  }
+}
+function buyDamageUpgrade(){
+  if(gameOver) return;
+  const cost = dmgUpgradeCost();
+  if(score < cost) return;
+  score -= cost;
+  dmgUpgradeLevel++;
+  damage += 1;
+  updateUI();
+  refreshShop();
+  purchaseChime();
+}
+function buyTornadoUpgrade(){
+  if(gameOver) return;
+  if(tornadoOwned) return;
+  if(score < TORNADO_COST) return;
+  score -= TORNADO_COST;
+  tornadoOwned = true;
+  tornadoBtn.classList.add("unlocked");
+  updateUI();
+  refreshShop();
+  purchaseChime();
+  showNotification("TORNADO UNLOCKED - press the Tornado button!");
 }
 
 /* ============================================================
-   EFFECTS
+   TORNADO
+   ============================================================ */
+function armTornado(){
+  if(gameOver||shopOpen) return;
+  if(!tornadoOwned) return;
+  if(Date.now() < tornadoCooldownUntil) return;
+  pressBlip();
+  tornadoArmed = !tornadoArmed;
+  if(tornadoArmed){
+    tornadoBtn.classList.add("armed");
+    game.classList.add("arming");
+  } else {
+    tornadoBtn.classList.remove("armed");
+    game.classList.remove("arming");
+  }
+}
+function dropTornado(clientX, clientY){
+  const rect = game.getBoundingClientRect();
+  const x = clientX - rect.left;
+  const y = clientY - rect.top;
+  tornadoArmed = false;
+  tornadoBtn.classList.remove("armed");
+  game.classList.remove("arming");
+  tornadoCooldownUntil = Date.now() + TORNADO_COOLDOWN_MS;
+  spawnTornadoAt(x,y);
+}
+function spawnTornadoAt(x,y){
+  const radius = TORNADO_RADIUS * SCALE;
+  const wrap = document.createElement("div");
+  wrap.className="tornado";
+  wrap.style.left = (x-radius)+"px";
+  wrap.style.top  = (y-radius)+"px";
+  wrap.style.width  = (radius*2)+"px";
+  wrap.style.height = (radius*2)+"px";
+  const c1=document.createElement("div"); c1.className="cone c1";
+  const c2=document.createElement("div"); c2.className="cone c2";
+  const c3=document.createElement("div"); c3.className="cone c3";
+  const s = SCALE;
+  c1.style.borderLeftWidth = (32*s)+"px";
+  c1.style.borderRightWidth= (32*s)+"px";
+  c1.style.borderTopWidth  = (24*s)+"px";
+  c2.style.top = (18*s)+"px";
+  c2.style.borderLeftWidth = (24*s)+"px";
+  c2.style.borderRightWidth= (24*s)+"px";
+  c2.style.borderTopWidth  = (20*s)+"px";
+  c3.style.top = (34*s)+"px";
+  c3.style.borderLeftWidth = (16*s)+"px";
+  c3.style.borderRightWidth= (16*s)+"px";
+  c3.style.borderTopWidth  = (16*s)+"px";
+  wrap.appendChild(c1);wrap.appendChild(c2);wrap.appendChild(c3);
+  game.appendChild(wrap);
+  const ring = document.createElement("div");
+  ring.className="tornadoRing";
+  ring.style.left = (x-radius)+"px";
+  ring.style.top  = (y-radius)+"px";
+  ring.style.width  = (radius*2)+"px";
+  ring.style.height = (radius*2)+"px";
+  game.appendChild(ring);
+  tornadoSpawnSound();
+  const dmgTicker = setInterval(()=>{
+    if(gameOver||shopOpen) return;
+    applyTornadoDamageAt(x,y,radius);
+  }, 1000);
+  applyTornadoDamageAt(x,y,radius);
+  setTimeout(()=>{
+    clearInterval(dmgTicker);
+    tornadoFadeSound();
+    wrap.style.transition="opacity .3s, transform .3s";
+    ring.style.transition="opacity .3s";
+    wrap.style.opacity="0";
+    ring.style.opacity="0";
+    wrap.style.transform="scale(1.3) rotate(90deg)";
+    setTimeout(()=>{ wrap.remove(); ring.remove(); }, 320);
+  }, TORNADO_DURATION_MS);
+}
+function applyTornadoDamageAt(cx,cy,radius){
+  for(let i=enemies.length-1; i>=0; i--){
+    const data = enemies[i];
+    if(!data.element.parentNode) continue;
+    const ex = data.element.offsetLeft + data.size/2;
+    const ey = data.element.offsetTop  + data.size/2;
+    const dx = ex - cx, dy = ey - cy;
+    if(dx*dx + dy*dy <= radius*radius){
+      data.health -= damage;
+      if(data.health <= 0){
+        cleanupEnemy(data);
+        enemies.splice(i,1);
+        score += data.points;
+      } else {
+        data.healthFill.style.width=(data.health/data.maxHealth*100)+"%";
+      }
+    }
+  }
+  updateUI();
+  if(shopOpen) refreshShop();
+}
+
+/* Remove an enemy and clear its timers */
+function cleanupEnemy(data){
+  if(data.teleportTimer) clearInterval(data.teleportTimer);
+  if(data.moveTimer) clearInterval(data.moveTimer);
+  if(data.healTimer) clearInterval(data.healTimer);
+  if(data.empTimer) clearInterval(data.empTimer);
+  data.element.remove();
+}
+
+tornadoBtn.addEventListener("click", (e)=>{
+  e.stopPropagation();
+  armTornado();
+});
+game.addEventListener("pointerdown", (e)=>{
+  if(!tornadoArmed) return;
+  e.preventDefault();
+  e.stopPropagation();
+  dropTornado(e.clientX, e.clientY);
+}, true);
+
+/* ============================================================
+   BLUE SQUARE EMP
+   ============================================================ */
+function fireEMP(enemy, data){
+  if(gameOver) return;
+  if(!enemy.parentNode) return;
+  if(shopOpen) return; // paused
+
+  const size = data.size;
+  const cx = enemy.offsetLeft + size/2;
+  const cy = enemy.offsetTop  + size/2;
+
+  // Visual: expanding ring
+  const ring = document.createElement("div");
+  ring.className = "empRing";
+  const ringSize = Math.round(180 * SCALE);
+  ring.style.width  = ringSize+"px";
+  ring.style.height = ringSize+"px";
+  ring.style.left = (cx - ringSize/2)+"px";
+  ring.style.top  = (cy - ringSize/2)+"px";
+  game.appendChild(ring);
+  setTimeout(()=>ring.remove(), 750);
+
+  // Shake the square
+  enemy.classList.add("emp-fire");
+  setTimeout(()=>{ if(enemy.parentNode) enemy.classList.remove("emp-fire"); }, 480);
+
+  // Sound
+  empSound();
+
+  // Disable Hit for 3 seconds
+  const now = Date.now();
+  const wasJammed = hitIsJammed();
+  hitJamUntil = Math.max(hitJamUntil, now) + BLUE_JAM_DURATION_MS;
+  if(!wasJammed){
+    // First time we enter jam — show notification
+    showNotification("SIGNAL JAMMED - Hit disabled " + (BLUE_JAM_DURATION_MS/1000) + "s", "jam");
+  } else {
+    // Refresh the timer quietly with a smaller note
+    showNotification("SIGNAL JAMMED EXTENDED", "jam");
+  }
+  applyJamClass();
+
+  // Schedule the jam-clearing UI update
+  if(hitJamTimer) clearTimeout(hitJamTimer);
+  const msLeft = hitJamUntil - Date.now();
+  hitJamTimer = setTimeout(clearJamUI, msLeft + 30);
+}
+function applyJamClass(){
+  if(hitIsJammed()){
+    game.classList.add("jammed");
+  } else {
+    game.classList.remove("jammed");
+  }
+}
+function clearJamUI(){
+  hitJamUntil = 0;
+  game.classList.remove("jammed");
+  jamClearSound();
+  showNotification("SIGNAL RESTORED");
+}
+
+/* ============================================================
+   START / END
+   ============================================================ */
+startBtn.addEventListener("click", ()=>{ startChime(); startGame(); });
+
+function startGame(){
+  ensureAudio();
+  menu.style.display="none";
+  loseScreen.style.display="none";
+  gameScreen.style.display="block";
+
+  score=0;damage=1;gameOver=false;enemies=[];
+  dmgUpgradeLevel=0;
+  tornadoOwned=false;
+  tornadoArmed=false;
+  tornadoCooldownUntil=0;
+  shopOpen=false;
+  shopOpenedAt=0;
+  totalPausedMs=0;
+  spawnEndsAt=0;
+  hitJamUntil=0;
+  if(hitJamTimer) { clearTimeout(hitJamTimer); hitJamTimer=null; }
+  shopOverlay.classList.remove("open");
+  tornadoBtn.classList.remove("unlocked");
+  tornadoBtn.classList.remove("armed");
+  game.classList.remove("arming");
+  game.classList.remove("jammed");
+
+  game.innerHTML="<div id=\"timer\">Time: 00:00</div><div id=\"notification\"></div><div id=\"chancePanel\"><h3>Spawn chances</h3><div id=\"chanceList\"></div></div>";
+  timerEl=document.getElementById("timer");
+  notificationEl=document.getElementById("notification");
+  chanceListEl=document.getElementById("chanceList");
+  gameStartTime=Date.now();notifiedMinutes={};
+  spawnTextEl=document.getElementById("spawnText");
+  timerEl.textContent="Time: 00:00";
+  updateUI();
+  refreshShop();
+
+  requestAnimationFrame(()=>{
+    recomputeScale();
+    clearInterval(timerInterval);
+    timerInterval=setInterval(updateGameTimer,250);
+    startMusic();
+    clearTimeout(spawnTimer);
+    scheduleNextSpawn();
+  });
+}
+function endGame(){
+  gameOver=true;
+  shopOpen=false;
+  shopOpenedAt=0;
+  tornadoArmed=false;
+  hitJamUntil=0;
+  if(hitJamTimer){ clearTimeout(hitJamTimer); hitJamTimer=null; }
+  tornadoBtn.classList.remove("armed");
+  game.classList.remove("arming");
+  game.classList.remove("jammed");
+  shopOverlay.classList.remove("open");
+  clearTimeout(spawnTimer);
+  spawnTimer=null;
+  clearInterval(timerInterval);
+  stopMusic();
+  if(score>getHighscore())localStorage.setItem("destroySquaresHighscore",score);
+  finalScoreEl.textContent=score;
+  loseHighscoreEl.textContent=getHighscore();
+  gameScreen.style.display="none";
+  loseScreen.style.display="flex";
+  enemies.forEach(e=>cleanupEnemy(e));
+}
+function goToMenu(){
+  clearTimeout(spawnTimer);
+  spawnTimer=null;
+  clearInterval(timerInterval);
+  stopMusic();
+  shopOpen=false;
+  shopOpenedAt=0;
+  tornadoArmed=false;
+  hitJamUntil=0;
+  if(hitJamTimer){ clearTimeout(hitJamTimer); hitJamTimer=null; }
+  tornadoBtn.classList.remove("armed");
+  game.classList.remove("arming");
+  game.classList.remove("jammed");
+  shopOverlay.classList.remove("open");
+  enemies.forEach(e=>cleanupEnemy(e));
+  enemies=[];
+  loseScreen.style.display="none";
+  gameScreen.style.display="none";
+  menu.style.display="flex";
+  updateMenu();
+}
+
+/* ============================================================
+   OTHER EFFECTS
    ============================================================ */
 function teleportEffect(x,y){
  const size = Math.round(70*SCALE);
@@ -371,7 +894,6 @@ function healEffect(x,y){
  ring.style.left=(x-ringSize/2)+"px"; ring.style.top=(y-ringSize/2)+"px";
  game.appendChild(ring);
  setTimeout(()=>ring.remove(),650);
-
  const cross=document.createElement("div");
  cross.className="healCross";
  cross.textContent="+2";
@@ -380,7 +902,6 @@ function healEffect(x,y){
  cross.style.top=(y-20*SCALE)+"px";
  game.appendChild(cross);
  setTimeout(()=>cross.remove(),950);
-
  if(audioCtx){
    tone(587.33,.18,"sine",.10);
    setTimeout(()=>tone(880,.28,"sine",.08),90);
@@ -390,30 +911,41 @@ function healEffect(x,y){
 /* ============================================================
    SPAWNING
    ============================================================ */
-function scheduleSpawns(){
- const elapsed=Date.now()-gameStartTime;
- const interval=Math.max(1000,3000-Math.floor(elapsed/300000)*1000);
- spawnTimer=setTimeout(()=>{spawnEnemy();if(!gameOver)scheduleSpawns()},interval);
+function currentSpawnInterval(){
+  const elapsed = elapsedMs();
+  return Math.max(1000, 3000 - Math.floor(elapsed/300000)*1000);
 }
-
+function scheduleNextSpawn(){
+  if(gameOver || shopOpen) return;
+  const interval = currentSpawnInterval();
+  spawnEndsAt = Date.now() + interval;
+  spawnTimer = setTimeout(onSpawnTick, interval);
+}
+function onSpawnTick(){
+  if(gameOver || shopOpen) return;
+  spawnEnemy();
+  if(!gameOver && !shopOpen) scheduleNextSpawn();
+}
 function spawnEnemy(){
- if(gameOver)return;
+ if(gameOver||shopOpen)return;
  if(enemies.length>=MAX_ALIVE){endGame();return}
 
  const roll=Math.random();
  let kind="red";
- const minutes=Math.floor((Date.now()-gameStartTime)/60000);
+ const minutes=Math.floor(elapsedMs()/60000);
  const orangeChance=Math.min(0.01+minutes*0.01,0.49);
  const purpleChance=Math.min(minutes*0.005,0.25);
  const greenChance=Math.min(Math.max(0,minutes-1)*0.005,0.25);
  const limeChance = Math.min(Math.max(0,minutes-2)*0.0015, 0.08);
- const redChance = 1 - orangeChance - purpleChance - greenChance - limeChance;
+ const blueChance = Math.min(Math.max(0,minutes-4)*0.0008, 0.04);
+ const redChance = 1 - orangeChance - purpleChance - greenChance - limeChance - blueChance;
 
  if(roll < redChance){kind="red"}
  else if(roll < redChance + orangeChance){kind="orange"}
  else if(roll < redChance + orangeChance + purpleChance){kind="purple"}
  else if(roll < redChance + orangeChance + purpleChance + greenChance){kind="green"}
- else { kind="lime" }
+ else if(roll < redChance + orangeChance + purpleChance + greenChance + limeChance){kind="lime"}
+ else { kind="blue" }
 
  const conf = scaledSizes[kind];
  const size = conf.size;
@@ -442,15 +974,15 @@ function spawnEnemy(){
 
  const data={
    element:enemy, health:maxHealth, maxHealth, kind, points,
-   healthFill, healthBar, size,
-   lastHitTime: 0    // timestamp of last successful hit
+   healthFill, healthBar, size, lastHitTime:0
  };
  enemies.push(data);updateUI();
 
- /* PURPLE teleport */
+ /* Purple teleport */
  if(kind==="purple"){
   data.teleportTimer=setInterval(()=>{
-   if(gameOver||!enemy.parentNode){clearInterval(data.teleportTimer);return}
+   if(!enemy.parentNode){clearInterval(data.teleportTimer);return}
+   if(gameOver||shopOpen) return;
    const ox=enemy.offsetLeft+size/2,oy=enemy.offsetTop+size/2;
    teleportEffect(ox,oy);
    const mx = Math.max(0, game.clientWidth  - size);
@@ -461,12 +993,13 @@ function spawnEnemy(){
   },1000);
  }
 
- /* GREEN movement */
+ /* Green movement */
  if(kind==="green"){
   let vx=(Math.random()<.5?-1:1)*(3+Math.random()*2)*SCALE;
   let vy=(Math.random()<.5?-1:1)*(3+Math.random()*2)*SCALE;
   data.moveTimer=setInterval(()=>{
-   if(gameOver||!enemy.parentNode){clearInterval(data.moveTimer);return}
+   if(!enemy.parentNode){clearInterval(data.moveTimer);return}
+   if(gameOver||shopOpen) return;
    const mx = Math.max(0, game.clientWidth  - size);
    const my = Math.max(0, game.clientHeight - size - Math.round(20*SCALE));
    let x=enemy.offsetLeft+vx,y=enemy.offsetTop+vy;
@@ -477,10 +1010,11 @@ function spawnEnemy(){
   },30);
  }
 
- /* LIME self-heal */
+ /* Lime heal */
  if(kind==="lime"){
    data.healTimer = setInterval(()=>{
-     if(gameOver || !enemy.parentNode) { clearInterval(data.healTimer); return; }
+     if(!enemy.parentNode){clearInterval(data.healTimer);return}
+     if(gameOver||shopOpen) return;
      if(data.health < data.maxHealth){
        data.health = Math.min(data.maxHealth, data.health + 2);
        data.healthFill.style.width = (data.health/data.maxHealth*100)+"%";
@@ -493,36 +1027,41 @@ function spawnEnemy(){
    }, 2000);
  }
 
- /* CLICK / TAP — 500ms cooldown per enemy */
+ /* Blue EMP — ALWAYS fires every 5 seconds */
+ if(kind==="blue"){
+   data.empTimer = setInterval(()=>{
+     if(!enemy.parentNode){clearInterval(data.empTimer);return}
+     if(gameOver||shopOpen) return;
+     fireEMP(enemy, data);
+   }, BLUE_EMP_INTERVAL_MS);
+ }
+
+ /* Hit handler */
  function handleHit(e){
   if(e.cancelable) e.preventDefault();
   e.stopPropagation();
-  if(gameOver) return;
+  if(gameOver||shopOpen) return;
 
-  // ---- 500ms cooldown check ----
+  // If jammed, swallow the click (no damage, no feedback)
+  if(hitIsJammed()) return;
+
   const now = Date.now();
   if(now - data.lastHitTime < HIT_COOLDOWN_MS) return;
   data.lastHitTime = now;
-  // ------------------------------
 
   data.health -= damage;
   if(data.health <= 0){
-    if(data.teleportTimer) clearInterval(data.teleportTimer);
-    if(data.moveTimer) clearInterval(data.moveTimer);
-    if(data.healTimer) clearInterval(data.healTimer);
-    enemy.remove();
+    cleanupEnemy(data);
     enemies = enemies.filter(x=>x!==data);
     score += data.points;
     updateUI();
+    if(shopOpen) refreshShop();
   } else {
     data.healthFill.style.width=(data.health/data.maxHealth*100)+"%";
     enemy.style.transform="scale(.85)";
     setTimeout(()=>{if(enemy.parentNode)enemy.style.transform=""},80);
   }
  }
-
- // pointerdown is the most reliable single-fire input on
- // both desktop and mobile; it fires before click/touch.
  enemy.addEventListener("pointerdown", handleHit);
 }
 
