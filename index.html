@@ -35,6 +35,11 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 #tornadoBtn:hover:not(:disabled){background:#2651a3}
 #tornadoBtn.armed{background:#1a7a1a;border-color:#3fb83f;animation:armedPulse .8s ease-in-out infinite}
 #tornadoBtn.cooling{background:#333;border-color:#555;color:#888;cursor:not-allowed}
+#meteorBtn{position:relative;background:#7a3a1a;border:2px solid #ff8f3f;color:#fff;padding:6px 12px;font-size:clamp(11px,1.5vw,17px);border-radius:6px;cursor:pointer;margin:0;font-family:inherit;display:none;align-items:center;gap:6px;pointer-events:auto}
+#meteorBtn.unlocked{display:inline-flex}
+#meteorBtn:hover:not(:disabled){background:#a34e26}
+#meteorBtn.armed{background:#c85a1a;border-color:#ffd08f;animation:armedPulse .8s ease-in-out infinite}
+#meteorBtn.cooling{background:#333;border-color:#555;color:#888;cursor:not-allowed}
 @keyframes armedPulse{0%,100%{box-shadow:0 0 0 0 rgba(63,184,63,.7)}50%{box-shadow:0 0 0 8px rgba(63,184,63,0)}}
 .miniTornado{position:relative;display:inline-block;width:16px;height:16px}
 .miniTornado::before,.miniTornado::after{content:"";position:absolute;left:50%;transform:translateX(-50%);border-style:solid;border-color:#cfe4ff transparent transparent transparent;width:0;height:0}
@@ -177,6 +182,17 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 .shopItem button:disabled{background:#333;border-color:#555;color:#888}
 #closeShopBtn{margin-top:6px;background:#444;border-color:#777;padding:10px 28px;font-size:clamp(14px,1.8vw,18px)}
 #closeShopBtn:hover{background:#555}
+
+.meteor{position:absolute;pointer-events:none;z-index:20;border-radius:50%;background:radial-gradient(circle at 35% 35%, #fff3c4, #ffae2b 45%, #c85a1a 80%);box-shadow:0 0 24px #ff8f3f, 0 0 60px #ff5522 inset;animation:meteorSpin .5s linear infinite}
+@keyframes meteorSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.meteorTrail{position:absolute;pointer-events:none;z-index:19;border-radius:50%;background:radial-gradient(circle, rgba(255,180,80,.7), rgba(255,90,0,0) 70%)}
+.meteorImpact{position:absolute;border-radius:50%;pointer-events:none;z-index:21;background:radial-gradient(circle, rgba(255,220,140,.95), rgba(255,90,0,0) 70%);animation:meteorImpact .55s ease-out forwards}
+@keyframes meteorImpact{0%{opacity:1;transform:scale(.3)}60%{opacity:1;transform:scale(1.4)}100%{opacity:0;transform:scale(2.2)}}
+.meteorImpactRing{position:absolute;border:4px solid #ffae2b;border-radius:50%;pointer-events:none;z-index:21;box-shadow:0 0 30px #ff8f3f, 0 0 60px #ff5522 inset;animation:meteorRing .6s ease-out forwards}
+@keyframes meteorRing{0%{opacity:1;transform:scale(.2)}100%{opacity:0;transform:scale(1.8)}}
+.meteorSpark{position:absolute;width:8px;height:8px;border-radius:2px;background:#ffcf6b;pointer-events:none;z-index:21;box-shadow:0 0 12px #ff8f3f}
+.meteorEndFX{position:absolute;inset:0;pointer-events:none;z-index:22;background:radial-gradient(circle at 50% 50%, rgba(255,150,50,.35), rgba(255,60,0,0) 70%);animation:meteorEndPulse 1s ease-out forwards}
+@keyframes meteorEndPulse{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
 </style>
 </head>
 <body>
@@ -196,6 +212,7 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
     <div id="spawnText">Spawn: 3s</div>
     <button id="betrayalBtn" title="Temporary Betrayal">⚔ <span>Temporary Betrayal</span></button>
     <button id="tornadoBtn" title="Tornado"><span class="miniTornado"></span><span>Tornado</span></button>
+    <button id="meteorBtn" title="Meteor Shower">☄ <span>Meteor Shower</span></button>
     <button id="shopBtn">SHOP</button>
   </div>
   <div id="game"><div id="timer">Time: 00:00</div><div id="notification"></div><div id="chancePanel"><h3>Spawn chances</h3><div id="chanceList"></div></div></div>
@@ -218,6 +235,11 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
         <h4>Temporary Betrayal</h4>
         <div class="desc">Summon a friendly Green Square at a location. It stays for 10 seconds and fires your current damage at the nearest enemy. 20 second cooldown.</div>
         <div class="row"><span class="lvl" id="betrayalLvl">Not owned</span><button id="buyBetrayalBtn">Cost: 70</button></div>
+      </div>
+      <div class="shopItem" id="meteorItem">
+        <h4>☄ Meteor Shower</h4>
+        <div class="desc">Unlocks the Meteor Shower ability. Press the Meteor button to instantly call down 10 meteors at random locations, each dealing your current damage on impact. 12 second cooldown.</div>
+        <div class="row"><span class="lvl" id="meteorLvl">Not owned</span><button id="buyMeteorBtn">Cost: 200</button></div>
       </div>
       <div class="shopItem" id="cooldownItem">
         <h4>Hit Cooldown</h4>
@@ -257,6 +279,9 @@ const buyBetrayalBtn=document.getElementById("buyBetrayalBtn");
 const betrayalLvlEl=document.getElementById("betrayalLvl");
 const tornadoLvlEl=document.getElementById("tornadoLvl");
 const buyTornadoBtn=document.getElementById("buyTornadoBtn");
+const meteorBtn=document.getElementById("meteorBtn");
+const buyMeteorBtn=document.getElementById("buyMeteorBtn");
+const meteorLvlEl=document.getElementById("meteorLvl");
 const cooldownLvlEl=document.getElementById("cooldownLvl");
 const buyCooldownBtn=document.getElementById("buyCooldownBtn");
 const cooldownItemEl=document.getElementById("cooldownItem");
@@ -275,6 +300,7 @@ let shopOpen=false;
 let dmgUpgradeLevel=0;
 let tornadoOwned=false, tornadoArmed=false, tornadoCooldownUntil=0;
 let betrayalOwned=false, betrayalArmed=false, betrayalCooldownUntil=0;
+let meteorOwned=false, meteorCooldownUntil=0;
 let hitJamUntil=0, hitJamTimer=null;
 let lastGlobalHitTime = 0;
 
@@ -292,6 +318,10 @@ const TORNADO_DURATION_MS = 3000;
 const TORNADO_RADIUS = 90;
 const TORNADO_COOLDOWN_MS = 6000;
 const BETRAYAL_COST = 70, BETRAYAL_COOLDOWN_MS = 20000, BETRAYAL_DURATION_MS = 10000;
+const METEOR_COST = 200;
+const METEOR_COOLDOWN_MS = 12000;
+const METEOR_COUNT = 10;
+const METEOR_FALL_MS = 550;
 
 const BLUE_HEALTH = 12;
 const BLUE_POINTS = 30;
@@ -468,6 +498,27 @@ function factorySummonSound(){try{ensureAudio();
   tone(900,.12,"sine",.06,.08);
   tone(1200,.15,"sine",.05,.16);
 }catch(e){}}
+function meteorSummonSound(){try{ensureAudio();
+  sweep(900,180,.5,"sawtooth",.09);
+  sweep(1200,240,.5,"square",.05,.05);
+  noiseBurst(.4,.06);
+  tone(70,.5,"sine",.10,.1);
+  tone(110,.4,"sine",.07,.25);
+}catch(e){}}
+function meteorHitSound(){try{ensureAudio();
+  tone(160,.10,"square",.09);
+  tone(90,.16,"triangle",.08,.02);
+  noiseBurst(.14,.09);
+  sweep(500,80,.18,"sawtooth",.06,.02);
+}catch(e){}}
+function meteorEndSound(){try{ensureAudio();
+  sweep(300,60,1.2,"sawtooth",.08);
+  tone(60,.9,"sine",.11,.1);
+  tone(45,1.2,"sine",.09,.4);
+  noiseBurst(.8,.06,.2);
+  tone(880,.3,"sine",.05,.8);
+  tone(660,.4,"sine",.05,1.05);
+}catch(e){}}
 function playMusicStep(){
  const step=musicStep%16;
  const bass=[55,55,73.42,55,65.41,65.41,82.41,65.41][Math.floor(step/2)];
@@ -561,6 +612,7 @@ function updateGameTimer(){
  if(s>=600&&!notifiedMinutes[10]){notifiedMinutes[10]=true;showNotification("10 MINUTES! Spawn time reduced to 1 second!");tone(990,.2,"square",.08);}
  if(s>=900&&!notifiedMinutes[15]){notifiedMinutes[15]=true;showNotification("15 MINUTES! Spawn time reduced to 0.5 seconds!");tone(1100,.2,"square",.08);}
  updateTornadoButton();
+ updateMeteorButton();
 }
 function updateTornadoButton(){
   if(!tornadoOwned){
@@ -589,6 +641,27 @@ function updateTornadoButton(){
     } else {
       tornadoBtn.querySelector("span:last-child").textContent = "Tornado";
     }
+  }
+}
+function updateMeteorButton(){
+  if(!meteorOwned){
+    meteorBtn.classList.remove("unlocked","cooling");
+    meteorBtn.style.display="none";
+    meteorBtn.disabled=true;
+    return;
+  }
+  meteorBtn.classList.add("unlocked");
+  meteorBtn.style.display="inline-flex";
+  const now=Date.now();
+  if(now < meteorCooldownUntil){
+    meteorBtn.classList.add("cooling");
+    meteorBtn.disabled=true;
+    const left=Math.ceil((meteorCooldownUntil-now)/1000);
+    meteorBtn.querySelector("span").textContent="Meteor Shower ("+left+"s)";
+  } else {
+    meteorBtn.classList.remove("cooling");
+    meteorBtn.disabled=false;
+    meteorBtn.querySelector("span").textContent="Meteor Shower";
   }
 }
 function showNotification(text,className=""){
@@ -624,6 +697,9 @@ function refreshShop(){
   if(betrayalOwned){
     betrayalLvlEl.textContent="Owned"; buyBetrayalBtn.textContent="Owned"; buyBetrayalBtn.disabled=true;
   } else { betrayalLvlEl.textContent="Not owned"; buyBetrayalBtn.textContent="Cost: "+BETRAYAL_COST; buyBetrayalBtn.disabled=score<BETRAYAL_COST; }
+  if(meteorOwned){
+    meteorLvlEl.textContent="Owned"; buyMeteorBtn.textContent="Owned"; buyMeteorBtn.disabled=true;
+  } else { meteorLvlEl.textContent="Not owned"; buyMeteorBtn.textContent="Cost: "+METEOR_COST; buyMeteorBtn.disabled=score<METEOR_COST; }
   const cdSec = (hitCooldownMs/1000).toFixed(2);
   const maxed = cooldownMaxed();
   if(maxed){
@@ -658,6 +734,7 @@ function toggleShop(){
     if(hitJamUntil>0) hitJamUntil += pausedFor;
     if(lastGlobalHitTime>0) lastGlobalHitTime += pausedFor;
     if(tornadoCooldownUntil>Date.now()) tornadoCooldownUntil += pausedFor;
+    if(meteorCooldownUntil>Date.now()) meteorCooldownUntil += pausedFor;
     if(!gameOver){
       const remaining = Math.max(0, spawnEndsAt - Date.now());
       spawnTimer = setTimeout(onSpawnTick, remaining);
@@ -687,6 +764,12 @@ function buyBetrayalUpgrade(){
  score-=BETRAYAL_COST; betrayalOwned=true; betrayalBtn.classList.add("unlocked");
  updateUI(); refreshShop(); purchaseChime(); showNotification("TEMPORARY BETRAYAL UNLOCKED!");
 }
+function buyMeteorUpgrade(){
+  if(gameOver||meteorOwned||score<METEOR_COST) return;
+  score-=METEOR_COST; meteorOwned=true; meteorBtn.classList.add("unlocked");
+  updateUI(); refreshShop(); purchaseChime();
+  showNotification("METEOR SHOWER UNLOCKED!");
+}
 function armBetrayal(){
  if(gameOver||shopOpen||!betrayalOwned||Date.now()<betrayalCooldownUntil)return;
  betrayalArmed=!betrayalArmed; betrayalBtn.classList.toggle("armed",betrayalArmed); game.classList.toggle("arming",betrayalArmed);
@@ -704,46 +787,35 @@ function summonBetrayal(cx,cy){
  setTimeout(()=>{if(el.parentNode)el.remove();clearInterval(d.timer)},BETRAYAL_DURATION_MS);
 }
 function fireBetrayalShot(d){
- let target=null,best=Infinity;
- for(const e of enemies){
-  if(e.friendly||!e.element.parentNode||e.dying)continue;
-  const dx=(e.element.offsetLeft+e.size/2)-(d.element.offsetLeft+d.size/2);
-  const dy=(e.element.offsetTop+e.size/2)-(d.element.offsetTop+d.size/2);
-  const dist=dx*dx+dy*dy;
-  if(dist<best){best=dist;target=e}
- }
- if(!target)return;
- const x=d.element.offsetLeft+d.size/2,y=d.element.offsetTop+d.size/2;
- const tx=target.element.offsetLeft+target.size/2,ty=target.element.offsetTop+target.size/2;
- const b=document.createElement("div");
- const bs=Math.max(4,Math.round(7*SCALE));
- b.style.cssText=`position:absolute;width:${bs}px;height:${bs}px;background:#49ff49;border:2px solid #caffca;border-radius:50%;box-shadow:0 0 12px #16d64b;z-index:18;left:${x-bs/2}px;top:${y-bs/2}px;pointer-events:none`;
- game.appendChild(b);
- try{ensureAudio();tone(720,.07,"square",.07);sweep(900,500,.08,"sine",.04)}catch(e){}
- const dx=tx-x,dy=ty-y,len=Math.hypot(dx,dy)||1,vx=dx/len*8*SCALE,vy=dy/len*8*SCALE;
- const iv=setInterval(()=>{
-  if(!b.parentNode){clearInterval(iv);return}
-  const oldX=b.offsetLeft,oldY=b.offsetTop;
-  const newX=oldX+vx,newY=oldY+vy;
-  b.style.left=newX+"px"; b.style.top=newY+"px";
-  let hit=null;
-  for(const e of enemies){
-   if(e.friendly||e.dying||!e.element.parentNode)continue;
-   const ex=e.element.offsetLeft,ey=e.element.offsetTop;
-   if(newX+bs>=ex && newX<=ex+e.size && newY+bs>=ey && newY<=ey+e.size){hit=e;break}
-  }
-  if(hit){
-   clearInterval(iv);b.remove();
-   if(hit.element.parentNode&&!hit.dying){
-    hit.health-=damage;
-    try{tone(180,.09,"triangle",.06)}catch(e){}
-    if(hit.health<=0)killEnemy(hit);
-    else{if(hit.healthFill)hit.healthFill.style.width=(hit.health/hit.maxHealth*100)+"%";hitEffect(hit.kind,hit.element.offsetLeft+hit.size/2,hit.element.offsetTop+hit.size/2,hit.size)}
-   }
-  } else if(newX+bs<0||newY+bs<0||newX>game.clientWidth||newY>game.clientHeight){
-   clearInterval(iv);b.remove();
-  }
- },30);
+  let target=null,best=Infinity;
+  for(const e of enemies){if(e.friendly||!e.element.parentNode)continue;const dx=e.element.offsetLeft-d.element.offsetLeft,dy=e.element.offsetTop-d.element.offsetTop,dist=dx*dx+dy*dy;if(dist<best){best=dist;target=e}}
+  if(!target)return;
+  const x=d.element.offsetLeft+d.size/2,y=d.element.offsetTop+d.size/2;
+  const tx=target.element.offsetLeft+target.size/2,ty=target.element.offsetTop+target.size/2;
+  const b=document.createElement("div"); b.style.cssText=`position:absolute;width:${Math.max(4,Math.round(7*SCALE))}px;height:${Math.max(4,Math.round(7*SCALE))}px;background:#49ff49;border:2px solid #caffca;border-radius:50%;box-shadow:0 0 12px #16d64b;z-index:18;left:${x}px;top:${y}px;pointer-events:none`; game.appendChild(b);
+  try{ensureAudio();tone(720,.07,"square",.07);sweep(900,500,.08,"sine",.04)}catch(e){}
+  const dx=tx-x,dy=ty-y,len=Math.hypot(dx,dy)||1,vx=dx/len*8*SCALE,vy=dy/len*8*SCALE;
+  const iv=setInterval(()=>{
+    if(!b.parentNode){clearInterval(iv);return}
+    b.style.left=(b.offsetLeft+vx)+"px";
+    b.style.top=(b.offsetTop+vy)+"px";
+    const bx=b.offsetLeft,bby=b.offsetTop;
+    let hitEnemy=null;
+    for(const e of enemies){
+      if(e.friendly||!e.element.parentNode||e.dying)continue;
+      const ex=e.element.offsetLeft+e.size/2, ey=e.element.offsetTop+e.size/2;
+      if(Math.hypot(bx-ex,bby-ey) < Math.max(14,e.size/2)){ hitEnemy=e; break; }
+    }
+    if(hitEnemy){
+      clearInterval(iv); b.remove();
+      hitEnemy.health-=damage;
+      try{tone(180,.09,"triangle",.06)}catch(e){}
+      if(hitEnemy.health<=0)killEnemy(hitEnemy);
+      else{hitEnemy.healthFill.style.width=(hitEnemy.health/hitEnemy.maxHealth*100)+"%";hitEffect(hitEnemy.kind,hitEnemy.element.offsetLeft+hitEnemy.size/2,hitEnemy.element.offsetTop+hitEnemy.size/2,hitEnemy.size)}
+      return;
+    }
+    if(bx<0||bby<0||bx>game.clientWidth||bby>game.clientHeight){clearInterval(iv);b.remove()}
+  },30);
 }
 function updateBetrayalButton(){
  if(!betrayalOwned)return; const left=Math.ceil(Math.max(0,betrayalCooldownUntil-Date.now())/1000);
@@ -838,6 +910,125 @@ function applyTornadoDamageAt(cx,cy,radius){
   updateUI();
   if(shopOpen) refreshShop();
 }
+
+/* ============================================================
+   METEOR SHOWER
+   ============================================================ */
+function triggerMeteorShower(){
+  if(gameOver||shopOpen||!meteorOwned) return;
+  if(Date.now() < meteorCooldownUntil) return;
+  try{pressBlip();}catch(e){}
+  meteorCooldownUntil = Date.now() + METEOR_COOLDOWN_MS;
+  updateMeteorButton();
+  showNotification("METEOR SHOWER!", "boss");
+  meteorSummonSound();
+
+  const fovW = game.clientWidth, fovH = game.clientHeight;
+  const baseSize = Math.max(30, Math.round(60*SCALE));
+  let landed = 0;
+  for(let i=0;i<METEOR_COUNT;i++){
+    const delay = i * 90;
+    const tx = Math.random() * Math.max(1, fovW - baseSize) + baseSize/2;
+    const ty = Math.random() * Math.max(1, fovH - baseSize) + baseSize/2;
+    setTimeout(()=>{ if(!gameOver) dropMeteorAt(tx,ty,baseSize,()=>{ landed++; if(landed>=METEOR_COUNT) meteorShowerEnd(); }); }, delay);
+  }
+}
+function dropMeteorAt(tx,ty,size,onLand){
+  const startY = -size*2;
+  const m = document.createElement("div");
+  m.className="meteor";
+  m.style.width=size+"px"; m.style.height=size+"px";
+  m.style.left=(tx-size/2)+"px";
+  m.style.top=startY+"px";
+  game.appendChild(m);
+
+  const trail = document.createElement("div");
+  trail.className="meteorTrail";
+  trail.style.width=(size*1.6)+"px"; trail.style.height=(size*1.6)+"px";
+  trail.style.left=(tx-size*0.8)+"px";
+  trail.style.top=startY+"px";
+  game.appendChild(trail);
+
+  const start = performance.now();
+  function step(t){
+    const p = Math.min(1, (t-start)/METEOR_FALL_MS);
+    const eased = p*p;
+    const y = startY + (ty - startY)*eased;
+    m.style.top = (y-size/2)+"px";
+    trail.style.top = (y-size*0.8)+"px";
+    trail.style.opacity = String(0.4 + 0.6*p);
+    if(p<1) requestAnimationFrame(step);
+    else { m.remove(); trail.remove(); meteorImpact(tx,ty,size,onLand); }
+  }
+  requestAnimationFrame(step);
+}
+function meteorImpact(tx,ty,size,onLand){
+  meteorHitSound();
+  const impact = document.createElement("div");
+  impact.className="meteorImpact";
+  const r = size*2.6;
+  impact.style.width=r+"px"; impact.style.height=r+"px";
+  impact.style.left=(tx-r/2)+"px"; impact.style.top=(ty-r/2)+"px";
+  game.appendChild(impact);
+  setTimeout(()=>impact.remove(),600);
+
+  const ring = document.createElement("div");
+  ring.className="meteorImpactRing";
+  ring.style.width=r+"px"; ring.style.height=r+"px";
+  ring.style.left=(tx-r/2)+"px"; ring.style.top=(ty-r/2)+"px";
+  game.appendChild(ring);
+  setTimeout(()=>ring.remove(),650);
+
+  for(let i=0;i<7;i++){
+    const a = Math.random()*Math.PI*2;
+    const sp = document.createElement("div");
+    sp.className="meteorSpark";
+    const sz = Math.max(5, Math.round(8*SCALE));
+    sp.style.width=sz+"px"; sp.style.height=sz+"px";
+    sp.style.left=(tx-sz/2)+"px"; sp.style.top=(ty-sz/2)+"px";
+    game.appendChild(sp);
+    const dist = (40 + Math.random()*40)*SCALE;
+    const dx=Math.cos(a)*dist, dy=Math.sin(a)*dist;
+    const s0 = performance.now();
+    function stp(tt){
+      const p = Math.min(1,(tt-s0)/450);
+      sp.style.transform=`translate(${dx*p}px,${dy*p}px) rotate(${p*360}deg)`;
+      sp.style.opacity=String(1-p);
+      if(p<1) requestAnimationFrame(stp);
+      else sp.remove();
+    }
+    requestAnimationFrame(stp);
+  }
+
+  const radius = size*1.5;
+  for(let i=enemies.length-1;i>=0;i--){
+    const e = enemies[i];
+    if(!e.element.parentNode||e.dying) continue;
+    const ex = e.element.offsetLeft + e.size/2;
+    const ey = e.element.offsetTop  + e.size/2;
+    if(Math.hypot(ex-tx, ey-ty) <= radius){
+      e.health -= damage;
+      if(e.health > 0){
+        hitEffect(e.kind, ex, ey, e.size);
+        e.healthFill.style.width=(e.health/e.maxHealth*100)+"%";
+      } else {
+        killEnemy(e);
+      }
+    }
+  }
+  updateUI();
+  if(shopOpen) refreshShop();
+  if(onLand) onLand();
+}
+function meteorShowerEnd(){
+  meteorEndSound();
+  const fx = document.createElement("div");
+  fx.className="meteorEndFX";
+  game.appendChild(fx);
+  setTimeout(()=>fx.remove(),1050);
+  showNotification("METEOR SHOWER COMPLETE");
+}
+
 function cleanupEnemy(data){
   if(data.teleportTimer) clearInterval(data.teleportTimer);
   if(data.moveTimer) clearInterval(data.moveTimer);
@@ -1398,11 +1589,13 @@ function factoryDeath(cx,cy,sizePx){
 }
 
 tornadoBtn.addEventListener("click", (e)=>{ e.stopPropagation(); armTornado(); });
+meteorBtn.addEventListener("click", (e)=>{ e.stopPropagation(); triggerMeteorShower(); });
 shopBtn.addEventListener("click", (e)=>{ e.stopPropagation(); toggleShop(); });
 closeShopBtn.addEventListener("click", (e)=>{ e.stopPropagation(); toggleShop(); });
 buyDmgBtn.addEventListener("click", (e)=>{ e.stopPropagation(); buyDamageUpgrade(); });
 buyTornadoBtn.addEventListener("click", (e)=>{ e.stopPropagation(); buyTornadoUpgrade(); });
 buyBetrayalBtn.addEventListener("click", (e)=>{e.stopPropagation();buyBetrayalUpgrade()});
+buyMeteorBtn.addEventListener("click", (e)=>{e.stopPropagation();buyMeteorUpgrade()});
 betrayalBtn.addEventListener("click",(e)=>{e.stopPropagation();armBetrayal()});
 buyCooldownBtn.addEventListener("click", (e)=>{ e.stopPropagation(); buyCooldownUpgrade(); });
 game.addEventListener("pointerdown", (e)=>{
@@ -1609,7 +1802,6 @@ function factorySummon(enemy, data){
 
   factorySummonSound();
 
-  // Summon a green square near the factory
   const angle = Math.random()*Math.PI*2;
   const distance = size * 0.9 + Math.round(40*SCALE);
   const sx = cx + Math.cos(angle)*distance;
@@ -1645,7 +1837,6 @@ function spawnGreenAt(cx,cy){
   setTimeout(()=>flash.remove(),400);
   const data={element:enemy,health:maxHealth,maxHealth,kind:"green",points,healthFill:hf,healthBar:hb,size,summoned:true};
   enemies.push(data); updateUI();
-  // Green movement
   let vx=(Math.random()<.5?-1:1)*(3+Math.random()*2)*SCALE;
   let vy=(Math.random()<.5?-1:1)*(3+Math.random()*2)*SCALE;
   data.moveTimer=setInterval(()=>{
@@ -1732,6 +1923,7 @@ function startGame(){
   lastGlobalHitTime = 0;
   lastChanceMinute = -1;
   tornadoOwned=false; tornadoArmed=false; tornadoCooldownUntil=0; betrayalOwned=false; betrayalArmed=false; betrayalCooldownUntil=0;
+  meteorOwned=false; meteorCooldownUntil=0;
   shopOpen=false; shopOpenedAt=0; totalPausedMs=0; spawnEndsAt=0;
   hitJamUntil=0;
   if(hitJamTimer){ clearTimeout(hitJamTimer); hitJamTimer=null; }
@@ -1739,11 +1931,11 @@ function startGame(){
   tornadoBtn.classList.remove("unlocked");
   tornadoBtn.classList.remove("armed");
   tornadoBtn.classList.remove("cooling");
-  betrayalBtn.classList.remove("unlocked","armed","cooling");
-  betrayalBtn.disabled = false;
-  betrayalBtn.querySelector("span").textContent = "Temporary Betrayal";
   tornadoBtn.disabled = false;
   tornadoBtn.querySelector("span:last-child").textContent = "Tornado";
+  meteorBtn.classList.remove("unlocked","cooling");
+  meteorBtn.disabled = false;
+  meteorBtn.querySelector("span").textContent = "Meteor Shower";
   game.classList.remove("arming");
   game.classList.remove("jammed");
   game.innerHTML="<div id=\"timer\">Time: 00:00</div><div id=\"notification\"></div><div id=\"chancePanel\"><h3>Spawn chances</h3><div id=\"chanceList\"></div></div>";
@@ -1770,6 +1962,7 @@ function endGame(){
   if(hitJamTimer){ clearTimeout(hitJamTimer); hitJamTimer=null; }
   tornadoBtn.classList.remove("armed");
   tornadoBtn.classList.remove("cooling");
+  meteorBtn.classList.remove("cooling");
   game.classList.remove("arming");
   game.classList.remove("jammed");
   shopOverlay.classList.remove("open");
@@ -1792,6 +1985,7 @@ function goToMenu(){
   if(hitJamTimer){ clearTimeout(hitJamTimer); hitJamTimer=null; }
   tornadoBtn.classList.remove("armed");
   tornadoBtn.classList.remove("cooling");
+  meteorBtn.classList.remove("cooling");
   game.classList.remove("arming");
   game.classList.remove("jammed");
   shopOverlay.classList.remove("open");
