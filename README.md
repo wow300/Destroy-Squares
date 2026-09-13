@@ -1,1 +1,1 @@
-The latest update removed the Online Leaderboard and added a new Boss called Green Factory.
+The latest update re added Temporary Betrayal in shop.
