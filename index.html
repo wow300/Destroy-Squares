@@ -57,17 +57,26 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 #game.arming{cursor:crosshair}
 #game.jammed::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%, rgba(70,130,255,.10), rgba(70,130,255,.28));pointer-events:none;z-index:14;animation:jamPulse 0.8s ease-in-out infinite}
 @keyframes jamPulse{0%,100%{opacity:.6}50%{opacity:1}}
-#game.spin::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%, rgba(255,230,60,.10), rgba(255,220,0,.30));pointer-events:none;z-index:13;animation:spinPulse 0.5s ease-in-out infinite}
-@keyframes spinPulse{0%,100%{opacity:.55}50%{opacity:1}}
-#game.spin .enemy,#game.spin #timer,#game.spin #notification,#game.spin #chancePanel,#game.spin .tornado,#game.spin .tornadoRing,#game.spin .meteor,#game.spin .meteorTrail{
-  animation:gameSpin 2s linear infinite;
+#game.shake{animation:gameShake 0.12s linear infinite;will-change:transform}
+#game.shake::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%, rgba(255,230,60,.05), rgba(255,200,0,.20));pointer-events:none;z-index:13;animation:shakePulse 0.35s ease-in-out infinite}
+@keyframes shakePulse{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes gameShake{
+  0%,100%{transform:translate(0,0)}
+  10%{transform:translate(-8px,4px)}
+  20%{transform:translate(7px,-5px)}
+  30%{transform:translate(-6px,-6px)}
+  40%{transform:translate(6px,5px)}
+  50%{transform:translate(-5px,3px)}
+  60%{transform:translate(8px,-4px)}
+  70%{transform:translate(-7px,5px)}
+  80%{transform:translate(5px,-3px)}
+  90%{transform:translate(-4px,-2px)}
 }
-@keyframes gameSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 #timer{position:absolute;left:12px;bottom:10px;font-size:clamp(12px,1.5vw,18px);color:#fff;background:rgba(0,0,0,.55);padding:6px 10px;border:1px solid #555;border-radius:5px;z-index:10;pointer-events:none}
 #notification{position:absolute;top:12px;left:50%;transform:translateX(-50%);font-size:clamp(14px,2vw,24px);font-weight:bold;color:#ffd700;text-shadow:0 0 10px #ff8c00;background:rgba(0,0,0,.7);padding:8px 16px;border-radius:6px;opacity:0;pointer-events:none;z-index:15;transition:opacity .25s;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
 #notification.jam{color:#8fc4ff;text-shadow:0 0 12px #3f8fff}
 #notification.boss{color:#ff4444;text-shadow:0 0 16px #ff0000;font-size:clamp(16px,2.4vw,28px)}
-#notification.spin{color:#ffe94a;text-shadow:0 0 14px #ffea00}
+#notification.shake{color:#ffe94a;text-shadow:0 0 14px #ffea00}
 #chancePanel{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:clamp(120px,17vw,200px);max-height:calc(100% - 40px);overflow-y:auto;overflow-x:hidden;background:rgba(0,0,0,.78);border:1px solid #555;border-radius:6px;padding:8px 10px;font-size:clamp(10px,1.2vw,14px);line-height:1.5;z-index:1;pointer-events:auto;user-select:none;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#ffcc44 #111}
 #chancePanel::-webkit-scrollbar{width:6px}
 #chancePanel::-webkit-scrollbar-track{background:#111;border-radius:3px}
@@ -323,7 +332,7 @@ let betrayalOwned=false, betrayalArmed=false, betrayalCooldownUntil=0;
 let meteorOwned=false, meteorCooldownUntil=0;
 let hitJamUntil=0, hitJamTimer=null;
 let lastGlobalHitTime = 0;
-let screenSpinUntil = 0, screenSpinTimer = null, spinCount = 0;
+let screenShakeUntil = 0, screenShakeTimer = null, shakeCount = 0;
 
 const HIT_COOLDOWN_BASE_MS = 500;
 const HIT_COOLDOWN_STEP_MS = 50;
@@ -365,63 +374,147 @@ const FACTORY_SUMMON_INTERVAL_MS = 1000;
 /* ---- YELLOW ---- */
 const YELLOW_HEALTH = 45;
 const YELLOW_POINTS = 20;
-const YELLOW_SPIN_INTERVAL_MS = 4000;
-const YELLOW_SPIN_DURATION_MS = 2000;
+const YELLOW_SHAKE_INTERVAL_MS = 4000;
+const YELLOW_SHAKE_DURATION_MS = 2000;
+
+// Factory grows a bit faster than Overlord; both feed the same cascade.
+const FACTORY_GROWTH = 0.028;
 
 const GROWTH = {
   red:0, orange:0.020, purple:0.020, green:0.020, lime:0.020,
-  yellow:0.021, blue:0.020, cyan:0.025, black:0.022, overlord:0.020, factory:0.00015
+  yellow:0.021, blue:0.020, cyan:0.025, black:0.022, overlord:0.020,
+  factory: FACTORY_GROWTH
 };
+
+/*
+  CASCADE PATTERN
+  ---------------
+  Each enemy unlocks at a specific minute and grows at its own rate.
+  The rule: while the *previous* enemy in the chain still has > 0% chance,
+  the current enemy keeps growing. Once the previous enemy hits 0%, the
+  current enemy starts *decreasing* at its growth rate — mirroring the
+  curve it just climbed.
+
+  Chain order (matches unlock order):
+    orange -> purple -> green -> lime -> yellow -> blue -> cyan -> black -> overlord -> factory
+
+  The cascade is driven by tracking when each chain member gets "squeezed out"
+  (its effective share reaches 0 because everything before it has filled the pool).
+*/
 function getSpawnChances(){
   const m = Math.floor(elapsedMs()/60000);
+
+  // Raw growth values (pre-clamp). These represent how big each enemy *wants* to be.
   const raw = {
-    red:0,
-    orange: GROWTH.orange * Math.max(0, m - 0),
-    purple: GROWTH.purple * Math.max(0, m - 1),
-    green:  GROWTH.green  * Math.max(0, m - 2),
-    lime:   GROWTH.lime   * Math.max(0, m - 3),
-    yellow: GROWTH.yellow * Math.max(0, m - 4),
-    blue:   GROWTH.blue   * Math.max(0, m - 4),
-    cyan:   GROWTH.cyan   * Math.max(0, m - 5),
-    black:  GROWTH.black  * Math.max(0, m - 6),
+    orange:   GROWTH.orange   * Math.max(0, m - 0),
+    purple:   GROWTH.purple   * Math.max(0, m - 1),
+    green:    GROWTH.green    * Math.max(0, m - 2),
+    lime:     GROWTH.lime     * Math.max(0, m - 3),
+    yellow:   GROWTH.yellow   * Math.max(0, m - 4),
+    blue:     GROWTH.blue     * Math.max(0, m - 4),
+    cyan:     GROWTH.cyan     * Math.max(0, m - 5),
+    black:    GROWTH.black    * Math.max(0, m - 6),
     overlord: GROWTH.overlord * Math.max(0, m - 7),
-    factory:  GROWTH.factory  * Math.max(0, m - 7) * 8
+    factory:  GROWTH.factory  * Math.max(0, m - 7)
   };
-  let sumOthers = 0;
-  for(const k of ["orange","purple","green","lime","yellow","blue","cyan","black","overlord","factory"]) sumOthers += raw[k];
-  let red = Math.max(0, 1 - sumOthers);
-  raw.red = red;
-  if(red <= 0 && sumOthers > 1){
-    for(const k of ["orange","purple","green","lime","yellow","blue","cyan","black","overlord","factory"]){
-      if(raw[k] <= 0) continue;
-      const excess = sumOthers - 1;
-      const shrink = Math.min(excess, raw[k]);
-      raw[k] -= shrink;
-      sumOthers -= shrink;
-      if(sumOthers <= 1) break;
+
+  const CHAIN = ["orange","purple","green","lime","yellow","blue","cyan","black","overlord","factory"];
+
+  // Walk the chain in order, tracking running pressure from earlier members.
+  // When running pressure hits 1, the current member can't grow any more.
+  // From then on, the current member starts decreasing.
+  // The next member keeps growing until *this* member hits 0.
+  const effective = {};
+  let running = 0;             // sum of effective values so far (excluding red filler)
+  let firstClampedIdx = -1;    // index of the first chain member that couldn't fully grow
+
+  for(let i = 0; i < CHAIN.length; i++){
+    const key = CHAIN[i];
+    const want = raw[key];
+    if(firstClampedIdx === -1){
+      // Still in growth phase for this member.
+      if(running + want <= 1){
+        effective[key] = want;
+        running += want;
+      } else {
+        // This member is the first to get squeezed. It gets whatever is left.
+        effective[key] = Math.max(0, 1 - running);
+        running = 1;
+        firstClampedIdx = i;
+      }
+    } else {
+      // We've passed the squeeze point. This member's *predecessor* has
+      // effectively hit 0% (its raw growth can't keep up with earlier pressure).
+      // So this member starts decreasing from its own peak.
+      //
+      // Its peak is its raw value at the moment the predecessor clamped.
+      // Since we don't store that, we approximate by: this member grows for
+      // (i - firstClampedIdx) minutes past the clamp minute before starting
+      // to decrease. Simpler: it decreases at the same rate it grew,
+      // measured from the minute it peaked (= clamp minute of its predecessor).
+      //
+      // Because the chain is fully deterministic, we can compute "minutes since
+      // this member's peak" as m minus the minute its predecessor hit zero.
+      // We approximate the predecessor's zero minute as the minute we
+      // identified firstClampedIdx, offset by (i - firstClampedIdx).
+      const minutesSincePeak = Math.max(0, m - (Math.floor(elapsedMs()/60000) - (i - firstClampedIdx)));
+      const decrease = GROWTH[key] * minutesSincePeak;
+      // Its peak was its raw value at the peak minute. Since raw grows linearly
+      // with m, the peak is exactly raw[key] at the moment of peaking, which
+      // we can approximate as raw[key] (since it hasn't grown past that).
+      // Subtract decrease but never go below 0.
+      effective[key] = Math.max(0, raw[key] - decrease);
     }
   }
-  let total = raw.red;
-  for(const k of ["orange","purple","green","lime","yellow","blue","cyan","black","overlord","factory"]) total += raw[k];
+
+  // Red is the filler.
+  let chainTotal = 0;
+  for(const k of CHAIN) chainTotal += effective[k] || 0;
+  let redShare = Math.max(0, 1 - chainTotal);
+  if(chainTotal > 1){
+    const k = 1/chainTotal;
+    for(const key of CHAIN) effective[key] = (effective[key]||0) * k;
+    redShare = 0;
+  }
+
+  const out = {
+    red: redShare,
+    orange: effective.orange || 0,
+    purple: effective.purple || 0,
+    green: effective.green || 0,
+    lime: effective.lime || 0,
+    yellow: effective.yellow || 0,
+    blue: effective.blue || 0,
+    cyan: effective.cyan || 0,
+    black: effective.black || 0,
+    overlord: effective.overlord || 0,
+    factory: effective.factory || 0
+  };
+
+  // Final normalise safety net.
+  let total = 0;
+  for(const k in out) total += out[k];
   if(total > 1.0000001){
     const k = 1/total;
-    for(const key in raw) raw[key] *= k;
+    for(const key in out) out[key] *= k;
   }
+
   const list = [
-    { name:"Red", chance:raw.red },
-    { name:"Orange", chance:raw.orange },
-    { name:"Purple", chance:raw.purple },
-    { name:"Green", chance:raw.green },
-    { name:"Lime", chance:raw.lime },
-    { name:"Yellow", chance:raw.yellow },
-    { name:"Blue", chance:raw.blue },
-    { name:"Cyan", chance:raw.cyan },
-    { name:"Black", chance:raw.black },
-    { name:"Overlord", chance:raw.overlord },
-    { name:"Factory", chance:raw.factory }
+    { name:"Red",      chance:out.red },
+    { name:"Orange",   chance:out.orange },
+    { name:"Purple",   chance:out.purple },
+    { name:"Green",    chance:out.green },
+    { name:"Lime",     chance:out.lime },
+    { name:"Yellow",   chance:out.yellow },
+    { name:"Blue",     chance:out.blue },
+    { name:"Cyan",     chance:out.cyan },
+    { name:"Black",    chance:out.black },
+    { name:"Overlord", chance:out.overlord },
+    { name:"Factory",  chance:out.factory }
   ];
   return list.sort((a,b)=>b.chance-a.chance);
 }
+
 let totalPausedMs=0, shopOpenedAt=0, spawnEndsAt=0;
 function elapsedMs(){
   const raw = Date.now()-gameStartTime;
@@ -430,7 +523,7 @@ function elapsedMs(){
 }
 function elapsedSeconds(){ return Math.floor(elapsedMs()/1000); }
 function hitIsJammed(){ return Date.now() < hitJamUntil; }
-function isSpinning(){ return Date.now() < screenSpinUntil; }
+function isShaking(){ return Date.now() < screenShakeUntil; }
 
 /* ============================================================
    AUDIO
@@ -499,13 +592,19 @@ function cyanHitSound(){try{ensureAudio();tone(1200,.05,"sine",.07,0);tone(900,.
 function blackHitSound(){try{ensureAudio();tone(180,.08,"square",.08,0);tone(110,.10,"triangle",.06,.02);noiseBurst(.05,.05,0);}catch(e){}}
 function factoryHitSound(){try{ensureAudio();tone(140,.10,"square",.09,0);tone(90,.14,"triangle",.07,.03);noiseBurst(.06,.06,0);tone(220,.06,"sine",.05,.01);}catch(e){}}
 function yellowHitSound(){try{ensureAudio();tone(1600,.05,"square",.08,0);tone(1200,.06,"sine",.06,.03);tone(800,.06,"sine",.05,.08);sweep(1800,600,.10,"square",.05,.02);noiseBurst(.03,.03,0);}catch(e){}}
-function yellowSpinSound(){try{ensureAudio();
-  // Rising whir + bass wobble
-  sweep(200,2400,1.9,"sawtooth",.07);
-  sweep(300,2800,1.9,"square",.04,.05);
-  tone(60,1.9,"sine",.10,.1);
-  tone(90,1.9,"sine",.07,.3);
-  noiseBurst(1.8,.04,.2);
+function yellowShakeSound(){try{ensureAudio();
+  // Rumbling tremor — low sawtooth with wobbling detuned overtones
+  tone(48,1.9,"sawtooth",.12,.0);
+  tone(62,1.9,"triangle",.09,.02);
+  tone(38,1.9,"sine",.11,.05);
+  sweep(90,60,1.9,"sawtooth",.07,.05);
+  // Rapid clicky rattle on top
+  for(let i=0;i<28;i++){ tone(140+Math.random()*90, .04, "square", .03 + Math.random()*.03, 0.02+i*0.065); }
+  // Deep impact thuds at start
+  tone(80,.35,"sine",.14,0);
+  tone(60,.45,"sine",.12,.05);
+  noiseBurst(1.6,.06,.1);
+  noiseBurst(.4,.09,0);
 }catch(e){}}
 function redDeathSound(){try{ensureAudio();tone(300,.07,"square",.09);tone(140,.14,"square",.07,.04);noiseBurst(.09,.05);}catch(e){}}
 function orangeDeathSound(){try{ensureAudio();sweep(600,120,.25,"sawtooth",.10);tone(90,.22,"sine",.08,.05);noiseBurst(.14,.06,.02);}catch(e){}}
@@ -810,7 +909,7 @@ function toggleShop(){
     if(tornadoCooldownUntil>Date.now()) tornadoCooldownUntil += pausedFor;
     if(meteorCooldownUntil>Date.now()) meteorCooldownUntil += pausedFor;
     if(betrayalCooldownUntil>Date.now()) betrayalCooldownUntil += pausedFor;
-    if(screenSpinUntil>Date.now()) screenSpinUntil += pausedFor;
+    if(screenShakeUntil>Date.now()) screenShakeUntil += pausedFor;
     if(!gameOver){
       const remaining = Math.max(0, spawnEndsAt - Date.now());
       spawnTimer = setTimeout(onSpawnTick, remaining);
@@ -1145,7 +1244,7 @@ function cleanupEnemy(data){
   if(data.cyanHealTimer) clearInterval(data.cyanHealTimer);
   if(data.blackStealTimer) clearInterval(data.blackStealTimer);
   if(data.factorySummonTimer) clearInterval(data.factorySummonTimer);
-  if(data.yellowSpinTimer) clearInterval(data.yellowSpinTimer);
+  if(data.yellowShakeTimer) clearInterval(data.yellowShakeTimer);
   const el = data.element;
   if(el){
     if(el.parentNode) el.parentNode.removeChild(el);
@@ -1154,51 +1253,74 @@ function cleanupEnemy(data){
 }
 
 /* ============================================================
-   YELLOW SCREEN SPIN
+   YELLOW SCREEN SHAKE
    ============================================================ */
-function yellowScreenSpin(enemy,data){
+function yellowScreenShake(enemy,data){
   if(gameOver||shopOpen||!enemy.parentNode) return;
-  spinCount++;
-  screenSpinUntil = Date.now() + YELLOW_SPIN_DURATION_MS;
-  yellowSpinSound();
-  showNotification("SCREEN SPIN!","spin");
-  game.classList.add("spin");
+  shakeCount++;
+  screenShakeUntil = Date.now() + YELLOW_SHAKE_DURATION_MS;
+  yellowShakeSound();
+  showNotification("SCREEN SHAKE!","shake");
+  game.classList.add("shake");
+
   const cx=enemy.offsetLeft+data.size/2, cy=enemy.offsetTop+data.size/2;
+
+  // Impact ring at the yellow square
   const ring=document.createElement("div");
   ring.className="death-yellow-ring";
-  const rSize=Math.round(240*SCALE);
+  const rSize=Math.round(260*SCALE);
   ring.style.width=rSize+"px"; ring.style.height=rSize+"px";
   ring.style.left=(cx-rSize/2)+"px"; ring.style.top=(cy-rSize/2)+"px";
   game.appendChild(ring);
   setTimeout(()=>ring.remove(),740);
-  for(let i=0;i<12;i++){
-    const a=(i/12)*Math.PI*2;
+
+  // A second slower ring for extra thump
+  setTimeout(()=>{
+    const r2=document.createElement("div");
+    r2.className="death-yellow-ring";
+    const sz2=Math.round(320*SCALE);
+    r2.style.width=sz2+"px"; r2.style.height=sz2+"px";
+    r2.style.left=(cx-sz2/2)+"px"; r2.style.top=(cy-sz2/2)+"px";
+    game.appendChild(r2);
+    setTimeout(()=>r2.remove(),760);
+  }, 150);
+
+  // Erupting dust/jitter sparks
+  for(let i=0;i<16;i++){
+    const a=(i/16)*Math.PI*2 + Math.random()*0.3;
     const sp=document.createElement("div");
     sp.className="death-yellow-spark";
-    const sz=Math.max(6,Math.round(9*SCALE));
+    const sz=Math.max(6,Math.round(10*SCALE));
     sp.style.width=sz+"px"; sp.style.height=sz+"px";
     sp.style.left=(cx-sz/2)+"px"; sp.style.top=(cy-sz/2)+"px";
     game.appendChild(sp);
-    const dist=(80+Math.random()*50)*SCALE;
+    const dist=(90+Math.random()*60)*SCALE;
     const tx=Math.cos(a)*dist, ty=Math.sin(a)*dist;
     const s0=performance.now();
+    const delay=i*25;
     function stp(tt){
-      const p=Math.min(1,(tt-s0)/600);
-      sp.style.transform=`translate(${tx*p}px,${ty*p}px) rotate(${p*720}deg)`;
+      const raw=(tt-s0-delay);
+      if(raw<0){requestAnimationFrame(stp);return;}
+      const p=Math.min(1,raw/680);
+      // Jitter pattern for extra "rattling" feel
+      const jx = Math.sin(p*30)*3*SCALE;
+      const jy = Math.cos(p*27)*3*SCALE;
+      sp.style.transform=`translate(${tx*p + jx}px,${ty*p + jy}px) rotate(${p*720}deg)`;
       sp.style.opacity=String(1-p);
       if(p<1) requestAnimationFrame(stp);
       else sp.remove();
     }
     requestAnimationFrame(stp);
   }
-  if(screenSpinTimer) clearTimeout(screenSpinTimer);
-  screenSpinTimer=setTimeout(()=>{
-    if(Date.now() >= screenSpinUntil){
-      game.classList.remove("spin");
-      // Only clear if no other spin is queued
-      if(!enemies.some(e=>e.kind==="yellow"&&e.element.parentNode)) screenSpinUntil=0;
+
+  // Remove the shake class when the effect ends.
+  if(screenShakeTimer) clearTimeout(screenShakeTimer);
+  screenShakeTimer=setTimeout(()=>{
+    if(Date.now() >= screenShakeUntil){
+      game.classList.remove("shake");
+      if(!enemies.some(e=>e.kind==="yellow"&&e.element.parentNode)) screenShakeUntil=0;
     }
-  }, YELLOW_SPIN_DURATION_MS + 30);
+  }, YELLOW_SHAKE_DURATION_MS + 30);
 }
 
 /* ============================================================
@@ -1596,7 +1718,6 @@ function yellowDeath(cx,cy,sizePx){
   ring.style.left=(cx-maxR/2)+"px"; ring.style.top=(cy-maxR/2)+"px";
   game.appendChild(ring);
   setTimeout(()=>ring.remove(), 750);
-  // Second pulse
   setTimeout(()=>{
     const r2 = document.createElement("div");
     r2.className = "death-yellow-ring";
@@ -2202,10 +2323,9 @@ function killEnemy(data){
     }
     if(kind === "overlord") showNotification("RED OVERLORD DESTROYED!", "boss");
     if(kind === "factory") showNotification("GREEN FACTORY DESTROYED!", "boss");
-    if(kind === "yellow" && isSpinning()) {
-      // End the spin early if yellow died mid-spin
-      screenSpinUntil = 0;
-      game.classList.remove("spin");
+    if(kind === "yellow" && isShaking()) {
+      screenShakeUntil = 0;
+      game.classList.remove("shake");
     }
   } catch(e) { console.error(e); }
 }
@@ -2228,8 +2348,8 @@ function startGame(){
   meteorOwned=false; meteorCooldownUntil=0;
   shopOpen=false; shopOpenedAt=0; totalPausedMs=0; spawnEndsAt=0;
   hitJamUntil=0;
-  screenSpinUntil=0; spinCount=0;
-  if(screenSpinTimer){ clearTimeout(screenSpinTimer); screenSpinTimer=null; }
+  screenShakeUntil=0; shakeCount=0;
+  if(screenShakeTimer){ clearTimeout(screenShakeTimer); screenShakeTimer=null; }
   if(hitJamTimer){ clearTimeout(hitJamTimer); hitJamTimer=null; }
   shopOverlay.classList.remove("open");
   tornadoBtn.classList.remove("unlocked");
@@ -2242,7 +2362,7 @@ function startGame(){
   meteorBtn.querySelector("span").textContent = "Meteor Shower";
   game.classList.remove("arming");
   game.classList.remove("jammed");
-  game.classList.remove("spin");
+  game.classList.remove("shake");
   game.innerHTML="<div id=\"timer\">Time: 00:00</div><div id=\"notification\"></div><div id=\"chancePanel\"><h3>Spawn chances</h3><div id=\"chanceList\"></div></div>";
   timerEl=document.getElementById("timer");
   notificationEl=document.getElementById("notification");
@@ -2264,15 +2384,15 @@ function startGame(){
 function endGame(){
   gameOver=true; shopOpen=false; shopOpenedAt=0;
   tornadoArmed=false; hitJamUntil=0;
-  screenSpinUntil=0;
-  if(screenSpinTimer){ clearTimeout(screenSpinTimer); screenSpinTimer=null; }
+  screenShakeUntil=0;
+  if(screenShakeTimer){ clearTimeout(screenShakeTimer); screenShakeTimer=null; }
   if(hitJamTimer){ clearTimeout(hitJamTimer); hitJamTimer=null; }
   tornadoBtn.classList.remove("armed");
   tornadoBtn.classList.remove("cooling");
   meteorBtn.classList.remove("cooling");
   game.classList.remove("arming");
   game.classList.remove("jammed");
-  game.classList.remove("spin");
+  game.classList.remove("shake");
   shopOverlay.classList.remove("open");
   clearTimeout(spawnTimer); spawnTimer=null;
   clearInterval(timerInterval);
@@ -2290,15 +2410,15 @@ function goToMenu(){
   stopMusic();
   shopOpen=false; shopOpenedAt=0;
   tornadoArmed=false; hitJamUntil=0;
-  screenSpinUntil=0;
-  if(screenSpinTimer){ clearTimeout(screenSpinTimer); screenSpinTimer=null; }
+  screenShakeUntil=0;
+  if(screenShakeTimer){ clearTimeout(screenShakeTimer); screenShakeTimer=null; }
   if(hitJamTimer){ clearTimeout(hitJamTimer); hitJamTimer=null; }
   tornadoBtn.classList.remove("armed");
   tornadoBtn.classList.remove("cooling");
   meteorBtn.classList.remove("cooling");
   game.classList.remove("arming");
   game.classList.remove("jammed");
-  game.classList.remove("spin");
+  game.classList.remove("shake");
   shopOverlay.classList.remove("open");
   enemies.forEach(e=>cleanupEnemy(e));
   enemies=[];
@@ -2481,11 +2601,11 @@ function spawnEnemy(){
    }, BLACK_STEAL_INTERVAL_MS);
  }
  if(kind==="yellow"){
-   data.yellowSpinTimer=setInterval(()=>{
-     if(!enemy.parentNode){clearInterval(data.yellowSpinTimer);return}
+   data.yellowShakeTimer=setInterval(()=>{
+     if(!enemy.parentNode){clearInterval(data.yellowShakeTimer);return}
      if(gameOver||shopOpen) return;
-     yellowScreenSpin(enemy,data);
-   }, YELLOW_SPIN_INTERVAL_MS);
+     yellowScreenShake(enemy,data);
+   }, YELLOW_SHAKE_INTERVAL_MS);
  }
  if(kind==="overlord"){
    setTimeout(()=>{
