@@ -705,15 +705,44 @@ function summonBetrayal(cx,cy){
 }
 function fireBetrayalShot(d){
  let target=null,best=Infinity;
- for(const e of enemies){if(e.friendly||!e.element.parentNode)continue;const dx=e.element.offsetLeft-d.element.offsetLeft,dy=e.element.offsetTop-d.element.offsetTop,dist=dx*dx+dy*dy;if(dist<best){best=dist;target=e}}
+ for(const e of enemies){
+  if(e.friendly||!e.element.parentNode||e.dying)continue;
+  const dx=(e.element.offsetLeft+e.size/2)-(d.element.offsetLeft+d.size/2);
+  const dy=(e.element.offsetTop+e.size/2)-(d.element.offsetTop+d.size/2);
+  const dist=dx*dx+dy*dy;
+  if(dist<best){best=dist;target=e}
+ }
  if(!target)return;
- const x=d.element.offsetLeft+d.size/2,y=d.element.offsetTop+d.size/2,tx=target.element.offsetLeft+target.size/2,ty=target.element.offsetTop+target.size/2;
- const b=document.createElement("div"); b.style.cssText=`position:absolute;width:${Math.max(4,Math.round(7*SCALE))}px;height:${Math.max(4,Math.round(7*SCALE))}px;background:#49ff49;border:2px solid #caffca;border-radius:50%;box-shadow:0 0 12px #16d64b;z-index:18;left:${x}px;top:${y}px;pointer-events:none`; game.appendChild(b);
+ const x=d.element.offsetLeft+d.size/2,y=d.element.offsetTop+d.size/2;
+ const tx=target.element.offsetLeft+target.size/2,ty=target.element.offsetTop+target.size/2;
+ const b=document.createElement("div");
+ const bs=Math.max(4,Math.round(7*SCALE));
+ b.style.cssText=`position:absolute;width:${bs}px;height:${bs}px;background:#49ff49;border:2px solid #caffca;border-radius:50%;box-shadow:0 0 12px #16d64b;z-index:18;left:${x-bs/2}px;top:${y-bs/2}px;pointer-events:none`;
+ game.appendChild(b);
  try{ensureAudio();tone(720,.07,"square",.07);sweep(900,500,.08,"sine",.04)}catch(e){}
  const dx=tx-x,dy=ty-y,len=Math.hypot(dx,dy)||1,vx=dx/len*8*SCALE,vy=dy/len*8*SCALE;
- const iv=setInterval(()=>{if(!b.parentNode){clearInterval(iv);return} b.style.left=(b.offsetLeft+vx)+"px";b.style.top=(b.offsetTop+vy)+"px";
-  if(Math.hypot(b.offsetLeft-tx,b.offsetTop-ty)<Math.max(14,target.size/2)){clearInterval(iv);b.remove(); if(target.element.parentNode&&!target.dying){target.health-=damage; try{tone(180,.09,"triangle",.06)}catch(e){} if(target.health<=0)killEnemy(target);else{target.healthFill.style.width=(target.health/target.maxHealth*100)+"%";hitEffect(target.kind,tx,ty,target.size)}}}
-  else if(b.offsetLeft<0||b.offsetTop<0||b.offsetLeft>game.clientWidth||b.offsetTop>game.clientHeight){clearInterval(iv);b.remove()}
+ const iv=setInterval(()=>{
+  if(!b.parentNode){clearInterval(iv);return}
+  const oldX=b.offsetLeft,oldY=b.offsetTop;
+  const newX=oldX+vx,newY=oldY+vy;
+  b.style.left=newX+"px"; b.style.top=newY+"px";
+  let hit=null;
+  for(const e of enemies){
+   if(e.friendly||e.dying||!e.element.parentNode)continue;
+   const ex=e.element.offsetLeft,ey=e.element.offsetTop;
+   if(newX+bs>=ex && newX<=ex+e.size && newY+bs>=ey && newY<=ey+e.size){hit=e;break}
+  }
+  if(hit){
+   clearInterval(iv);b.remove();
+   if(hit.element.parentNode&&!hit.dying){
+    hit.health-=damage;
+    try{tone(180,.09,"triangle",.06)}catch(e){}
+    if(hit.health<=0)killEnemy(hit);
+    else{if(hit.healthFill)hit.healthFill.style.width=(hit.health/hit.maxHealth*100)+"%";hitEffect(hit.kind,hit.element.offsetLeft+hit.size/2,hit.element.offsetTop+hit.size/2,hit.size)}
+   }
+  } else if(newX+bs<0||newY+bs<0||newX>game.clientWidth||newY>game.clientHeight){
+   clearInterval(iv);b.remove();
+  }
  },30);
 }
 function updateBetrayalButton(){
@@ -1710,6 +1739,9 @@ function startGame(){
   tornadoBtn.classList.remove("unlocked");
   tornadoBtn.classList.remove("armed");
   tornadoBtn.classList.remove("cooling");
+  betrayalBtn.classList.remove("unlocked","armed","cooling");
+  betrayalBtn.disabled = false;
+  betrayalBtn.querySelector("span").textContent = "Temporary Betrayal";
   tornadoBtn.disabled = false;
   tornadoBtn.querySelector("span:last-child").textContent = "Tornado";
   game.classList.remove("arming");
