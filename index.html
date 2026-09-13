@@ -57,10 +57,17 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 #game.arming{cursor:crosshair}
 #game.jammed::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%, rgba(70,130,255,.10), rgba(70,130,255,.28));pointer-events:none;z-index:14;animation:jamPulse 0.8s ease-in-out infinite}
 @keyframes jamPulse{0%,100%{opacity:.6}50%{opacity:1}}
+#game.spin::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 50%, rgba(255,230,60,.10), rgba(255,220,0,.30));pointer-events:none;z-index:13;animation:spinPulse 0.5s ease-in-out infinite}
+@keyframes spinPulse{0%,100%{opacity:.55}50%{opacity:1}}
+#game.spin .enemy,#game.spin #timer,#game.spin #notification,#game.spin #chancePanel,#game.spin .tornado,#game.spin .tornadoRing,#game.spin .meteor,#game.spin .meteorTrail{
+  animation:gameSpin 2s linear infinite;
+}
+@keyframes gameSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 #timer{position:absolute;left:12px;bottom:10px;font-size:clamp(12px,1.5vw,18px);color:#fff;background:rgba(0,0,0,.55);padding:6px 10px;border:1px solid #555;border-radius:5px;z-index:10;pointer-events:none}
 #notification{position:absolute;top:12px;left:50%;transform:translateX(-50%);font-size:clamp(14px,2vw,24px);font-weight:bold;color:#ffd700;text-shadow:0 0 10px #ff8c00;background:rgba(0,0,0,.7);padding:8px 16px;border-radius:6px;opacity:0;pointer-events:none;z-index:15;transition:opacity .25s;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
 #notification.jam{color:#8fc4ff;text-shadow:0 0 12px #3f8fff}
 #notification.boss{color:#ff4444;text-shadow:0 0 16px #ff0000;font-size:clamp(16px,2.4vw,28px)}
+#notification.spin{color:#ffe94a;text-shadow:0 0 14px #ffea00}
 #chancePanel{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:clamp(120px,17vw,200px);max-height:calc(100% - 40px);overflow-y:auto;overflow-x:hidden;background:rgba(0,0,0,.78);border:1px solid #555;border-radius:6px;padding:8px 10px;font-size:clamp(10px,1.2vw,14px);line-height:1.5;z-index:1;pointer-events:auto;user-select:none;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#ffcc44 #111}
 #chancePanel::-webkit-scrollbar{width:6px}
 #chancePanel::-webkit-scrollbar-track{background:#111;border-radius:3px}
@@ -73,6 +80,7 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 .purple{background:#8b20d9;border:2px solid #d58aff;box-shadow:0 0 18px #a020f0}
 .green{background:#16d64b;border:2px solid #8aff9b;box-shadow:0 0 16px #16d64b}
 .lime{background:#9acd32;border:2px solid #d4ff70;box-shadow:0 0 26px #b3ff3b}
+.yellow{background:#ffdc00;border:2px solid #fff59a;box-shadow:0 0 30px #ffea00, 0 0 60px #ffea00 inset}
 .blue{background:#1e6bff;border:2px solid #8fc4ff;box-shadow:0 0 28px #3f8fff}
 .cyan{background:#00e5e5;border:2px solid #a8ffff;box-shadow:0 0 30px #00e5e5}
 .black{background:#111;border:3px solid #888;box-shadow:0 0 24px #555, 0 0 40px #000 inset}
@@ -97,6 +105,10 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 @keyframes stealPulse{0%{opacity:0}30%{opacity:1}100%{opacity:0}}
 .stealScoreText{position:absolute;color:#ff4466;font-weight:bold;pointer-events:none;z-index:21;text-shadow:0 0 14px #ff0033;animation:stealFloat 1.1s ease-out forwards}
 @keyframes stealFloat{0%{opacity:1;transform:translateY(0) scale(.8)}100%{opacity:0;transform:translateY(-55px) scale(1.4)}}
+.scorePopup{position:absolute;color:#ffe94a;font-weight:bold;pointer-events:none;z-index:22;text-shadow:0 0 10px #ffb700, 0 0 20px #ffb700;animation:scoreFloat 1.1s ease-out forwards}
+@keyframes scoreFloat{0%{opacity:1;transform:translateY(0) scale(.7)}25%{opacity:1;transform:translateY(-18px) scale(1.15)}100%{opacity:0;transform:translateY(-70px) scale(.9)}}
+.damagePopup{position:absolute;color:#ff3b3b;font-weight:bold;pointer-events:none;z-index:22;text-shadow:0 0 10px #ff0000, 0 0 22px #ff0000;animation:damageFloat 1.0s ease-out forwards}
+@keyframes damageFloat{0%{opacity:1;transform:translateY(0) scale(.7)}25%{opacity:1;transform:translateY(-16px) scale(1.2)}100%{opacity:0;transform:translateY(-60px) scale(.9)}}
 .teleportFX{position:absolute;border:3px solid #d58aff;border-radius:50%;pointer-events:none;animation:tele .45s ease-out forwards}
 @keyframes tele{from{opacity:1;transform:scale(.3)}to{opacity:0;transform:scale(1.8)}}
 .healFX{position:absolute;border:3px solid #b3ff3b;border-radius:50%;pointer-events:none;animation:healRing .6s ease-out forwards;box-shadow:0 0 22px #b3ff3b inset}
@@ -119,6 +131,8 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 .hitFactory{position:absolute;pointer-events:none;z-index:18;border-radius:6px;border:4px solid #b3ff3b;box-shadow:0 0 30px #16d64b, 0 0 60px #16d64b inset;animation:hitFactoryAnim .5s ease-out forwards}
 @keyframes hitFactoryAnim{0%{opacity:1;transform:scale(.8) rotate(0deg)}100%{opacity:0;transform:scale(1.4) rotate(45deg)}}
 .hitFactorySpark{position:absolute;width:8px;height:8px;background:#b3ff3b;border-radius:2px;pointer-events:none;z-index:18;box-shadow:0 0 12px #16d64b}
+.hitYellow{position:absolute;pointer-events:none;z-index:18;border-radius:50%;border:3px solid #ffe94a;box-shadow:0 0 30px #ffea00, 0 0 60px #ffea00 inset;animation:hitYellowAnim .5s ease-out forwards}
+@keyframes hitYellowAnim{0%{opacity:1;transform:scale(.6) rotate(0deg)}100%{opacity:0;transform:scale(1.8) rotate(-180deg)}}
 .death-red-puff{position:absolute;border-radius:50%;pointer-events:none;z-index:19;background:radial-gradient(circle, rgba(255,60,60,.9), rgba(255,0,0,0) 65%);animation:redPuff .4s ease-out forwards}
 @keyframes redPuff{0%{opacity:1;transform:scale(.5)}100%{opacity:0;transform:scale(1.8)}}
 .death-shard{position:absolute;width:6px;height:6px;background:#ff4040;pointer-events:none;z-index:19;border-radius:1px;box-shadow:0 0 8px #ff2020}
@@ -132,6 +146,11 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 .death-lime-ring{position:absolute;border:3px solid #d4ff70;border-radius:50%;pointer-events:none;z-index:19;box-shadow:0 0 20px #b3ff3b, 0 0 40px #b3ff3b inset;animation:limeRing .8s ease-out forwards}
 @keyframes limeRing{0%{opacity:1;transform:scale(1.3)}100%{opacity:0;transform:scale(.2)}}
 .death-lime-drip{position:absolute;width:6px;height:6px;background:#d4ff70;border-radius:50%;pointer-events:none;z-index:19;box-shadow:0 0 10px #b3ff3b}
+.death-yellow-core{position:absolute;border-radius:50%;pointer-events:none;z-index:19;background:radial-gradient(circle, rgba(255,250,180,.95), rgba(255,220,0,0) 70%);animation:yellowCore .55s ease-out forwards}
+@keyframes yellowCore{0%{opacity:1;transform:scale(.4)}60%{opacity:1;transform:scale(1.6)}100%{opacity:0;transform:scale(2.4)}}
+.death-yellow-ring{position:absolute;border:3px solid #ffe94a;border-radius:50%;pointer-events:none;z-index:19;box-shadow:0 0 30px #ffea00, 0 0 60px #ffea00 inset;animation:yellowRing .7s ease-out forwards}
+@keyframes yellowRing{0%{opacity:1;transform:scale(.4)}100%{opacity:0;transform:scale(1.6)}}
+.death-yellow-spark{position:absolute;width:7px;height:7px;background:#ffe94a;border-radius:2px;pointer-events:none;z-index:19;box-shadow:0 0 12px #ffea00}
 .death-blue-flash{position:absolute;border-radius:50%;pointer-events:none;z-index:19;background:radial-gradient(circle, rgba(140,200,255,.95), rgba(30,100,255,0) 70%);animation:blueFlash .35s ease-out forwards}
 @keyframes blueFlash{0%{opacity:1;transform:scale(.6)}100%{opacity:0;transform:scale(2.2)}}
 .death-bolt{position:absolute;width:3px;height:26px;background:#bfe0ff;pointer-events:none;z-index:19;transform-origin:50% 100%;box-shadow:0 0 12px #3f8fff;animation:boltFade .35s ease-out forwards}
@@ -161,6 +180,7 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 .healthFill{height:100%;background:#00e83b;width:100%;pointer-events:none}
 .healthFill.boss{background:linear-gradient(90deg,#ff4444,#ff8800)}
 .healthFill.factory{background:linear-gradient(90deg,#b3ff3b,#16d64b)}
+.healthFill.yellow{background:linear-gradient(90deg,#fff59a,#ffdc00)}
 #loseScreen{display:none;z-index:30}
 #loseScreen p{font-size:clamp(14px,2vw,25px);margin:6px 0}
 #finalScore,#loseHighscore{color:#ffd700}
@@ -303,6 +323,7 @@ let betrayalOwned=false, betrayalArmed=false, betrayalCooldownUntil=0;
 let meteorOwned=false, meteorCooldownUntil=0;
 let hitJamUntil=0, hitJamTimer=null;
 let lastGlobalHitTime = 0;
+let screenSpinUntil = 0, screenSpinTimer = null, spinCount = 0;
 
 const HIT_COOLDOWN_BASE_MS = 500;
 const HIT_COOLDOWN_STEP_MS = 50;
@@ -338,14 +359,18 @@ const BLACK_STEAL_AMOUNT = 40;
 const OVERLORD_HEALTH = 50;
 const OVERLORD_POINTS = 100;
 const OVERLORD_SUMMON_INTERVAL_MS = 5000;
-/* ---- GREEN FACTORY ---- */
 const FACTORY_HEALTH = 120;
 const FACTORY_POINTS = 100;
 const FACTORY_SUMMON_INTERVAL_MS = 1000;
+/* ---- YELLOW ---- */
+const YELLOW_HEALTH = 45;
+const YELLOW_POINTS = 20;
+const YELLOW_SPIN_INTERVAL_MS = 4000;
+const YELLOW_SPIN_DURATION_MS = 2000;
 
 const GROWTH = {
   red:0, orange:0.020, purple:0.020, green:0.020, lime:0.020,
-  blue:0.020, cyan:0.025, black:0.022, overlord:0.020, factory:0.00015
+  yellow:0.021, blue:0.020, cyan:0.025, black:0.022, overlord:0.020, factory:0.00015
 };
 function getSpawnChances(){
   const m = Math.floor(elapsedMs()/60000);
@@ -355,6 +380,7 @@ function getSpawnChances(){
     purple: GROWTH.purple * Math.max(0, m - 1),
     green:  GROWTH.green  * Math.max(0, m - 2),
     lime:   GROWTH.lime   * Math.max(0, m - 3),
+    yellow: GROWTH.yellow * Math.max(0, m - 4),
     blue:   GROWTH.blue   * Math.max(0, m - 4),
     cyan:   GROWTH.cyan   * Math.max(0, m - 5),
     black:  GROWTH.black  * Math.max(0, m - 6),
@@ -362,11 +388,11 @@ function getSpawnChances(){
     factory:  GROWTH.factory  * Math.max(0, m - 7) * 8
   };
   let sumOthers = 0;
-  for(const k of ["orange","purple","green","lime","blue","cyan","black","overlord","factory"]) sumOthers += raw[k];
+  for(const k of ["orange","purple","green","lime","yellow","blue","cyan","black","overlord","factory"]) sumOthers += raw[k];
   let red = Math.max(0, 1 - sumOthers);
   raw.red = red;
   if(red <= 0 && sumOthers > 1){
-    for(const k of ["orange","purple","green","lime","blue","cyan","black","overlord","factory"]){
+    for(const k of ["orange","purple","green","lime","yellow","blue","cyan","black","overlord","factory"]){
       if(raw[k] <= 0) continue;
       const excess = sumOthers - 1;
       const shrink = Math.min(excess, raw[k]);
@@ -376,7 +402,7 @@ function getSpawnChances(){
     }
   }
   let total = raw.red;
-  for(const k of ["orange","purple","green","lime","blue","cyan","black","overlord","factory"]) total += raw[k];
+  for(const k of ["orange","purple","green","lime","yellow","blue","cyan","black","overlord","factory"]) total += raw[k];
   if(total > 1.0000001){
     const k = 1/total;
     for(const key in raw) raw[key] *= k;
@@ -387,6 +413,7 @@ function getSpawnChances(){
     { name:"Purple", chance:raw.purple },
     { name:"Green", chance:raw.green },
     { name:"Lime", chance:raw.lime },
+    { name:"Yellow", chance:raw.yellow },
     { name:"Blue", chance:raw.blue },
     { name:"Cyan", chance:raw.cyan },
     { name:"Black", chance:raw.black },
@@ -403,6 +430,7 @@ function elapsedMs(){
 }
 function elapsedSeconds(){ return Math.floor(elapsedMs()/1000); }
 function hitIsJammed(){ return Date.now() < hitJamUntil; }
+function isSpinning(){ return Date.now() < screenSpinUntil; }
 
 /* ============================================================
    AUDIO
@@ -470,11 +498,21 @@ function hitSound(isBoss){try{ensureAudio();tone(520,.045,"square",.075,0);tone(
 function cyanHitSound(){try{ensureAudio();tone(1200,.05,"sine",.07,0);tone(900,.06,"sine",.06,.04);tone(1500,.05,"sine",.05,.09);noiseBurst(.02,.03,0);}catch(e){}}
 function blackHitSound(){try{ensureAudio();tone(180,.08,"square",.08,0);tone(110,.10,"triangle",.06,.02);noiseBurst(.05,.05,0);}catch(e){}}
 function factoryHitSound(){try{ensureAudio();tone(140,.10,"square",.09,0);tone(90,.14,"triangle",.07,.03);noiseBurst(.06,.06,0);tone(220,.06,"sine",.05,.01);}catch(e){}}
+function yellowHitSound(){try{ensureAudio();tone(1600,.05,"square",.08,0);tone(1200,.06,"sine",.06,.03);tone(800,.06,"sine",.05,.08);sweep(1800,600,.10,"square",.05,.02);noiseBurst(.03,.03,0);}catch(e){}}
+function yellowSpinSound(){try{ensureAudio();
+  // Rising whir + bass wobble
+  sweep(200,2400,1.9,"sawtooth",.07);
+  sweep(300,2800,1.9,"square",.04,.05);
+  tone(60,1.9,"sine",.10,.1);
+  tone(90,1.9,"sine",.07,.3);
+  noiseBurst(1.8,.04,.2);
+}catch(e){}}
 function redDeathSound(){try{ensureAudio();tone(300,.07,"square",.09);tone(140,.14,"square",.07,.04);noiseBurst(.09,.05);}catch(e){}}
 function orangeDeathSound(){try{ensureAudio();sweep(600,120,.25,"sawtooth",.10);tone(90,.22,"sine",.08,.05);noiseBurst(.14,.06,.02);}catch(e){}}
 function purpleDeathSound(){try{ensureAudio();sweep(400,1400,.18,"sine",.08);sweep(1300,240,.28,"square",.07,.14);tone(700,.10,"sine",.05,.28);}catch(e){}}
 function greenDeathSound(){try{ensureAudio();tone(1100,.05,"square",.08);tone(1500,.05,"square",.07,.05);tone(900,.06,"square",.06,.12);}catch(e){}}
 function limeDeathSound(){try{ensureAudio();tone(880,.12,"sine",.08);tone(660,.14,"sine",.07,.08);tone(440,.20,"sine",.06,.18);}catch(e){}}
+function yellowDeathSound(){try{ensureAudio();tone(2000,.06,"sine",.08,0);tone(1600,.07,"sine",.07,.05);tone(1200,.09,"sine",.06,.11);tone(800,.14,"sine",.06,.19);sweep(1800,300,.5,"sine",.05,.05);noiseBurst(.18,.05,.1);}catch(e){}}
 function blueDeathSound(){try{ensureAudio();sweep(2200,300,.22,"square",.10);noiseBurst(.15,.08);tone(1600,.08,"sawtooth",.06,.02);tone(120,.18,"sine",.07,.10);}catch(e){}}
 function cyanDeathSound(){try{ensureAudio();tone(1500,.06,"sine",.08,0);tone(1200,.07,"sine",.07,.05);tone(900,.08,"sine",.06,.11);tone(600,.12,"sine",.06,.18);sweep(1400,300,.4,"sine",.05,.05);noiseBurst(.2,.05,.1);}catch(e){}}
 function blackDeathSound(){try{ensureAudio();sweep(400,60,.7,"sawtooth",.09);sweep(600,80,.7,"triangle",.07,.05);tone(60,.5,"sine",.11,.15);tone(45,.7,"sine",.09,.4);noiseBurst(.5,.07,.1);tone(220,.2,"sine",.05,.3);tone(110,.3,"sine",.05,.5);}catch(e){}}
@@ -526,6 +564,8 @@ function betrayalDeathSound(){try{ensureAudio();
   sweep(700,180,.4,"triangle",.05,.05);
   noiseBurst(.12,.04,.02);
 }catch(e){}}
+function scorePopupSound(){try{ensureAudio();tone(1320,.05,"sine",.05,0);tone(1760,.06,"sine",.04,.03);}catch(e){}}
+function damagePopupSound(){try{ensureAudio();tone(220,.08,"square",.07,0);tone(140,.12,"sawtooth",.06,.03);}catch(e){}}
 function playMusicStep(){
  const step=musicStep%16;
  const bass=[55,55,73.42,55,65.41,65.41,82.41,65.41][Math.floor(step/2)];
@@ -553,6 +593,7 @@ function recomputeScale(){
     purple:   { size: Math.max(26, Math.round(48 * SCALE)), health: 5,  points: 8  },
     green:    { size: Math.max(18, Math.round(28 * SCALE)), health: 2,  points: 10 },
     lime:     { size: Math.max(40, Math.round(72 * SCALE)), health: 10, points: 25 },
+    yellow:   { size: Math.max(42, Math.round(76 * SCALE)), health: YELLOW_HEALTH, points: YELLOW_POINTS },
     blue:     { size: Math.max(46, Math.round(80 * SCALE)), health: BLUE_HEALTH, points: BLUE_POINTS },
     cyan:     { size: Math.max(50, Math.round(88 * SCALE)), health: CYAN_HEALTH, points: CYAN_POINTS },
     black:    { size: Math.max(38, Math.round(65 * SCALE)), health: BLACK_HEALTH, points: BLACK_POINTS },
@@ -680,6 +721,32 @@ function showNotification(text,className=""){
 }
 
 /* ============================================================
+   FLOATING POPUPS
+   ============================================================ */
+function scorePopup(x,y,amount){
+  const el=document.createElement("div");
+  el.className="scorePopup";
+  el.textContent="+"+amount;
+  el.style.fontSize=Math.max(13,Math.round(22*SCALE))+"px";
+  el.style.left=(x-8)+"px";
+  el.style.top=(y-14)+"px";
+  game.appendChild(el);
+  setTimeout(()=>el.remove(),1150);
+  try{scorePopupSound();}catch(e){}
+}
+function damagePopup(x,y,amount){
+  const el=document.createElement("div");
+  el.className="damagePopup";
+  el.textContent="-"+amount;
+  el.style.fontSize=Math.max(14,Math.round(24*SCALE))+"px";
+  el.style.left=(x-8)+"px";
+  el.style.top=(y-14)+"px";
+  game.appendChild(el);
+  setTimeout(()=>el.remove(),1050);
+  try{damagePopupSound();}catch(e){}
+}
+
+/* ============================================================
    SHOP
    ============================================================ */
 function dmgUpgradeCost(){ return DMG_STARTING_COST + dmgUpgradeLevel*DMG_COST_STEP; }
@@ -743,6 +810,7 @@ function toggleShop(){
     if(tornadoCooldownUntil>Date.now()) tornadoCooldownUntil += pausedFor;
     if(meteorCooldownUntil>Date.now()) meteorCooldownUntil += pausedFor;
     if(betrayalCooldownUntil>Date.now()) betrayalCooldownUntil += pausedFor;
+    if(screenSpinUntil>Date.now()) screenSpinUntil += pausedFor;
     if(!gameOver){
       const remaining = Math.max(0, spawnEndsAt - Date.now());
       spawnTimer = setTimeout(onSpawnTick, remaining);
@@ -756,6 +824,7 @@ function buyDamageUpgrade(){
   if(score < c) return;
   score -= c; dmgUpgradeLevel++; damage += 1;
   updateUI(); refreshShop(); purchaseChime();
+  damagePopup(game.clientWidth/2, game.clientHeight/2, -1);
 }
 function buyTornadoUpgrade(){
   if(gameOver||tornadoOwned) return;
@@ -816,7 +885,6 @@ function summonBetrayal(cx,cy){
    fireBetrayalShot(d);
  },900);
  setTimeout(endBetrayal, BETRAYAL_DURATION_MS);
- // Pop early on tap
  el.addEventListener("pointerdown",(e)=>{
    if(e.cancelable) e.preventDefault();
    e.stopPropagation();
@@ -1077,6 +1145,7 @@ function cleanupEnemy(data){
   if(data.cyanHealTimer) clearInterval(data.cyanHealTimer);
   if(data.blackStealTimer) clearInterval(data.blackStealTimer);
   if(data.factorySummonTimer) clearInterval(data.factorySummonTimer);
+  if(data.yellowSpinTimer) clearInterval(data.yellowSpinTimer);
   const el = data.element;
   if(el){
     if(el.parentNode) el.parentNode.removeChild(el);
@@ -1085,12 +1154,60 @@ function cleanupEnemy(data){
 }
 
 /* ============================================================
+   YELLOW SCREEN SPIN
+   ============================================================ */
+function yellowScreenSpin(enemy,data){
+  if(gameOver||shopOpen||!enemy.parentNode) return;
+  spinCount++;
+  screenSpinUntil = Date.now() + YELLOW_SPIN_DURATION_MS;
+  yellowSpinSound();
+  showNotification("SCREEN SPIN!","spin");
+  game.classList.add("spin");
+  const cx=enemy.offsetLeft+data.size/2, cy=enemy.offsetTop+data.size/2;
+  const ring=document.createElement("div");
+  ring.className="death-yellow-ring";
+  const rSize=Math.round(240*SCALE);
+  ring.style.width=rSize+"px"; ring.style.height=rSize+"px";
+  ring.style.left=(cx-rSize/2)+"px"; ring.style.top=(cy-rSize/2)+"px";
+  game.appendChild(ring);
+  setTimeout(()=>ring.remove(),740);
+  for(let i=0;i<12;i++){
+    const a=(i/12)*Math.PI*2;
+    const sp=document.createElement("div");
+    sp.className="death-yellow-spark";
+    const sz=Math.max(6,Math.round(9*SCALE));
+    sp.style.width=sz+"px"; sp.style.height=sz+"px";
+    sp.style.left=(cx-sz/2)+"px"; sp.style.top=(cy-sz/2)+"px";
+    game.appendChild(sp);
+    const dist=(80+Math.random()*50)*SCALE;
+    const tx=Math.cos(a)*dist, ty=Math.sin(a)*dist;
+    const s0=performance.now();
+    function stp(tt){
+      const p=Math.min(1,(tt-s0)/600);
+      sp.style.transform=`translate(${tx*p}px,${ty*p}px) rotate(${p*720}deg)`;
+      sp.style.opacity=String(1-p);
+      if(p<1) requestAnimationFrame(stp);
+      else sp.remove();
+    }
+    requestAnimationFrame(stp);
+  }
+  if(screenSpinTimer) clearTimeout(screenSpinTimer);
+  screenSpinTimer=setTimeout(()=>{
+    if(Date.now() >= screenSpinUntil){
+      game.classList.remove("spin");
+      // Only clear if no other spin is queued
+      if(!enemies.some(e=>e.kind==="yellow"&&e.element.parentNode)) screenSpinUntil=0;
+    }
+  }, YELLOW_SPIN_DURATION_MS + 30);
+}
+
+/* ============================================================
    HIT EFFECTS
    ============================================================ */
 const HIT_COLORS = {
   red:"#ff4040", orange:"#ff9020", purple:"#c080ff",
-  green:"#40ff80", lime:"#d4ff60", blue:"#60a0ff",
-  cyan:"#00e5e5", black:"#888888",
+  green:"#40ff80", lime:"#d4ff60", yellow:"#ffe94a",
+  blue:"#60a0ff", cyan:"#00e5e5", black:"#888888",
   overlord:"#ff3030", factory:"#b3ff3b"
 };
 function hitEffect(kind, cx, cy, sizePx){
@@ -1191,6 +1308,41 @@ function hitEffect(kind, cx, cy, sizePx){
     }
     return;
   }
+  if(kind === "yellow"){
+    const ringBase = Math.max(40, Math.round((sizePx||70) * 1.2));
+    const ring = document.createElement("div");
+    ring.className = "hitYellow";
+    ring.style.width  = ringBase+"px";
+    ring.style.height = ringBase+"px";
+    ring.style.left = (cx - ringBase/2)+"px";
+    ring.style.top  = (cy - ringBase/2)+"px";
+    game.appendChild(ring);
+    setTimeout(()=>ring.remove(), 520);
+    for(let i=0;i<6;i++){
+      const a = Math.random()*Math.PI*2;
+      const sp = document.createElement("div");
+      sp.className = "death-yellow-spark";
+      const sz = Math.max(5, Math.round(7*SCALE));
+      sp.style.width = sz+"px";
+      sp.style.height = sz+"px";
+      sp.style.left = (cx - sz/2)+"px";
+      sp.style.top  = (cy - sz/2)+"px";
+      game.appendChild(sp);
+      const dist = (35 + Math.random()*25) * SCALE;
+      const tx = Math.cos(a)*dist;
+      const ty = Math.sin(a)*dist;
+      const start = performance.now();
+      function step(t){
+        const p = Math.min(1, (t-start)/380);
+        sp.style.transform = `translate(${tx*p}px, ${ty*p}px) rotate(${p*540}deg)`;
+        sp.style.opacity = String(1-p);
+        if(p<1) requestAnimationFrame(step);
+        else sp.remove();
+      }
+      requestAnimationFrame(step);
+    }
+    return;
+  }
   const color = HIT_COLORS[kind] || "#ffffff";
   const isBoss = (kind === "overlord");
   const ringBase = Math.max(24, Math.round((sizePx||40) * 0.9));
@@ -1254,6 +1406,7 @@ function deathEffect(kind, cx, cy, sizePx){
     case "purple":   purpleDeath(cx,cy,sizePx); break;
     case "green":    greenDeath(cx,cy);    break;
     case "lime":     limeDeath(cx,cy,sizePx); break;
+    case "yellow":   yellowDeath(cx,cy,sizePx); break;
     case "blue":     blueDeath(cx,cy,sizePx); break;
     case "cyan":     cyanDeath(cx,cy,sizePx); break;
     case "black":    blackDeath(cx,cy,sizePx); break;
@@ -1427,6 +1580,54 @@ function limeDeath(cx,cy,sizePx){
       else d.remove();
     }
     requestAnimationFrame(step);
+  }
+}
+function yellowDeath(cx,cy,sizePx){
+  const maxR = Math.round(110*SCALE);
+  const core = document.createElement("div");
+  core.className = "death-yellow-core";
+  core.style.width=maxR+"px"; core.style.height=maxR+"px";
+  core.style.left=(cx-maxR/2)+"px"; core.style.top=(cy-maxR/2)+"px";
+  game.appendChild(core);
+  setTimeout(()=>core.remove(), 600);
+  const ring = document.createElement("div");
+  ring.className = "death-yellow-ring";
+  ring.style.width=maxR+"px"; ring.style.height=maxR+"px";
+  ring.style.left=(cx-maxR/2)+"px"; ring.style.top=(cy-maxR/2)+"px";
+  game.appendChild(ring);
+  setTimeout(()=>ring.remove(), 750);
+  // Second pulse
+  setTimeout(()=>{
+    const r2 = document.createElement("div");
+    r2.className = "death-yellow-ring";
+    const sz = Math.round(140*SCALE);
+    r2.style.width=sz+"px"; r2.style.height=sz+"px";
+    r2.style.left=(cx-sz/2)+"px"; r2.style.top=(cy-sz/2)+"px";
+    game.appendChild(r2);
+    setTimeout(()=>r2.remove(), 760);
+  }, 180);
+  for(let i=0;i<12;i++){
+    const a=(i/12)*Math.PI*2 + Math.random()*0.3;
+    const sp=document.createElement("div");
+    sp.className="death-yellow-spark";
+    const sz=Math.max(6,Math.round(9*SCALE));
+    sp.style.width=sz+"px"; sp.style.height=sz+"px";
+    sp.style.left=(cx-sz/2)+"px"; sp.style.top=(cy-sz/2)+"px";
+    game.appendChild(sp);
+    const dist=(60+Math.random()*50)*SCALE;
+    const tx=Math.cos(a)*dist, ty=Math.sin(a)*dist;
+    const s0=performance.now();
+    const delay=i*30;
+    function stp(tt){
+      const raw=(tt-s0-delay);
+      if(raw<0){requestAnimationFrame(stp);return;}
+      const p=Math.min(1,raw/650);
+      sp.style.transform=`translate(${tx*p}px,${ty*p}px) rotate(${p*720}deg)`;
+      sp.style.opacity=String(1-p);
+      if(p<1) requestAnimationFrame(stp);
+      else sp.remove();
+    }
+    requestAnimationFrame(stp);
   }
 }
 function blueDeath(cx,cy,sizePx){
@@ -1983,6 +2184,7 @@ function killEnemy(data){
   score += data.points;
   updateUI();
   if(shopOpen) refreshShop();
+  if(data.points > 0) scorePopup(cx, cy, data.points);
   try {
     deathEffect(kind, cx, cy, data.size);
     switch(kind){
@@ -1991,6 +2193,7 @@ function killEnemy(data){
       case "purple":   purpleDeathSound();   break;
       case "green":    greenDeathSound();    break;
       case "lime":     limeDeathSound();     break;
+      case "yellow":   yellowDeathSound();   break;
       case "blue":     blueDeathSound();     break;
       case "cyan":     cyanDeathSound();     break;
       case "black":    blackDeathSound();    break;
@@ -1999,6 +2202,11 @@ function killEnemy(data){
     }
     if(kind === "overlord") showNotification("RED OVERLORD DESTROYED!", "boss");
     if(kind === "factory") showNotification("GREEN FACTORY DESTROYED!", "boss");
+    if(kind === "yellow" && isSpinning()) {
+      // End the spin early if yellow died mid-spin
+      screenSpinUntil = 0;
+      game.classList.remove("spin");
+    }
   } catch(e) { console.error(e); }
 }
 
@@ -2020,6 +2228,8 @@ function startGame(){
   meteorOwned=false; meteorCooldownUntil=0;
   shopOpen=false; shopOpenedAt=0; totalPausedMs=0; spawnEndsAt=0;
   hitJamUntil=0;
+  screenSpinUntil=0; spinCount=0;
+  if(screenSpinTimer){ clearTimeout(screenSpinTimer); screenSpinTimer=null; }
   if(hitJamTimer){ clearTimeout(hitJamTimer); hitJamTimer=null; }
   shopOverlay.classList.remove("open");
   tornadoBtn.classList.remove("unlocked");
@@ -2032,6 +2242,7 @@ function startGame(){
   meteorBtn.querySelector("span").textContent = "Meteor Shower";
   game.classList.remove("arming");
   game.classList.remove("jammed");
+  game.classList.remove("spin");
   game.innerHTML="<div id=\"timer\">Time: 00:00</div><div id=\"notification\"></div><div id=\"chancePanel\"><h3>Spawn chances</h3><div id=\"chanceList\"></div></div>";
   timerEl=document.getElementById("timer");
   notificationEl=document.getElementById("notification");
@@ -2053,12 +2264,15 @@ function startGame(){
 function endGame(){
   gameOver=true; shopOpen=false; shopOpenedAt=0;
   tornadoArmed=false; hitJamUntil=0;
+  screenSpinUntil=0;
+  if(screenSpinTimer){ clearTimeout(screenSpinTimer); screenSpinTimer=null; }
   if(hitJamTimer){ clearTimeout(hitJamTimer); hitJamTimer=null; }
   tornadoBtn.classList.remove("armed");
   tornadoBtn.classList.remove("cooling");
   meteorBtn.classList.remove("cooling");
   game.classList.remove("arming");
   game.classList.remove("jammed");
+  game.classList.remove("spin");
   shopOverlay.classList.remove("open");
   clearTimeout(spawnTimer); spawnTimer=null;
   clearInterval(timerInterval);
@@ -2076,12 +2290,15 @@ function goToMenu(){
   stopMusic();
   shopOpen=false; shopOpenedAt=0;
   tornadoArmed=false; hitJamUntil=0;
+  screenSpinUntil=0;
+  if(screenSpinTimer){ clearTimeout(screenSpinTimer); screenSpinTimer=null; }
   if(hitJamTimer){ clearTimeout(hitJamTimer); hitJamTimer=null; }
   tornadoBtn.classList.remove("armed");
   tornadoBtn.classList.remove("cooling");
   meteorBtn.classList.remove("cooling");
   game.classList.remove("arming");
   game.classList.remove("jammed");
+  game.classList.remove("spin");
   shopOverlay.classList.remove("open");
   enemies.forEach(e=>cleanupEnemy(e));
   enemies=[];
@@ -2173,7 +2390,7 @@ function spawnEnemy(){
  hb.style.height=Math.max(4,Math.round(7*SCALE))+"px";
  hb.style.bottom=(-Math.max(8,Math.round(15*SCALE)))+"px";
  const hf=document.createElement("div");
- hf.className="healthFill"+(kind==="overlord"?" boss":(kind==="factory"?" factory":""));
+ hf.className="healthFill"+(kind==="overlord"?" boss":(kind==="factory"?" factory":(kind==="yellow"?" yellow":"")));
  hb.appendChild(hf); enemy.appendChild(hb); game.appendChild(enemy);
  const data={element:enemy,health:maxHealth,maxHealth,kind,points,healthFill:hf,healthBar:hb,size};
  enemies.push(data);updateUI();
@@ -2263,6 +2480,13 @@ function spawnEnemy(){
      blackSteal(enemy,data);
    }, BLACK_STEAL_INTERVAL_MS);
  }
+ if(kind==="yellow"){
+   data.yellowSpinTimer=setInterval(()=>{
+     if(!enemy.parentNode){clearInterval(data.yellowSpinTimer);return}
+     if(gameOver||shopOpen) return;
+     yellowScreenSpin(enemy,data);
+   }, YELLOW_SPIN_INTERVAL_MS);
+ }
  if(kind==="overlord"){
    setTimeout(()=>{
      if(!gameOver && enemy.parentNode) overlordSummon(enemy,data);
@@ -2303,6 +2527,8 @@ function spawnEnemy(){
       blackHitSound();
     } else if(kind === "factory"){
       factoryHitSound();
+    } else if(kind === "yellow"){
+      yellowHitSound();
     } else {
       const isBoss = (kind === "overlord");
       hitSound(isBoss);
