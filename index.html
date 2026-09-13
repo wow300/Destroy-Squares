@@ -75,34 +75,9 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
 .overlord{background:linear-gradient(135deg,#8a0000,#ff2020,#8a0000);border:3px solid #ff8888;box-shadow:0 0 40px #ff0000, 0 0 80px #ff0000 inset;border-radius:4px}
 .overlord::before{content:"";position:absolute;inset:-6px;border:2px solid #ff6666;border-radius:8px;animation:overlordAura 1.6s ease-in-out infinite;pointer-events:none}
 @keyframes overlordAura{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
-.factory{
-  background:linear-gradient(135deg,#0a7a2a,#16d64b,#0a7a2a);
-  border:4px solid #8aff9b;
-  box-shadow:0 0 50px #16d64b, 0 0 90px #16d64b inset;
-  border-radius:6px;
-}
-.factory::before{
-  content:"";
-  position:absolute;inset:-8px;
-  border:3px solid #b3ff3b;
-  border-radius:10px;
-  animation:factoryAura 1.4s ease-in-out infinite;
-  pointer-events:none;
-}
-.factory::after{
-  content:"";
-  position:absolute;
-  left:50%;top:50%;
-  width:26%;height:26%;
-  transform:translate(-50%,-50%);
-  background:radial-gradient(circle, #b3ff3b, #0a7a2a 70%);
-  border-radius:50%;
-  box-shadow:0 0 20px #b3ff3b;
-  animation:factoryCore 1s ease-in-out infinite;
-  pointer-events:none;
-}
-@keyframes factoryAura{0%,100%{opacity:.5;transform:scale(1)}50%{opacity:1;transform:scale(1.06)}}
-@keyframes factoryCore{0%,100%{opacity:.7;transform:translate(-50%,-50%) scale(1)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.35)}}
+.factory{background:linear-gradient(135deg,#087a24,#25ff62,#087a24);border:3px solid #9affb0;box-shadow:0 0 40px #16d64b,0 0 80px #16d64b inset;border-radius:4px}
+.factory::before{content:"";position:absolute;inset:-6px;border:2px solid #8aff9b;border-radius:8px;animation:factoryAura 1.6s ease-in-out infinite;pointer-events:none}
+@keyframes factoryAura{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.04)}}
 .blue.emp-fire{animation:empShake .45s ease-out;box-shadow:0 0 60px #8fc4ff, 0 0 100px #3f8fff}
 @keyframes empShake{0%{transform:translate(0,0) scale(1)}20%{transform:translate(-3px,2px) scale(1.06)}40%{transform:translate(3px,-2px) scale(1.06)}60%{transform:translate(-2px,-2px) scale(1.04)}80%{transform:translate(2px,2px) scale(1.02)}100%{transform:translate(0,0) scale(1)}}
 .empRing{position:absolute;border:3px solid #8fc4ff;border-radius:50%;pointer-events:none;animation:empExpand .7s ease-out forwards;box-shadow:0 0 30px #3f8fff, 0 0 60px #3f8fff inset;z-index:19}
@@ -524,7 +499,7 @@ function recomputeScale(){
     cyan:     { size: Math.max(50, Math.round(88 * SCALE)), health: CYAN_HEALTH, points: CYAN_POINTS },
     black:    { size: Math.max(38, Math.round(65 * SCALE)), health: BLACK_HEALTH, points: BLACK_POINTS },
     overlord: { size: Math.max(70, Math.round(120 * SCALE)), health: OVERLORD_HEALTH, points: OVERLORD_POINTS },
-    factory:  { size: Math.max(90, Math.round(150 * SCALE)), health: FACTORY_HEALTH, points: FACTORY_POINTS }
+    factory:  { size: Math.max(105, Math.round(180 * SCALE)), health: FACTORY_HEALTH, points: FACTORY_POINTS }
   };
 }
 function applyScaleToDOM(){
