@@ -1,1 +1,1 @@
-The latest update re added Temporary Betrayal in shop.
+The latest update fixed Temporary Betrayal and added Meteor Shower to the shop.
