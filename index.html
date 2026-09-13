@@ -233,7 +233,7 @@ button:disabled{background:#444;border-color:#666;cursor:not-allowed;opacity:.6}
       </div>
       <div class="shopItem" id="betrayalItem">
         <h4>Temporary Betrayal</h4>
-        <div class="desc">Summon a friendly Green Square at a location. It stays for 10 seconds and fires your current damage at the nearest enemy. 20 second cooldown.</div>
+        <div class="desc">Summon a friendly Green Square at a location. It stays for 10 seconds and fires your current damage at the nearest enemy. 20 second cooldown. Tap it to pop it early!</div>
         <div class="row"><span class="lvl" id="betrayalLvl">Not owned</span><button id="buyBetrayalBtn">Cost: 70</button></div>
       </div>
       <div class="shopItem" id="meteorItem">
@@ -519,6 +519,13 @@ function meteorEndSound(){try{ensureAudio();
   tone(880,.3,"sine",.05,.8);
   tone(660,.4,"sine",.05,1.05);
 }catch(e){}}
+function betrayalDeathSound(){try{ensureAudio();
+  tone(880,.08,"sine",.08,0);
+  tone(660,.10,"sine",.07,.07);
+  tone(440,.14,"sine",.06,.16);
+  sweep(700,180,.4,"triangle",.05,.05);
+  noiseBurst(.12,.04,.02);
+}catch(e){}}
 function playMusicStep(){
  const step=musicStep%16;
  const bass=[55,55,73.42,55,65.41,65.41,82.41,65.41][Math.floor(step/2)];
@@ -735,6 +742,7 @@ function toggleShop(){
     if(lastGlobalHitTime>0) lastGlobalHitTime += pausedFor;
     if(tornadoCooldownUntil>Date.now()) tornadoCooldownUntil += pausedFor;
     if(meteorCooldownUntil>Date.now()) meteorCooldownUntil += pausedFor;
+    if(betrayalCooldownUntil>Date.now()) betrayalCooldownUntil += pausedFor;
     if(!gameOver){
       const remaining = Math.max(0, spawnEndsAt - Date.now());
       spawnTimer = setTimeout(onSpawnTick, remaining);
@@ -779,14 +787,45 @@ function summonBetrayal(cx,cy){
  const r=game.getBoundingClientRect(),x=cx-r.left,y=cy-r.top;
  betrayalArmed=false; betrayalBtn.classList.remove("armed"); game.classList.remove("arming");
  betrayalCooldownUntil=Date.now()+BETRAYAL_COOLDOWN_MS; updateBetrayalButton();
- const size=Math.max(18,Math.round(28*SCALE)), el=document.createElement("div");
- el.className="enemy green"; el.style.cssText=`width:${size}px;height:${size}px;left:${Math.max(0,Math.min(game.clientWidth-size,x-size/2))}px;top:${Math.max(0,Math.min(game.clientHeight-size,y-size/2))}px;`;
- game.appendChild(el); const d={element:el,kind:"friendlyBetrayal",size,health:1,maxHealth:1,points:0,healthFill:null,healthBar:null,friendly:true};
+ const size=Math.max(18,Math.round(28*SCALE));
+ const px=Math.max(0,Math.min(game.clientWidth-size,x-size/2));
+ const py=Math.max(0,Math.min(game.clientHeight-size,y-size/2));
+ const el=document.createElement("div");
+ el.className="enemy green";
+ el.style.cssText=`width:${size}px;height:${size}px;left:${px}px;top:${py}px;`;
+ game.appendChild(el);
+ const d={element:el,kind:"friendlyBetrayal",size,health:1,maxHealth:1,points:0,healthFill:null,healthBar:null,friendly:true};
  const ring=document.createElement("div"); ring.className="factorySpawnFX"; ring.style.cssText=`width:${size*2}px;height:${size*2}px;left:${x-size}px;top:${y-size}px`; game.appendChild(ring); setTimeout(()=>ring.remove(),800);
- const started=Date.now(); d.timer=setInterval(()=>{ if(!el.parentNode){clearInterval(d.timer);return} if(Date.now()-started>=BETRAYAL_DURATION_MS){clearInterval(d.timer);el.remove();return} fireBetrayalShot(d); },900);
- setTimeout(()=>{if(el.parentNode)el.remove();clearInterval(d.timer)},BETRAYAL_DURATION_MS);
+ const started=Date.now();
+ let ended=false;
+ function endBetrayal(){
+   if(ended) return;
+   ended=true;
+   clearInterval(d.timer);
+   if(el.parentNode){
+     const ecx = px + size/2;
+     const ecy = py + size/2;
+     try { betrayalDeath(ecx, ecy, size); } catch(e) { console.error(e); }
+     try { betrayalDeathSound(); } catch(e){}
+     el.remove();
+   }
+ }
+ d.timer=setInterval(()=>{
+   if(!el.parentNode){clearInterval(d.timer);return}
+   if(Date.now()-started>=BETRAYAL_DURATION_MS){ endBetrayal(); return; }
+   fireBetrayalShot(d);
+ },900);
+ setTimeout(endBetrayal, BETRAYAL_DURATION_MS);
+ // Pop early on tap
+ el.addEventListener("pointerdown",(e)=>{
+   if(e.cancelable) e.preventDefault();
+   e.stopPropagation();
+   if(gameOver||shopOpen) return;
+   endBetrayal();
+ });
 }
 function fireBetrayalShot(d){
+  if(!d.element.parentNode) return;
   let target=null,best=Infinity;
   for(const e of enemies){if(e.friendly||!e.element.parentNode)continue;const dx=e.element.offsetLeft-d.element.offsetLeft,dy=e.element.offsetTop-d.element.offsetTop,dist=dx*dx+dy*dy;if(dist<best){best=dist;target=e}}
   if(!target)return;
@@ -1220,6 +1259,7 @@ function deathEffect(kind, cx, cy, sizePx){
     case "black":    blackDeath(cx,cy,sizePx); break;
     case "overlord": overlordDeath(cx,cy,sizePx); break;
     case "factory":  factoryDeath(cx,cy,sizePx); break;
+    case "friendlyBetrayal": betrayalDeath(cx,cy,sizePx); break;
   }
 }
 function redDeath(cx,cy){
@@ -1586,6 +1626,60 @@ function factoryDeath(cx,cy,sizePx){
     }
     requestAnimationFrame(step);
   }
+}
+function betrayalDeath(cx,cy,sizePx){
+  const maxR = Math.round(90*SCALE);
+  const ring = document.createElement("div");
+  ring.className = "death-lime-ring";
+  ring.style.width=maxR+"px"; ring.style.height=maxR+"px";
+  ring.style.left=(cx-maxR/2)+"px"; ring.style.top=(cy-maxR/2)+"px";
+  ring.style.borderColor = "#8aff9b";
+  game.appendChild(ring);
+  setTimeout(()=>ring.remove(), 850);
+
+  for(let i=0;i<8;i++){
+    const a = (i/8)*Math.PI*2;
+    const d = document.createElement("div");
+    d.className = "death-green-dot";
+    const sz = Math.max(6, Math.round(9*SCALE));
+    d.style.width=sz+"px"; d.style.height=sz+"px";
+    d.style.left=(cx-sz/2)+"px"; d.style.top=(cy-sz/2)+"px";
+    game.appendChild(d);
+    const dist = (36 + Math.random()*20) * SCALE;
+    const tx = Math.cos(a)*dist;
+    const ty = Math.sin(a)*dist - 40*SCALE;
+    const start = performance.now();
+    const delay = i*40;
+    function step(t){
+      const raw = (t-start-delay);
+      if(raw<0){ requestAnimationFrame(step); return; }
+      const p = Math.min(1, raw/650);
+      d.style.transform = `translate(${tx*p}px, ${ty*p}px) scale(${1-p*0.4})`;
+      d.style.opacity = String(1-p);
+      if(p<1) requestAnimationFrame(step);
+      else d.remove();
+    }
+    requestAnimationFrame(step);
+  }
+
+  const farewell = document.createElement("div");
+  farewell.textContent = "✕";
+  farewell.style.position = "absolute";
+  farewell.style.color = "#8aff9b";
+  farewell.style.fontWeight = "bold";
+  farewell.style.fontSize = Math.max(16, Math.round(28*SCALE))+"px";
+  farewell.style.textShadow = "0 0 14px #16d64b";
+  farewell.style.pointerEvents = "none";
+  farewell.style.zIndex = "20";
+  farewell.style.left = (cx-10)+"px";
+  farewell.style.top = (cy-16)+"px";
+  farewell.style.transition = "opacity .8s, transform .8s";
+  game.appendChild(farewell);
+  requestAnimationFrame(()=>{
+    farewell.style.transform = "translateY(-30px) scale(1.4)";
+    farewell.style.opacity = "0";
+  });
+  setTimeout(()=>farewell.remove(), 900);
 }
 
 tornadoBtn.addEventListener("click", (e)=>{ e.stopPropagation(); armTornado(); });
